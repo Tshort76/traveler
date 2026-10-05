@@ -1,0 +1,1210 @@
+{
+  "format": "traveler-trip",
+  "formatVersion": 1,
+  "id": "demo-buenos-aires-madryn",
+  "revision": 1,
+  "generatedAt": "2026-10-05T12:00:00Z",
+  "generatedBy": "Traveler demo",
+  "title": "Demo: Buenos Aires + Puerto Madryn",
+  "kicker": "Every feature of the app, in one short trip",
+  "summary": "Four days in Buenos Aires (two neighbourhoods), three on the Patagonian coast for whales and sea lions.",
+  "startDate": "2027-10-17",
+  "endDate": "2027-10-25",
+  "links": [
+    {
+      "label": "Planning spreadsheet",
+      "url": "https://docs.google.com/spreadsheets/",
+      "kind": "spreadsheet"
+    }
+  ],
+  "notes": [
+    "Argentina takes cards almost everywhere; carry some pesos for taxis and markets."
+  ],
+  "warnings": [
+    "Whale season ends in mid-December; October is near its peak."
+  ],
+  "stays": [
+    {
+      "id": "lax-out",
+      "name": "Los Angeles",
+      "place": {
+        "name": "Los Angeles International Airport",
+        "query": "LAX",
+        "lat": 33.9416,
+        "lng": -118.4085
+      },
+      "arrive": "2027-10-17",
+      "depart": "2027-10-17",
+      "timezone": "America/Los_Angeles"
+    },
+    {
+      "id": "palermo",
+      "name": "Buenos Aires · Palermo",
+      "region": "CABA, Argentina",
+      "place": {
+        "query": "Palermo, Buenos Aires",
+        "lat": -34.588,
+        "lng": -58.429
+      },
+      "arrive": "2027-10-18",
+      "depart": "2027-10-20",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "Parks, cafés and the best of the food scene, with mornings for work.",
+      "priorities": [
+        "Bosques de Palermo",
+        "Palermo Soho",
+        "Recoleta"
+      ],
+      "lodging": {
+        "name": "Palermo Soho Loft",
+        "status": "booked",
+        "place": {
+          "query": "Palermo Soho Loft",
+          "lat": -34.5875,
+          "lng": -58.43
+        },
+        "checkIn": "15:00",
+        "checkOut": "11:00",
+        "ref": "HMQ2X9",
+        "url": "https://www.airbnb.com/",
+        "price": {
+          "amount": 190,
+          "currency": "USD",
+          "note": "2 nights; about ARS 230,000"
+        },
+        "notes": "Desk by the window; keypad entry, code in the booking app."
+      },
+      "transport": "Walk, Subte line D, or app cars after dark.",
+      "workRhythm": {
+        "days": [
+          "mon",
+          "tue"
+        ],
+        "start": "07:00",
+        "end": "11:00",
+        "timezone": "America/Los_Angeles",
+        "note": "Calls on Pacific time; mornings here."
+      }
+    },
+    {
+      "id": "san-telmo",
+      "name": "Buenos Aires · San Telmo",
+      "region": "CABA, Argentina",
+      "place": {
+        "query": "San Telmo, Buenos Aires",
+        "lat": -34.6212,
+        "lng": -58.3731
+      },
+      "arrive": "2027-10-20",
+      "depart": "2027-10-22",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "The old city: the civic centre, markets, La Boca and the riverside reserve.",
+      "priorities": [
+        "Plaza de Mayo",
+        "Costanera Sur",
+        "Teatro Colón"
+      ],
+      "lodging": {
+        "name": "Casa San Telmo",
+        "status": "tentative",
+        "place": {
+          "query": "Casa San Telmo",
+          "lat": -34.6211,
+          "lng": -58.3731
+        },
+        "price": {
+          "amount": 160,
+          "max": 220,
+          "currency": "USD",
+          "note": "2 nights"
+        },
+        "priority": 2,
+        "how": "Hold a refundable room; confirm once the Colón tour time is set.",
+        "url": "https://www.booking.com/"
+      },
+      "transport": "Walkable; the 152 bus or an app car to Palermo."
+    },
+    {
+      "id": "madryn",
+      "name": "Puerto Madryn",
+      "region": "Chubut, Argentina",
+      "place": {
+        "query": "Puerto Madryn, Chubut",
+        "lat": -42.7692,
+        "lng": -65.0385
+      },
+      "arrive": "2027-10-22",
+      "depart": "2027-10-25",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "Whales from the beach and by boat, sea lions on the cliffs.",
+      "priorities": [
+        "El Doradillo",
+        "Península Valdés boat trip",
+        "Punta Loma"
+      ],
+      "lodging": {
+        "status": "undecided",
+        "priority": 1,
+        "price": {
+          "amount": 270,
+          "max": 360,
+          "currency": "USD",
+          "note": "3 nights"
+        },
+        "how": "Book on the waterfront (the rambla) so the town is walkable; whale season fills it.",
+        "url": "https://www.booking.com/"
+      },
+      "transport": "Walkable centre; rent a car or book a remis for El Doradillo and Punta Loma.",
+      "notes": [
+        "Windy most afternoons; bring a shell layer."
+      ]
+    },
+    {
+      "id": "lax-back",
+      "name": "Los Angeles",
+      "place": {
+        "name": "Los Angeles International Airport",
+        "query": "LAX",
+        "lat": 33.9416,
+        "lng": -118.4085
+      },
+      "arrive": "2027-10-25",
+      "depart": "2027-10-25",
+      "timezone": "America/Los_Angeles"
+    }
+  ],
+  "transfers": [
+    {
+      "id": "fly-out",
+      "from": "lax-out",
+      "to": "palermo",
+      "date": "2027-10-17",
+      "mode": "flight",
+      "depart": "21:40",
+      "arrive": "13:05",
+      "details": "Overnight via Dallas; lands at Ezeiza next day.",
+      "booking": {
+        "status": "booked",
+        "ref": "QK7Z2M",
+        "url": "https://www.aa.com/",
+        "price": {
+          "amount": 1180,
+          "currency": "USD",
+          "note": "Round trip"
+        }
+      }
+    },
+    {
+      "id": "taxi-across",
+      "from": "palermo",
+      "to": "san-telmo",
+      "date": "2027-10-20",
+      "mode": "other",
+      "details": "Taxi or app car across town, about 30 minutes."
+    },
+    {
+      "id": "fly-south",
+      "from": "san-telmo",
+      "to": "madryn",
+      "date": "2027-10-22",
+      "mode": "flight",
+      "depart": "08:10",
+      "arrive": "10:20",
+      "details": "Aeroparque to Trelew, then the airport shuttle to Puerto Madryn (1 hour).",
+      "booking": {
+        "status": "needed",
+        "priority": 1,
+        "url": "https://www.aerolineas.com.ar/",
+        "price": {
+          "amount": 140,
+          "max": 190,
+          "currency": "USD",
+          "note": "One way; about ARS 170,000–230,000"
+        },
+        "how": "Aerolíneas Argentinas; the morning flight keeps the afternoon free."
+      }
+    },
+    {
+      "id": "fly-home",
+      "from": "madryn",
+      "to": "lax-back",
+      "date": "2027-10-25",
+      "mode": "flight",
+      "depart": "11:30",
+      "details": "Trelew to Aeroparque, then the evening flight home from Ezeiza (covered by the round trip).",
+      "booking": {
+        "status": "needed",
+        "priority": 2,
+        "url": "https://www.aerolineas.com.ar/",
+        "price": {
+          "amount": 140,
+          "max": 190,
+          "currency": "USD",
+          "note": "Domestic leg only"
+        },
+        "how": "Leave at least 4 hours to change airports in Buenos Aires."
+      }
+    }
+  ],
+  "activities": [
+    {
+      "id": "bosques-palermo",
+      "stayId": "palermo",
+      "name": "Bosques de Palermo and Rosedal",
+      "tag": "🏃",
+      "short": "Lakes, rose garden and city running paths",
+      "detail": [
+        "Walk or run the loops around the Palermo lakes and Rosedal."
+      ],
+      "why": "An active, low-pressure introduction to the city after arrival.",
+      "rank": 3,
+      "place": {
+        "query": "El Rosedal de Palermo, Buenos Aires",
+        "lat": -34.5717,
+        "lng": -58.417
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "moderate",
+      "confidence": "check",
+      "stars": 3
+    },
+    {
+      "id": "palermo-soho",
+      "stayId": "palermo",
+      "name": "Palermo Soho",
+      "tag": "🏡",
+      "short": "Leafy streets, cafés, shops and dinner",
+      "detail": [
+        "Wander around Plaza Armenia and Plaza Serrano, using the side streets for cafés, boutiques and dinner."
+      ],
+      "rank": 6,
+      "place": {
+        "query": "Plaza Armenia, Palermo Soho, Buenos Aires",
+        "lat": -34.588,
+        "lng": -58.429
+      },
+      "duration": {
+        "minutes": 150
+      },
+      "fit": "evening",
+      "bestTime": [
+        "afternoon",
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "check",
+      "stars": 3
+    },
+    {
+      "id": "avenida-alvear",
+      "stayId": "palermo",
+      "name": "Avenida Alvear and Recoleta walk",
+      "tag": "🚶",
+      "short": "Belle Époque streets and grand architecture",
+      "detail": [
+        "Walk from the cemetery through Recoleta and along Avenida Alvear, taking in the neighborhood’s grand early-20th-century architecture."
+      ],
+      "rank": 7,
+      "place": {
+        "query": "Avenida Alvear, Recoleta, Buenos Aires",
+        "lat": -34.588,
+        "lng": -58.388
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon"
+      ],
+      "effort": "easy",
+      "confidence": "check",
+      "stars": 3
+    },
+    {
+      "id": "el-ateneo",
+      "stayId": "palermo",
+      "name": "El Ateneo Grand Splendid",
+      "tag": "📚",
+      "short": "Bookshop inside a grand former theater",
+      "detail": [
+        "Browse the former theater, with books filling the orchestra and balconies and a café on the old stage."
+      ],
+      "rank": 8,
+      "place": {
+        "query": "El Ateneo Grand Splendid, Buenos Aires",
+        "lat": -34.5958,
+        "lng": -58.3942
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "check",
+      "stars": 2
+    },
+    {
+      "id": "barrancas-belgrano",
+      "stayId": "palermo",
+      "name": "Barrancas de Belgrano and Chinatown",
+      "tag": "🚶",
+      "short": "Park walk and a different neighborhood",
+      "detail": [
+        "Walk the landscaped Barrancas and continue into nearby Barrio Chino for a change from the central tourist neighborhoods."
+      ],
+      "rank": 14,
+      "place": {
+        "query": "Barrancas de Belgrano, Buenos Aires",
+        "lat": -34.559,
+        "lng": -58.452
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon",
+        "short-morning"
+      ],
+      "confidence": "check",
+      "stars": 1
+    },
+    {
+      "id": "plaza-de-mayo",
+      "stayId": "san-telmo",
+      "name": "Plaza de Mayo and historic center",
+      "tag": "🏛️",
+      "short": "Casa Rosada, cathedral and civic heart",
+      "detail": [
+        "Walk the civic core around Plaza de Mayo, then continue along Avenida de Mayo toward the Congreso area."
+      ],
+      "why": "The clearest introduction to Argentina’s political and architectural history.",
+      "rank": 2,
+      "place": {
+        "query": "Plaza de Mayo, Buenos Aires",
+        "lat": -34.6083,
+        "lng": -58.3712
+      },
+      "duration": {
+        "minutes": 150
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning"
+      ],
+      "effort": "easy",
+      "confidence": "check",
+      "stars": 3
+    },
+    {
+      "id": "cafe-tortoni",
+      "stayId": "san-telmo",
+      "name": "Café Tortoni",
+      "tag": "☕",
+      "short": "Historic grand café on Avenida de Mayo",
+      "detail": [
+        "Stop for the historic interior while walking Avenida de Mayo."
+      ],
+      "rank": 10,
+      "place": {
+        "query": "Cafe Tortoni, Avenida de Mayo, Buenos Aires",
+        "lat": -34.6088,
+        "lng": -58.3787
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "check",
+      "stars": 2
+    },
+    {
+      "id": "costanera-sur",
+      "stayId": "san-telmo",
+      "name": "Reserva Ecológica Costanera Sur",
+      "tag": "🌿",
+      "short": "Urban wetlands beside the Río de la Plata",
+      "detail": [
+        "Walk or run through the reserve’s wetland trails, with the skyline behind you and riverfront at the far edge."
+      ],
+      "why": "A genuine nature break inside the city and a good active afternoon.",
+      "rank": 6,
+      "place": {
+        "query": "Reserva Ecologica Costanera Sur, Buenos Aires",
+        "lat": -34.6105,
+        "lng": -58.353
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon"
+      ],
+      "effort": "moderate",
+      "practical": {
+        "weather": "May close during strong rain or wind."
+      },
+      "confidence": "check",
+      "stars": 3,
+      "userNote": "Go early; it gets hot by noon."
+    },
+    {
+      "id": "puerto-madero",
+      "stayId": "san-telmo",
+      "name": "Puerto Madero waterfront",
+      "tag": "🚶",
+      "short": "Modern waterfront and evening promenade",
+      "detail": [
+        "Walk the docks and Puente de la Mujer after the ecological reserve, then stay nearby for dinner."
+      ],
+      "rank": 11,
+      "place": {
+        "query": "Puente de la Mujer, Puerto Madero, Buenos Aires",
+        "lat": -34.6079,
+        "lng": -58.3652
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "check",
+      "stars": 2
+    },
+    {
+      "id": "caminito",
+      "stayId": "san-telmo",
+      "name": "Caminito and La Boca",
+      "tag": "🏡",
+      "short": "Colorful port neighborhood and street culture",
+      "detail": [
+        "Explore Caminito and the surrounding historic streets of La Boca during the daytime."
+      ],
+      "rank": 9,
+      "place": {
+        "query": "Caminito, La Boca, Buenos Aires",
+        "lat": -34.639,
+        "lng": -58.3626
+      },
+      "duration": {
+        "minutes": 150
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "practical": {
+        "transport": "Use an app car or direct transit and visit during the day."
+      },
+      "confidence": "check",
+      "stars": 2
+    },
+    {
+      "id": "mercado-san-telmo",
+      "stayId": "san-telmo",
+      "name": "Mercado de San Telmo",
+      "tag": "🍽️",
+      "short": "Historic market for lunch and browsing",
+      "detail": [
+        "Finish the Sunday walk inside the iron-and-glass market for food, antiques and coffee."
+      ],
+      "rank": 7,
+      "place": {
+        "query": "Mercado de San Telmo, Buenos Aires",
+        "lat": -34.6201,
+        "lng": -58.3716
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon"
+      ],
+      "effort": "easy",
+      "confidence": "check",
+      "stars": 2
+    },
+    {
+      "id": "don-julio",
+      "stayId": "palermo",
+      "name": "Don Julio",
+      "tag": "🍽️",
+      "stars": 3,
+      "short": "The Palermo parrilla everyone talks about",
+      "detail": [
+        "Steak and provoleta; book well ahead or queue at opening."
+      ],
+      "place": {
+        "query": "Parrilla Don Julio, Guatemala 4691, Buenos Aires",
+        "lat": -34.5866,
+        "lng": -58.424
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "confirmed",
+      "hours": "Daily 12:00–16:00 and 19:00–01:00",
+      "booking": {
+        "status": "booked",
+        "ref": "DJ-5521",
+        "url": "https://www.parrilladonjulio.com/",
+        "price": {
+          "amount": 110,
+          "currency": "USD",
+          "note": "For two, with wine; about ARS 130,000"
+        }
+      },
+      "url": "https://www.parrilladonjulio.com/"
+    },
+    {
+      "id": "teatro-colon",
+      "stayId": "san-telmo",
+      "name": "Teatro Colón guided tour",
+      "tag": "🎭",
+      "stars": 3,
+      "short": "Backstage at one of the great opera houses",
+      "detail": [
+        "50-minute guided tour of the hall, the foyers and the workshops.",
+        "Tours in English run several times a day and sell out."
+      ],
+      "why": "The interior is the city's showpiece and the acoustics are famous.",
+      "place": {
+        "query": "Teatro Colón, Cerrito 628, Buenos Aires",
+        "lat": -34.6011,
+        "lng": -58.3832
+      },
+      "duration": {
+        "minutes": 60
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "confirmed",
+      "availability": [
+        {
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+            "sun"
+          ],
+          "start": "09:00",
+          "end": "17:00"
+        }
+      ],
+      "practical": {
+        "cost": "About ARS 35,000 for foreigners",
+        "tips": "Book online; collect at the Tucumán entrance."
+      },
+      "booking": {
+        "status": "needed",
+        "priority": 1,
+        "url": "https://teatrocolon.org.ar/en/guided-tours",
+        "price": {
+          "amount": 30,
+          "currency": "USD",
+          "note": "Per person; about ARS 35,000"
+        },
+        "how": "Buy online for a morning English tour; they sell out days ahead."
+      },
+      "url": "https://teatrocolon.org.ar/en/guided-tours"
+    },
+    {
+      "id": "tango-show",
+      "stayId": "san-telmo",
+      "name": "Tango show at Bar Sur",
+      "tag": "💃",
+      "stars": 2,
+      "short": "Small, old-school tango bar in San Telmo",
+      "place": {
+        "query": "Bar Sur, Estados Unidos 299, Buenos Aires",
+        "lat": -34.6197,
+        "lng": -58.3714
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "estimate",
+      "booking": {
+        "status": "needed",
+        "priority": 2,
+        "url": "https://www.bar-sur.com.ar/",
+        "price": {
+          "amount": 70,
+          "currency": "USD",
+          "note": "Per person with dinner"
+        },
+        "how": "Reserve a table a few days ahead."
+      }
+    },
+    {
+      "id": "ride-along",
+      "stayId": "palermo",
+      "name": "Coffee with Marta",
+      "tag": "☕",
+      "origin": "user",
+      "short": "Friend of a friend; she suggested LAB Tostadores",
+      "place": {
+        "query": "LAB Tostadores de Café, Humboldt 1542, Buenos Aires",
+        "lat": -34.5848,
+        "lng": -58.4386
+      },
+      "duration": {
+        "minutes": 60
+      },
+      "fit": "short",
+      "userNote": "Text her the day before."
+    },
+    {
+      "id": "el-doradillo",
+      "stayId": "madryn",
+      "name": "El Doradillo / Las Canteras",
+      "tag": "🌊",
+      "short": "Whale watching from the beach",
+      "detail": [
+        "Walk the shoreline and use the coastal viewpoints at El Doradillo and Las Canteras."
+      ],
+      "why": "A simple nature-first Puerto Madryn outing with a very different feel from Buenos Aires.",
+      "rank": 1,
+      "stars": 3,
+      "place": {
+        "query": "Playa Las Canteras, El Doradillo, Puerto Madryn",
+        "lat": -42.6507,
+        "lng": -65.0447
+      },
+      "duration": {
+        "minutes": 180,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon"
+      ],
+      "practical": {
+        "transport": "About 19 km from central Puerto Madryn; arrange a car, taxi/remis, or local excursion.",
+        "tips": "For whale viewing, the local tourism office recommends going around high tide."
+      },
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/anp-el-doradillo/",
+      "sources": [
+        "https://madryn.travel/anp-el-doradillo/",
+        "https://madryn.travel/ballenas-landing/"
+      ]
+    },
+    {
+      "id": "madryn-rambla",
+      "stayId": "madryn",
+      "name": "Puerto Madryn waterfront rambla",
+      "tag": "🚶",
+      "short": "Easy walk along Golfo Nuevo",
+      "detail": [
+        "Walk the central waterfront between the pier and the southern beaches, stopping wherever the coast looks best."
+      ],
+      "why": "Low-friction orientation walk after the flight.",
+      "rank": 2,
+      "stars": 3,
+      "place": {
+        "query": "Rambla de Puerto Madryn, Chubut",
+        "lat": -42.7692,
+        "lng": -65.03
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon",
+        "evening"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "short-morning",
+        "free-afternoon"
+      ],
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/playas/",
+      "sources": [
+        "https://madryn.travel/playas/"
+      ]
+    },
+    {
+      "id": "punta-cuevas",
+      "stayId": "madryn",
+      "name": "Punta Cuevas",
+      "tag": "🏛️",
+      "short": "Coastal history and gulf views",
+      "detail": [
+        "Visit the historic Punta Cuevas area south of the center and use it as a short coastal viewpoint stop."
+      ],
+      "why": "Combines the Welsh-settlement story with an outdoor coastal stop.",
+      "rank": 3,
+      "stars": 2,
+      "place": {
+        "query": "Punta Cuevas, Puerto Madryn",
+        "lat": -42.7904,
+        "lng": -65.019
+      },
+      "duration": {
+        "minutes": 75
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "short-morning"
+      ],
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/anp-punta-loma/",
+      "sources": [
+        "https://madryn.travel/anp-punta-loma/"
+      ]
+    },
+    {
+      "id": "indio-tehuelche",
+      "stayId": "madryn",
+      "name": "Monumento al Indio Tehuelche",
+      "tag": "📸",
+      "short": "Panorama above the coast",
+      "detail": [
+        "Stop at the monument for a quick elevated view over Golfo Nuevo and Puerto Madryn."
+      ],
+      "why": "A compact viewpoint that pairs naturally with Punta Cuevas.",
+      "rank": 4,
+      "stars": 2,
+      "place": {
+        "query": "Monumento al Indio Tehuelche, Puerto Madryn",
+        "lat": -42.7921,
+        "lng": -65.0154
+      },
+      "duration": {
+        "minutes": 30
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "afternoon",
+        "evening"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "short-morning",
+        "free-afternoon"
+      ],
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/anp-punta-loma/",
+      "sources": [
+        "https://madryn.travel/anp-punta-loma/"
+      ]
+    },
+    {
+      "id": "muelle-piedra-buena",
+      "stayId": "madryn",
+      "name": "Muelle Luis Piedra Buena",
+      "tag": "🌊",
+      "short": "Pier walk beside the city center",
+      "detail": [
+        "Walk out toward the city pier area for open-water views and a different angle on the waterfront."
+      ],
+      "why": "Easy to fit around another outing without committing a half day.",
+      "rank": 5,
+      "stars": 2,
+      "place": {
+        "query": "Muelle Luis Piedra Buena, Puerto Madryn",
+        "lat": -42.7652,
+        "lng": -65.0301
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon",
+        "evening"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "punta-loma",
+      "stayId": "madryn",
+      "name": "Área Natural Protegida Punta Loma",
+      "tag": "🌿",
+      "short": "Sea lions from the cliffs",
+      "detail": [
+        "Head south of the city to the Punta Loma reserve for cliffside wildlife viewing and a relaxed walk."
+      ],
+      "why": "A second wildlife option that works even outside peak whale viewing.",
+      "rank": 6,
+      "stars": 2,
+      "place": {
+        "query": "Área Natural Protegida Punta Loma, Chubut",
+        "lat": -42.8137,
+        "lng": -64.8887
+      },
+      "duration": {
+        "minutes": 180,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon",
+        "needs-car"
+      ],
+      "practical": {
+        "transport": "The tourism office describes the route south of town as including about 14 km of gravel."
+      },
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/anp-punta-loma/",
+      "sources": [
+        "https://madryn.travel/anp-punta-loma/"
+      ]
+    },
+    {
+      "id": "playa-parana",
+      "stayId": "madryn",
+      "name": "Playa Paraná",
+      "tag": "🌊",
+      "short": "Quiet beach south of town",
+      "detail": [
+        "Use Playa Paraná as an easy spare-time coastal stop south of central Puerto Madryn."
+      ],
+      "why": "A flexible outdoor alternative when you do not want another structured excursion.",
+      "rank": 7,
+      "stars": 1,
+      "place": {
+        "query": "Playa Paraná, Puerto Madryn",
+        "lat": -42.8178,
+        "lng": -64.9918
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "cerro-avanzado",
+      "stayId": "madryn",
+      "name": "Cerro Avanzado",
+      "tag": "🏃",
+      "short": "Patagonian geology and coastal landscape",
+      "detail": [
+        "Continue beyond Punta Loma toward Cerro Avanzado for a rougher coastal landscape and exposed geology."
+      ],
+      "why": "Good spare option if you have a car and want more landscape than city.",
+      "rank": 8,
+      "stars": 1,
+      "place": {
+        "query": "Cerro Avanzado, Puerto Madryn",
+        "lat": -42.855,
+        "lng": -64.967
+      },
+      "duration": {
+        "minutes": 180,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "moderate",
+      "conditions": [
+        "needs-car",
+        "free-afternoon"
+      ],
+      "confidence": "confirmed",
+      "url": "https://madryn.travel/anp-punta-loma/",
+      "sources": [
+        "https://madryn.travel/anp-punta-loma/"
+      ]
+    },
+    {
+      "id": "valdes-whales",
+      "stayId": "madryn",
+      "name": "Whale-watching boat, Península Valdés",
+      "tag": "🐋",
+      "stars": 3,
+      "short": "Southern right whales up close from Puerto Pirámides",
+      "detail": [
+        "Drive or take the tour bus 95 km to Puerto Pirámides; boats leave from the beach.",
+        "Calm mornings are best; trips are cancelled in strong wind."
+      ],
+      "why": "The reason to come to Madryn in October.",
+      "place": {
+        "query": "Puerto Pirámides, Península Valdés",
+        "lat": -42.5717,
+        "lng": -64.2833
+      },
+      "duration": {
+        "minutes": 480,
+        "includesTravel": true
+      },
+      "fit": "full-day",
+      "bestTime": [
+        "morning"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "needs-car"
+      ],
+      "confidence": "confirmed",
+      "practical": {
+        "transport": "Tour pickup from your hotel, or a rental car (1h20 each way).",
+        "cost": "Park entry about USD 40 extra",
+        "weather": "Cancelled in high wind; keep the next day as a backup."
+      },
+      "booking": {
+        "priority": 1,
+        "how": "Book a morning boat with Hydrosport or Southern Spirit.",
+        "url": "https://www.hydrosport.com.ar/",
+        "price": {
+          "amount": 95,
+          "currency": "USD",
+          "note": "Per person, boat only"
+        }
+      },
+      "url": "https://www.hydrosport.com.ar/"
+    }
+  ],
+  "commitments": [
+    {
+      "id": "whales-booked",
+      "title": "Whale-watching boat",
+      "date": "2027-10-23",
+      "start": "09:30",
+      "end": "11:00",
+      "kind": "booking",
+      "booked": true,
+      "stayId": "madryn",
+      "activityId": "valdes-whales",
+      "ref": "HS-20931",
+      "url": "https://www.hydrosport.com.ar/",
+      "price": {
+        "amount": 190,
+        "currency": "USD",
+        "note": "Two people"
+      },
+      "notes": "Check in 30 minutes before at the Puerto Pirámides office.",
+      "origin": "user"
+    },
+    {
+      "id": "team-call",
+      "title": "Team planning call",
+      "date": "2027-10-19",
+      "start": "12:00",
+      "end": "13:00",
+      "kind": "work",
+      "stayId": "palermo"
+    }
+  ],
+  "days": [
+    {
+      "date": "2027-10-17",
+      "stayId": "lax-out",
+      "kind": "travel",
+      "title": "Fly to Buenos Aires",
+      "plan": []
+    },
+    {
+      "date": "2027-10-18",
+      "stayId": "palermo",
+      "kind": "plan",
+      "title": "Arrive; Palermo parks",
+      "plan": [
+        {
+          "activityId": "bosques-palermo",
+          "slot": "afternoon",
+          "status": "done"
+        },
+        {
+          "activityId": "palermo-soho",
+          "slot": "evening",
+          "status": "done"
+        },
+        {
+          "activityId": "don-julio",
+          "slot": "evening",
+          "time": "21:00"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-19",
+      "stayId": "palermo",
+      "kind": "work",
+      "title": "Work morning, Recoleta afternoon",
+      "plan": [
+        {
+          "activityId": "ride-along",
+          "slot": "afternoon",
+          "time": "14:30"
+        },
+        {
+          "activityId": "avenida-alvear",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "el-ateneo",
+          "slot": "evening",
+          "status": "skipped",
+          "note": "Ran late; try Thursday"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-20",
+      "stayId": "san-telmo",
+      "kind": "plan",
+      "title": "Across town; historic centre",
+      "note": "Drop bags in San Telmo before the Colón tour.",
+      "plan": [
+        {
+          "activityId": "plaza-de-mayo",
+          "slot": "morning"
+        },
+        {
+          "activityId": "teatro-colon",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "cafe-tortoni",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-21",
+      "stayId": "san-telmo",
+      "kind": "plan",
+      "title": "River reserve and Puerto Madero",
+      "plan": [
+        {
+          "activityId": "costanera-sur",
+          "slot": "morning"
+        },
+        {
+          "activityId": "puerto-madero",
+          "slot": "evening"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-22",
+      "stayId": "madryn",
+      "kind": "travel",
+      "title": "Fly south",
+      "plan": [
+        {
+          "activityId": "madryn-rambla",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-23",
+      "stayId": "madryn",
+      "kind": "plan",
+      "title": "Whales by boat",
+      "plan": [
+        {
+          "activityId": "valdes-whales",
+          "slot": "allday",
+          "time": "09:30"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-24",
+      "stayId": "madryn",
+      "kind": "plan",
+      "title": "Whales from the beach",
+      "plan": [
+        {
+          "activityId": "el-doradillo",
+          "slot": "morning"
+        },
+        {
+          "activityId": "punta-cuevas",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "indio-tehuelche",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-25",
+      "stayId": "lax-back",
+      "kind": "travel",
+      "title": "Fly home",
+      "plan": []
+    }
+  ]
+}

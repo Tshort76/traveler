@@ -1,0 +1,785 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Tshort76/traveler/schema/trip.schema.json",
+  "title": "Traveler trip file (traveler-trip v1)",
+  "description": "One trip. The human-readable contract is docs/trip-format.md; cross-reference rules (ids exist, dates in range) are checked by tools/validate_trip.py and the app.",
+  "type": "object",
+  "required": [
+    "format",
+    "formatVersion",
+    "id",
+    "revision",
+    "title",
+    "startDate",
+    "endDate",
+    "stays"
+  ],
+  "properties": {
+    "format": {
+      "const": "traveler-trip"
+    },
+    "formatVersion": {
+      "const": 1
+    },
+    "id": {
+      "$ref": "#/$defs/id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "generatedBy": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kicker": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "startDate": {
+      "$ref": "#/$defs/date"
+    },
+    "endDate": {
+      "$ref": "#/$defs/date"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/link"
+      }
+    },
+    "tripMap": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "attribution": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "stays": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/stay"
+      }
+    },
+    "transfers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/transfer"
+      }
+    },
+    "activities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/activity"
+      }
+    },
+    "commitments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/commitment"
+      }
+    },
+    "days": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/day"
+      }
+    },
+    "notes": {
+      "$ref": "#/$defs/strings"
+    },
+    "warnings": {
+      "$ref": "#/$defs/strings"
+    },
+    "exportedFrom": {
+      "type": "object",
+      "properties": {
+        "app": {
+          "type": "string"
+        },
+        "exportedAt": {
+          "type": "string"
+        },
+        "basedOnRevision": {
+          "type": "integer"
+        },
+        "localChanges": {
+          "type": "integer"
+        }
+      }
+    },
+    "userEdited": {
+      "$ref": "#/$defs/userEdited"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+    },
+    "weekday": {
+      "enum": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+      ]
+    },
+    "slot": {
+      "enum": [
+        "morning",
+        "afternoon",
+        "evening",
+        "allday"
+      ]
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "userEdited": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "App-written: fields holding the traveler's wording."
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "spreadsheet",
+            "chat",
+            "map",
+            "doc",
+            "booking",
+            "other"
+          ]
+        }
+      }
+    },
+    "price": {
+      "type": "object",
+      "required": [
+        "amount"
+      ],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "booking": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "booked",
+            "tentative",
+            "needed"
+          ]
+        },
+        "ref": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "how": {
+          "type": "string"
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        }
+      }
+    },
+    "place": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "lat": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "lng": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "placeId": {
+          "type": "string"
+        },
+        "mapsUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "stay": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "arrive",
+        "depart"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "type": "string"
+        },
+        "place": {
+          "$ref": "#/$defs/place"
+        },
+        "arrive": {
+          "$ref": "#/$defs/date"
+        },
+        "depart": {
+          "$ref": "#/$defs/date"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "priorities": {
+          "$ref": "#/$defs/strings"
+        },
+        "lodging": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "place": {
+              "$ref": "#/$defs/place"
+            },
+            "status": {
+              "enum": [
+                "booked",
+                "tentative",
+                "undecided"
+              ]
+            },
+            "checkIn": {
+              "type": "string"
+            },
+            "checkOut": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "priority": {
+              "enum": [
+                1,
+                2,
+                3
+              ]
+            },
+            "how": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            },
+            "price": {
+              "$ref": "#/$defs/price"
+            }
+          }
+        },
+        "transport": {
+          "type": "string"
+        },
+        "workRhythm": {
+          "type": "object",
+          "required": [
+            "start",
+            "end"
+          ],
+          "properties": {
+            "days": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/weekday"
+              }
+            },
+            "start": {
+              "$ref": "#/$defs/time"
+            },
+            "end": {
+              "$ref": "#/$defs/time"
+            },
+            "timezone": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "notes": {
+          "$ref": "#/$defs/strings"
+        },
+        "mapUrl": {
+          "type": "string"
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        },
+        "userEdited": {
+          "$ref": "#/$defs/userEdited"
+        }
+      }
+    },
+    "transfer": {
+      "type": "object",
+      "required": [
+        "id",
+        "from",
+        "to",
+        "date"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "from": {
+          "$ref": "#/$defs/id"
+        },
+        "to": {
+          "$ref": "#/$defs/id"
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "mode": {
+          "enum": [
+            "flight",
+            "train",
+            "bus",
+            "boat",
+            "ferry",
+            "car",
+            "taxi",
+            "hike",
+            "other"
+          ]
+        },
+        "depart": {
+          "$ref": "#/$defs/time"
+        },
+        "arrive": {
+          "$ref": "#/$defs/time"
+        },
+        "details": {
+          "type": "string"
+        },
+        "booking": {
+          "$ref": "#/$defs/booking"
+        }
+      }
+    },
+    "activity": {
+      "type": "object",
+      "required": [
+        "id",
+        "stayId",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "stayId": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string"
+        },
+        "short": {
+          "type": "string"
+        },
+        "detail": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/strings"
+            }
+          ]
+        },
+        "why": {
+          "type": "string"
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stars": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "place": {
+          "$ref": "#/$defs/place"
+        },
+        "duration": {
+          "type": "object",
+          "properties": {
+            "minutes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxMinutes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "includesTravel": {
+              "type": "boolean"
+            }
+          }
+        },
+        "fit": {
+          "enum": [
+            "short",
+            "half-day",
+            "full-day",
+            "evening"
+          ]
+        },
+        "bestTime": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ]
+          }
+        },
+        "effort": {
+          "enum": [
+            "easy",
+            "moderate",
+            "hard"
+          ]
+        },
+        "conditions": {
+          "$ref": "#/$defs/strings"
+        },
+        "hours": {
+          "type": "string"
+        },
+        "availability": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "days": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/weekday"
+                }
+              },
+              "start": {
+                "$ref": "#/$defs/time"
+              },
+              "end": {
+                "$ref": "#/$defs/time"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "practical": {
+          "type": "object",
+          "properties": {
+            "transport": {
+              "type": "string"
+            },
+            "booking": {
+              "type": "string"
+            },
+            "cost": {
+              "type": "string"
+            },
+            "weather": {
+              "type": "string"
+            },
+            "access": {
+              "type": "string"
+            },
+            "tips": {
+              "type": "string"
+            }
+          }
+        },
+        "booking": {
+          "$ref": "#/$defs/booking"
+        },
+        "confidence": {
+          "enum": [
+            "confirmed",
+            "estimate",
+            "check"
+          ]
+        },
+        "checkedOn": {
+          "$ref": "#/$defs/date"
+        },
+        "url": {
+          "type": "string"
+        },
+        "sources": {
+          "$ref": "#/$defs/strings"
+        },
+        "origin": {
+          "enum": [
+            "plan",
+            "user"
+          ],
+          "description": "App-written."
+        },
+        "userEdited": {
+          "$ref": "#/$defs/userEdited"
+        },
+        "userNote": {
+          "type": "string",
+          "description": "App-written: the traveler's own note."
+        }
+      }
+    },
+    "commitment": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "date"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "start": {
+          "$ref": "#/$defs/time"
+        },
+        "end": {
+          "$ref": "#/$defs/time"
+        },
+        "kind": {
+          "enum": [
+            "booking",
+            "appointment",
+            "work",
+            "other"
+          ]
+        },
+        "booked": {
+          "type": "boolean"
+        },
+        "stayId": {
+          "$ref": "#/$defs/id"
+        },
+        "place": {
+          "$ref": "#/$defs/place"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "priority": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "how": {
+          "type": "string"
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "activityId": {
+          "$ref": "#/$defs/id"
+        },
+        "origin": {
+          "enum": [
+            "plan",
+            "user"
+          ]
+        },
+        "userEdited": {
+          "$ref": "#/$defs/userEdited"
+        }
+      }
+    },
+    "day": {
+      "type": "object",
+      "required": [
+        "date"
+      ],
+      "properties": {
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "stayId": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "plan",
+            "work",
+            "rest",
+            "travel",
+            "free"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "plan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "activityId",
+              "slot"
+            ],
+            "properties": {
+              "activityId": {
+                "$ref": "#/$defs/id"
+              },
+              "slot": {
+                "$ref": "#/$defs/slot"
+              },
+              "time": {
+                "$ref": "#/$defs/time"
+              },
+              "status": {
+                "enum": [
+                  "proposed",
+                  "done",
+                  "skipped"
+                ]
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "userEdited": {
+          "$ref": "#/$defs/userEdited"
+        }
+      }
+    }
+  }
+}

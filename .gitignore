@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+.kotlin/
+build/
+app/build/
+
+# Android
+*.apk
+*.aab
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+__pycache__/
+
+# Release signing (never committed — docs/BUILD.md)
+keystore.properties
+*.jks
+*.keystore
+
+.claude/
+shot*.png
+tools/cache/

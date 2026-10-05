@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Traveler</string>
+    <string name="open_trip">Open trip in Traveler</string>
+    <string name="import_trip">Import into Traveler</string>
+</resources>

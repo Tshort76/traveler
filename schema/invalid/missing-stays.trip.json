@@ -1,0 +1,27 @@
+{
+  "format": "traveler-trip",
+  "formatVersion": 1,
+  "id": "weekend-denver",
+  "revision": 1,
+  "title": "A weekend in Denver",
+  "startDate": "2026-10-10",
+  "endDate": "2026-10-11",
+  "activities": [
+    {
+      "id": "cherry-creek",
+      "stayId": "denver",
+      "name": "Cherry Creek trail run"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-10-10",
+      "plan": [
+        {
+          "activityId": "cherry-creek",
+          "slot": "morning"
+        }
+      ]
+    }
+  ]
+}

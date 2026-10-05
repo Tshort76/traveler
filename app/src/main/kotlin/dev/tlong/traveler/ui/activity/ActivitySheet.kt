@@ -1,0 +1,203 @@
+package dev.tlong.traveler.ui.activity
+
+import dev.tlong.traveler.model.Commitment
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import dev.tlong.traveler.data.TripSession
+import dev.tlong.traveler.domain.Edits
+import dev.tlong.traveler.domain.MapsLinks
+import dev.tlong.traveler.domain.activity
+import dev.tlong.traveler.domain.label
+import dev.tlong.traveler.domain.placementsOf
+import dev.tlong.traveler.domain.stay
+import dev.tlong.traveler.model.Activity
+import dev.tlong.traveler.model.ItemStatus
+import dev.tlong.traveler.model.Slot
+import dev.tlong.traveler.model.Trip
+import dev.tlong.traveler.ui.common.starLabel
+import dev.tlong.traveler.ui.overview.UrlDialog
+import dev.tlong.traveler.ui.common.LabeledText
+import dev.tlong.traveler.ui.common.Pill
+import dev.tlong.traveler.ui.common.conditionLabel
+import dev.tlong.traveler.ui.common.durationLabel
+import dev.tlong.traveler.ui.common.effortLabel
+import dev.tlong.traveler.ui.common.fitLabel
+import dev.tlong.traveler.ui.common.openUrl
+import dev.tlong.traveler.ui.common.rememberOnline
+import dev.tlong.traveler.ui.common.rich
+
+/** Everything about one activity, in a sheet over the current screen. */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+fun ActivitySheet(
+    session: TripSession,
+    trip: Trip,
+    activityId: String,
+    onDismiss: () -> Unit,
+    onGoToDay: (String) -> Unit,
+    onPlace: (Activity) -> Unit,
+    onEdit: (Activity) -> Unit,
+    onDeleted: (Activity) -> Unit,
+    onMessage: (String) -> Unit,
+    onBook: (Activity, Commitment?) -> Unit,
+) {
+    val a = trip.activity(activityId) ?: return onDismiss()
+    val context = LocalContext.current
+    val online by rememberOnline()
+    val stay = trip.stay(a.stayId)
+    var note by remember(activityId) { mutableStateOf(a.userNote.orEmpty()) }
+    var confirmDelete by remember { mutableStateOf(false) }
+    var editingLink by remember { mutableStateOf(false) }
+    val currentNote by rememberUpdatedState(note)
+    // The note is saved when the sheet closes, as one undoable edit rather than one per keystroke.
+    DisposableEffect(activityId) {
+        onDispose {
+            if (currentNote != (session.trip.value.activity(activityId)?.userNote.orEmpty())) {
+                session.edit("Edit note") { Edits.setUserNote(it, activityId, currentNote) }
+            }
+        }
+    }
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)) {
+        Column(
+            Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(listOfNotNull(a.tag, a.name).joinToString("  "), style = MaterialTheme.typography.headlineSmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (a.isCustom) Pill("Your entry")
+                starLabel(a.stars)?.let { Pill(it) }
+                if (a.booking != null) Pill("🎟️ Ticket or reservation needed")
+                if (a.confidence == "check") Pill("⚠ Check before going", container = MaterialTheme.colorScheme.tertiaryContainer, content = MaterialTheme.colorScheme.onTertiaryContainer)
+            }
+            a.short?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
+
+            val hasPlace = a.place != null || !a.isCustom
+            if (hasPlace) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        if (!openUrl(context, MapsLinks.open(a.place, a.name, stay?.name))) onMessage("No app can open Google Maps links")
+                    }) { Text("Open in Maps") }
+                    OutlinedButton(onClick = {
+                        if (!openUrl(context, MapsLinks.directions(a.place, a.name, stay?.name))) onMessage("No app can open Google Maps links")
+                    }) { Text("Directions") }
+                }
+                if (!online) Text(
+                    "You're offline. Google Maps opens, but shows places only if you downloaded an offline area there.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            a.detail.forEach { Text(rich(it), style = MaterialTheme.typography.bodyLarge) }
+            a.why?.let { LabeledText("Why this one", it) }
+
+            val facts = listOfNotNull(
+                durationLabel(a.duration)?.let { "Time" to it },
+                fitLabel(a.fit)?.let { "Suits" to (it + (if (a.bestTime.isNotEmpty()) ", best in the " + a.bestTime.joinToString("/") else "")) },
+                effortLabel(a.effort)?.let { "Effort" to it },
+                a.hours?.let { "Hours" to it },
+                a.availability.takeIf { it.isNotEmpty() }?.let { w ->
+                    "Open" to w.joinToString("; ") { listOfNotNull(it.days.joinToString(" ").ifEmpty { null }, listOfNotNull(it.start, it.end).joinToString("–").ifEmpty { null }, it.note).joinToString(" · ") }
+                },
+                a.conditions.takeIf { it.isNotEmpty() }?.let { "Good for" to it.joinToString(", ") { c -> conditionLabel(c) } },
+                a.practical?.transport?.let { "Getting there" to it },
+                a.practical?.booking?.let { "Booking" to it },
+                a.practical?.cost?.let { "Cost" to it },
+                a.practical?.weather?.let { "Weather" to it },
+                a.practical?.access?.let { "Access" to it },
+                a.practical?.tips?.let { "Tips" to it },
+                a.place?.address?.let { "Address" to it },
+            )
+            if (facts.isNotEmpty()) {
+                HorizontalDivider()
+                facts.forEach { (k, v) -> LabeledText(k, v) }
+            }
+            Row {
+                a.url?.let { url -> TextButton(onClick = { openUrl(context, url) }) { Text("Website") } }
+                TextButton(onClick = { editingLink = true }) { Text(if (a.url == null) "+ Add link" else "Edit link") }
+            }
+            if (editingLink) UrlDialog("Link for ${a.name}", "The venue, tour or booking page.", a.url, onDismiss = { editingLink = false }) { url ->
+                editingLink = false
+                session.edit("Edit link") { Edits.updateActivity(it, activityId) { x -> x.copy(url = url) } }
+            }
+
+            HorizontalDivider()
+            val placements = trip.placementsOf(a.id)
+            if (placements.isEmpty()) {
+                Text("Not on any day yet.", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text("Planned", style = MaterialTheme.typography.labelLarge)
+                placements.forEach { p ->
+                    val status = ItemStatus.of(p.item.status).takeIf { it != ItemStatus.PROPOSED }?.let { " · ${it.label}" }.orEmpty()
+                    TextButton(onClick = { onGoToDay(p.date) }) {
+                        Text("${dayName(p.date)} · ${Slot.of(p.item.slot).label}${p.item.time?.let { " $it" } ?: ""}$status")
+                    }
+                }
+            }
+            val bookings = trip.commitments.filter { it.activityId == a.id }
+            bookings.forEach { c ->
+                TextButton(onClick = { onBook(a, c) }) {
+                    Text("🔒 Booked ${dayName(c.date)}${c.start?.let { " $it" } ?: ""}${c.ref?.let { " · $it" } ?: ""}")
+                }
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { onPlace(a) }) { Text(if (placements.isEmpty()) "Add to a day…" else "Add again…") }
+                OutlinedButton(onClick = { onBook(a, null) }) { Text("I booked this…") }
+                OutlinedButton(onClick = { onEdit(a) }) { Text("Edit") }
+            }
+
+            OutlinedTextField(
+                note, { note = it }, label = { Text("Your note") }, modifier = Modifier.fillMaxWidth(), minLines = 2,
+                supportingText = { Text("Kept when the trip is revised.") },
+            )
+            TextButton(onClick = { confirmDelete = true }) {
+                Text(if (a.isCustom) "Delete this entry" else "Delete this activity", color = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+
+    if (confirmDelete) {
+        val count = trip.placementsOf(a.id).size
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text("Delete “${a.name}”?") },
+            text = {
+                Text(
+                    (if (count > 0) "It is planned on $count day${if (count == 1) "" else "s"}; those placements go too. " else "") +
+                        "To take it off a day but keep it, use “Unschedule” on the day instead. You can undo this.",
+                )
+            },
+            confirmButton = { TextButton(onClick = { confirmDelete = false; onDeleted(a) }) { Text("Delete") } },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
+        )
+    }
+}

@@ -1,0 +1,1047 @@
+{
+  "format": "traveler-trip",
+  "formatVersion": 1,
+  "id": "argentina-2026-11",
+  "revision": 2,
+  "generatedAt": "2026-10-20T15:00:00Z",
+  "generatedBy": "Example fixture",
+  "title": "Buenos Aires and Iguazú",
+  "kicker": "Ten days in Argentina",
+  "summary": "Two short Buenos Aires stays bracket six nights at Iguazú. The falls get the weekend; weekdays are work from 8 to 3 with the late afternoons and evenings for the town, the river and the market. The Brazilian side and the bird park stay in the pool for whichever afternoon frees up.",
+  "startDate": "2026-11-05",
+  "endDate": "2026-11-15",
+  "links": [
+    {
+      "label": "Planning sheet",
+      "url": "https://docs.google.com/spreadsheets/d/EXAMPLE",
+      "kind": "spreadsheet"
+    },
+    {
+      "label": "Planning chat",
+      "url": "https://claude.ai/project/EXAMPLE",
+      "kind": "chat"
+    }
+  ],
+  "tripMap": {
+    "url": "https://www.google.com/maps/d/viewer?mid=EXAMPLE",
+    "note": "Custom map maintained by hand; it does not update when the plan changes."
+  },
+  "notes": [
+    "Weekdays are work days, 08:00–15:00 local, from a café or the room.",
+    "Argentina keeps UTC−3 all year; no clock change during the trip."
+  ],
+  "stays": [
+    {
+      "id": "bsas-1",
+      "name": "Buenos Aires",
+      "region": "Argentina",
+      "place": {
+        "name": "Buenos Aires",
+        "lat": -34.6037,
+        "lng": -58.3816
+      },
+      "arrive": "2026-11-05",
+      "depart": "2026-11-07",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "Two work days to get over the flight. Evenings stay close: the ecological reserve on the river and Palermo's parks.",
+      "priorities": [
+        "Costanera Sur reserve at golden hour",
+        "A run through the Bosques de Palermo"
+      ],
+      "lodging": {
+        "status": "undecided",
+        "price": {
+          "amount": 180,
+          "max": 260,
+          "currency": "USD"
+        },
+        "priority": 2,
+        "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation."
+      },
+      "transport": "Subte and walking; taxis or app cars late at night.",
+      "workRhythm": {
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "start": "08:00",
+        "end": "15:00"
+      }
+    },
+    {
+      "id": "iguazu",
+      "name": "Puerto Iguazú",
+      "region": "Misiones, Argentina",
+      "place": {
+        "name": "Puerto Iguazú",
+        "lat": -25.5972,
+        "lng": -54.5786
+      },
+      "arrive": "2026-11-07",
+      "depart": "2026-11-13",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "The falls are the point: spend all of Sunday in the Argentine park, starting at the Garganta del Diablo before the crowds. Weekday evenings belong to the town — the hummingbird garden, the Three Frontiers at sunset, the Feirinha for dinner.",
+      "priorities": [
+        "Garganta del Diablo at opening",
+        "Upper and Lower circuits",
+        "Brazilian side panorama if an afternoon frees up"
+      ],
+      "lodging": {
+        "name": "Hotel in the town center",
+        "status": "booked",
+        "ref": "Confirmation in email",
+        "notes": "Walking distance to the bus terminal."
+      },
+      "transport": "Park buses from the town terminal; remises (taxis) for the Brazilian side. Bring passport for Brazil.",
+      "workRhythm": {
+        "days": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri"
+        ],
+        "start": "08:00",
+        "end": "15:00",
+        "note": "Hotel Wi-Fi can be weak; have a café backup."
+      },
+      "notes": [
+        "Humid and hot by midday; sun hat and water for the park."
+      ]
+    },
+    {
+      "id": "bsas-2",
+      "name": "Buenos Aires",
+      "region": "Argentina",
+      "place": {
+        "name": "Buenos Aires",
+        "lat": -34.6037,
+        "lng": -58.3816
+      },
+      "arrive": "2026-11-13",
+      "depart": "2026-11-15",
+      "timezone": "America/Argentina/Buenos_Aires",
+      "summary": "A free weekend: Recoleta and the bookshop on Saturday, the San Telmo street fair on Sunday before the flight home.",
+      "priorities": [
+        "Feria de San Telmo (Sundays only)",
+        "El Ateneo Grand Splendid"
+      ],
+      "lodging": {
+        "status": "undecided",
+        "price": {
+          "amount": 180,
+          "max": 260,
+          "currency": "USD"
+        },
+        "priority": 2,
+        "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation."
+      }
+    }
+  ],
+  "transfers": [
+    {
+      "id": "fly-bsas-iguazu",
+      "from": "bsas-1",
+      "to": "iguazu",
+      "date": "2026-11-07",
+      "mode": "flight",
+      "details": "AEP → IGR, about 1 h 50 min",
+      "booking": {
+        "status": "needed",
+        "url": "https://www.aerolineas.com.ar",
+        "priority": 1,
+        "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.",
+        "price": {
+          "amount": 90,
+          "max": 150,
+          "currency": "USD"
+        }
+      }
+    },
+    {
+      "id": "fly-iguazu-bsas",
+      "from": "iguazu",
+      "to": "bsas-2",
+      "date": "2026-11-13",
+      "mode": "flight",
+      "depart": "17:30",
+      "details": "IGR → AEP after work",
+      "booking": {
+        "status": "needed",
+        "url": "https://www.aerolineas.com.ar",
+        "priority": 2,
+        "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.",
+        "price": {
+          "amount": 90,
+          "max": 150,
+          "currency": "USD"
+        }
+      }
+    }
+  ],
+  "commitments": [
+    {
+      "id": "boat-gran-aventura",
+      "title": "Gran Aventura boat ride",
+      "date": "2026-11-08",
+      "start": "10:30",
+      "end": "12:00",
+      "kind": "booking",
+      "booked": true,
+      "stayId": "iguazu",
+      "activityId": "gran-aventura",
+      "ref": "Voucher in email",
+      "price": {
+        "amount": 110,
+        "currency": "USD"
+      },
+      "notes": "Meet at the Gran Aventura stand inside the park 15 minutes early."
+    },
+    {
+      "id": "flight-home",
+      "title": "Flight home from EZE",
+      "date": "2026-11-15",
+      "start": "21:00",
+      "kind": "booking",
+      "booked": true,
+      "stayId": "bsas-2",
+      "price": {
+        "amount": 640,
+        "currency": "USD"
+      },
+      "notes": "Leave for Ezeiza by 18:00."
+    }
+  ],
+  "activities": [
+    {
+      "id": "garganta-del-diablo",
+      "stayId": "iguazu",
+      "name": "Garganta del Diablo walkway",
+      "tag": "🌊",
+      "short": "Catwalk to the lip of the biggest fall",
+      "detail": [
+        "Take the first park train from Estación Central to Estación Garganta, then the 1.1 km catwalk over the upper river to the viewing platform at the edge of the Devil's Throat.",
+        "Go first, before the tour groups arrive; the spray is heavy, so bag the phone.",
+        "Since the boat moved to the morning, go after lunch instead; the afternoon light on the spray is better anyway."
+      ],
+      "why": "The single strongest sight of the trip, and it is best with the place nearly empty.",
+      "rank": 1,
+      "stars": 3,
+      "place": {
+        "name": "Garganta del Diablo",
+        "query": "Garganta del Diablo, Parque Nacional Iguazú",
+        "lat": -25.6953,
+        "lng": -54.4367
+      },
+      "duration": {
+        "minutes": 120,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning"
+      ],
+      "effort": "easy",
+      "practical": {
+        "booking": "Park ticket at the gate or online; the train is included.",
+        "weather": "Wet from spray; quick-dry clothes."
+      },
+      "booking": {
+        "status": "needed",
+        "url": "https://iguazuargentina.com",
+        "priority": 3,
+        "how": "Buy the park ticket online the day before to skip the gate queue.",
+        "price": {
+          "amount": 45,
+          "currency": "USD",
+          "note": "National park entry"
+        }
+      },
+      "confidence": "check"
+    },
+    {
+      "id": "circuito-superior",
+      "stayId": "iguazu",
+      "name": "Upper Circuit (Circuito Superior)",
+      "tag": "🚶",
+      "short": "Catwalks along the top of the falls",
+      "detail": [
+        "About 1.7 km of level catwalks running along the top edge of a dozen falls, with views down the gorge."
+      ],
+      "rank": 2,
+      "stars": 2,
+      "place": {
+        "query": "Circuito Superior, Parque Nacional Iguazú",
+        "lat": -25.6865,
+        "lng": -54.4445
+      },
+      "duration": {
+        "minutes": 75
+      },
+      "fit": "short",
+      "effort": "easy",
+      "confidence": "estimate"
+    },
+    {
+      "id": "circuito-inferior",
+      "stayId": "iguazu",
+      "name": "Lower Circuit (Circuito Inferior)",
+      "tag": "🌊",
+      "short": "Trails and stairs below the falls",
+      "detail": [
+        "A loop of trails and stairs through the forest under the falls, with close views of Salto Bossetti and the San Martín falls."
+      ],
+      "why": "The most varied walk in the park; pairs naturally with the boat ride, which leaves from its lower end.",
+      "rank": 3,
+      "stars": 1,
+      "place": {
+        "query": "Circuito Inferior, Parque Nacional Iguazú",
+        "lat": -25.688,
+        "lng": -54.442
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "effort": "moderate",
+      "confidence": "estimate"
+    },
+    {
+      "id": "gran-aventura",
+      "stayId": "iguazu",
+      "name": "Gran Aventura boat ride",
+      "tag": "🌊",
+      "short": "Jungle truck, then a boat into the falls",
+      "detail": [
+        "A truck ride through the forest down to the river, then a speedboat up the gorge and under the edge of the falls. You will be soaked."
+      ],
+      "rank": 4,
+      "stars": 2,
+      "place": {
+        "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú"
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "effort": "easy",
+      "practical": {
+        "booking": "Booked — see the commitment for the time.",
+        "tips": "Dry bag for phone and passport."
+      },
+      "booking": {
+        "status": "needed",
+        "price": {
+          "amount": 110,
+          "currency": "USD"
+        }
+      },
+      "confidence": "confirmed",
+      "checkedOn": "2026-10-01"
+    },
+    {
+      "id": "sendero-macuco",
+      "stayId": "iguazu",
+      "name": "Sendero Macuco",
+      "tag": "🌲",
+      "short": "Quiet jungle trail to a hidden waterfall",
+      "detail": [
+        "A 3.5 km (each way) forest trail away from the crowds, ending at the Arrechea waterfall. Good odds of seeing coatis, toucans and monkeys early in the day."
+      ],
+      "why": "The only real hike in the park, and the quietest part of it.",
+      "rank": 6,
+      "stars": 1,
+      "place": {
+        "query": "Sendero Macuco, Parque Nacional Iguazú",
+        "lat": -25.683,
+        "lng": -54.447
+      },
+      "duration": {
+        "minutes": 150,
+        "maxMinutes": 180
+      },
+      "fit": "half-day",
+      "bestTime": [
+        "morning"
+      ],
+      "effort": "moderate",
+      "conditions": [
+        "short-morning"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "brazil-side-falls",
+      "stayId": "iguazu",
+      "name": "Brazilian side: Trilha das Cataratas",
+      "tag": "📸",
+      "short": "The panorama the Argentine side can't show",
+      "detail": [
+        "Cross the border to Parque Nacional do Iguaçu and walk the 1.2 km trail facing the whole curtain of falls, ending on a platform beside the Devil's Throat.",
+        "Pair with the bird park, which is next to the Brazilian park entrance."
+      ],
+      "why": "Argentina is for being inside the falls; Brazil is for seeing all of them at once.",
+      "rank": 2,
+      "stars": 2,
+      "place": {
+        "query": "Parque Nacional do Iguaçu, Foz do Iguaçu",
+        "lat": -25.627,
+        "lng": -54.463
+      },
+      "duration": {
+        "minutes": 240,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon"
+      ],
+      "practical": {
+        "transport": "Remis from town, about 30 min plus the border crossing.",
+        "access": "Passport required at the border.",
+        "cost": "Entry paid in Brazilian reais or by card."
+      },
+      "confidence": "check"
+    },
+    {
+      "id": "parque-das-aves",
+      "stayId": "iguazu",
+      "name": "Parque das Aves",
+      "tag": "🌿",
+      "short": "Walk-through aviaries of Atlantic Forest birds",
+      "detail": [
+        "Large walk-through aviaries with toucans, macaws and hummingbirds, run as a conservation center for Atlantic Forest species."
+      ],
+      "rank": 5,
+      "stars": 1,
+      "place": {
+        "query": "Parque das Aves, Foz do Iguaçu",
+        "lat": -25.6157,
+        "lng": -54.4823
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "jardin-picaflores",
+      "stayId": "iguazu",
+      "name": "Jardín de los Picaflores",
+      "tag": "🌿",
+      "short": "A backyard full of hummingbirds",
+      "detail": [
+        "A family garden in town with feeders that draw dozens of hummingbirds of several species. Small, close-up and unhurried."
+      ],
+      "why": "An hour that fits after a work day, and nothing else on the trip looks like it.",
+      "rank": 3,
+      "stars": 2,
+      "place": {
+        "query": "Jardín de los Picaflores, Puerto Iguazú",
+        "lat": -25.5985,
+        "lng": -54.5745
+      },
+      "duration": {
+        "minutes": 60
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon"
+      ],
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "hito-tres-fronteras",
+      "stayId": "iguazu",
+      "name": "Hito Tres Fronteras",
+      "tag": "📸",
+      "short": "Sunset where three countries meet",
+      "detail": [
+        "The landmark at the meeting of the Iguazú and Paraná rivers, looking across to Brazil and Paraguay. Walk there along the riverfront from the center."
+      ],
+      "rank": 4,
+      "stars": 1,
+      "place": {
+        "query": "Hito Tres Fronteras, Puerto Iguazú",
+        "lat": -25.5917,
+        "lng": -54.5917
+      },
+      "duration": {
+        "minutes": 60,
+        "includesTravel": false
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "estimate"
+    },
+    {
+      "id": "guira-oga",
+      "stayId": "iguazu",
+      "name": "Güira Oga wildlife rescue",
+      "tag": "🌿",
+      "short": "Guided walk through a rescue center",
+      "detail": [
+        "A rescue and rehabilitation center for injured and trafficked animals of the Atlantic Forest, visited on a guided walk."
+      ],
+      "rank": 7,
+      "stars": 1,
+      "place": {
+        "query": "Güira Oga, Puerto Iguazú",
+        "lat": -25.6116,
+        "lng": -54.5653
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "short-morning"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "la-aripuca",
+      "stayId": "iguazu",
+      "name": "La Aripuca",
+      "tag": "🏛️",
+      "short": "A giant bird-trap built from salvaged trees",
+      "detail": [
+        "A huge structure built in the shape of a Guaraní bird trap from trunks of trees that had been felled, with a small exhibit on the forest."
+      ],
+      "rank": 9,
+      "stars": 1,
+      "place": {
+        "query": "La Aripuca, Puerto Iguazú",
+        "lat": -25.6033,
+        "lng": -54.56
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "feirinha",
+      "stayId": "iguazu",
+      "name": "La Feirinha",
+      "tag": "🍽️",
+      "short": "Evening market: cheese, cured meats, empanadas",
+      "detail": [
+        "The covered market in town where stalls sell Argentine cheeses, salami, olives and wine; several have tables and grills for a casual dinner."
+      ],
+      "why": "Local, casual and good — the right dinner after a work day.",
+      "rank": 6,
+      "stars": 1,
+      "place": {
+        "query": "La Feirinha, Puerto Iguazú",
+        "lat": -25.596,
+        "lng": -54.577
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "confidence": "check"
+    },
+    {
+      "id": "costanera-run",
+      "stayId": "iguazu",
+      "name": "Riverfront run on the Costanera",
+      "tag": "🏃",
+      "short": "Out-and-back along the Paraná",
+      "detail": [
+        "Run from the center down to the riverfront avenue and out to the Hito Tres Fronteras and back, about 5 km."
+      ],
+      "rank": 8,
+      "stars": 2,
+      "place": {
+        "query": "Avenida Costanera, Puerto Iguazú",
+        "lat": -25.5935,
+        "lng": -54.584
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "evening"
+      ],
+      "effort": "moderate",
+      "conditions": [
+        "short-morning",
+        "hot-day"
+      ],
+      "confidence": "estimate"
+    },
+    {
+      "id": "reserva-costanera-sur",
+      "stayId": "bsas-1",
+      "name": "Reserva Ecológica Costanera Sur",
+      "tag": "🌿",
+      "short": "Wild reserve on the river, next to downtown",
+      "detail": [
+        "Trails through reeds and lagoons between Puerto Madero and the Río de la Plata, busy with runners and birders. The river edge at the far side is the reward."
+      ],
+      "why": "A real run or walk from downtown, with nature right next to the skyline.",
+      "rank": 1,
+      "stars": 3,
+      "place": {
+        "query": "Reserva Ecológica Costanera Sur, Buenos Aires",
+        "lat": -34.6105,
+        "lng": -58.353
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "afternoon",
+        "evening"
+      ],
+      "effort": "moderate",
+      "availability": [
+        {
+          "days": [
+            "tue",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+            "sun"
+          ],
+          "start": "08:00",
+          "end": "18:00",
+          "note": "Closed Mondays; check hours."
+        }
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "bosques-palermo-run",
+      "stayId": "bsas-1",
+      "name": "Bosques de Palermo run",
+      "tag": "🏃",
+      "short": "Loop around the lakes and rose garden",
+      "detail": [
+        "Run the loops around the Palermo lakes and the Rosedal; the main route for runners in the city."
+      ],
+      "rank": 3,
+      "stars": 2,
+      "place": {
+        "query": "Rosedal de Palermo, Buenos Aires",
+        "lat": -34.5717,
+        "lng": -58.417
+      },
+      "duration": {
+        "minutes": 60
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "evening"
+      ],
+      "effort": "moderate",
+      "conditions": [
+        "short-morning"
+      ],
+      "confidence": "estimate"
+    },
+    {
+      "id": "malba",
+      "stayId": "bsas-1",
+      "name": "MALBA",
+      "tag": "🎨",
+      "short": "Latin American art museum in Palermo",
+      "detail": [
+        "The museum of Latin American art: Frida Kahlo, Tarsila do Amaral, Berni, Xul Solar."
+      ],
+      "rank": 2,
+      "stars": 2,
+      "place": {
+        "query": "MALBA, Buenos Aires",
+        "lat": -34.5772,
+        "lng": -58.4033
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "availability": [
+        {
+          "days": [
+            "mon",
+            "wed",
+            "thu",
+            "fri",
+            "sat",
+            "sun"
+          ],
+          "note": "Closed Tuesdays; check hours."
+        }
+      ],
+      "confidence": "check"
+    },
+    {
+      "id": "don-julio",
+      "stayId": "bsas-1",
+      "name": "Don Julio",
+      "tag": "🍽️",
+      "short": "The Palermo parrilla",
+      "detail": [
+        "A classic Palermo steakhouse with a long wait; book ahead or go early."
+      ],
+      "rank": 4,
+      "stars": 2,
+      "place": {
+        "query": "Parrilla Don Julio, Buenos Aires",
+        "lat": -34.5864,
+        "lng": -58.4251
+      },
+      "duration": {
+        "minutes": 120
+      },
+      "fit": "evening",
+      "bestTime": [
+        "evening"
+      ],
+      "effort": "easy",
+      "practical": {
+        "booking": "Reservation strongly recommended."
+      },
+      "booking": {
+        "status": "needed",
+        "priority": 2,
+        "how": "Reservations open two weeks ahead on their website; walk-ins wait over an hour.",
+        "price": {
+          "amount": 120,
+          "max": 180,
+          "currency": "USD",
+          "note": "Dinner for two"
+        }
+      },
+      "confidence": "check"
+    },
+    {
+      "id": "cafe-tortoni",
+      "stayId": "bsas-1",
+      "name": "Café Tortoni",
+      "tag": "☕",
+      "short": "The 1858 café on Avenida de Mayo",
+      "detail": [
+        "The old grand café: go for the room, not the coffee."
+      ],
+      "rank": 5,
+      "stars": 1,
+      "place": {
+        "query": "Café Tortoni, Buenos Aires",
+        "lat": -34.6088,
+        "lng": -58.3787
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "estimate"
+    },
+    {
+      "id": "feria-san-telmo",
+      "stayId": "bsas-2",
+      "name": "Feria de San Telmo",
+      "tag": "🛍️",
+      "short": "Sunday street fair along Calle Defensa",
+      "detail": [
+        "Antiques, street musicians and tango in Plaza Dorrego, stretching blocks along Defensa. Walk it end to end and finish in the covered Mercado de San Telmo."
+      ],
+      "why": "The city at its liveliest, and it only happens on Sundays.",
+      "rank": 1,
+      "stars": 3,
+      "place": {
+        "query": "Plaza Dorrego, San Telmo, Buenos Aires",
+        "lat": -34.621,
+        "lng": -58.372
+      },
+      "duration": {
+        "minutes": 180
+      },
+      "fit": "half-day",
+      "effort": "easy",
+      "availability": [
+        {
+          "days": [
+            "sun"
+          ],
+          "note": "Sundays only."
+        }
+      ],
+      "confidence": "confirmed",
+      "checkedOn": "2026-10-01"
+    },
+    {
+      "id": "recoleta-cemetery",
+      "stayId": "bsas-2",
+      "name": "Cementerio de la Recoleta",
+      "tag": "🏛️",
+      "short": "A city of marble mausoleums",
+      "detail": [
+        "Avenues of ornate family tombs, Evita's among them. Pick up a map at the entrance."
+      ],
+      "rank": 2,
+      "stars": 2,
+      "place": {
+        "query": "Cementerio de la Recoleta, Buenos Aires",
+        "lat": -34.5875,
+        "lng": -58.3934
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "effort": "easy",
+      "confidence": "estimate"
+    },
+    {
+      "id": "el-ateneo",
+      "stayId": "bsas-2",
+      "name": "El Ateneo Grand Splendid",
+      "tag": "📚",
+      "short": "A bookshop inside a 1919 theatre",
+      "detail": [
+        "A bookshop in a converted theatre, with the stage turned into a café."
+      ],
+      "rank": 3,
+      "stars": 1,
+      "place": {
+        "query": "El Ateneo Grand Splendid, Buenos Aires",
+        "lat": -34.5958,
+        "lng": -58.3942
+      },
+      "duration": {
+        "minutes": 45
+      },
+      "fit": "short",
+      "effort": "easy",
+      "conditions": [
+        "rainy-day"
+      ],
+      "confidence": "estimate"
+    },
+    {
+      "id": "itaipu-dam",
+      "stayId": "iguazu",
+      "name": "Itaipu Dam panoramic tour",
+      "tag": "🏛️",
+      "short": "Bus tour of one of the world's largest dams",
+      "detail": [
+        "A guided bus tour across the dam on the Brazil–Paraguay border, from the Brazilian visitor center north of Foz do Iguaçu."
+      ],
+      "rank": 8,
+      "stars": 2,
+      "place": {
+        "query": "Itaipu Binacional visitor center, Foz do Iguaçu",
+        "lat": -25.408,
+        "lng": -54.5888
+      },
+      "duration": {
+        "minutes": 180,
+        "includesTravel": true
+      },
+      "fit": "half-day",
+      "effort": "easy",
+      "conditions": [
+        "free-afternoon",
+        "rainy-day"
+      ],
+      "practical": {
+        "access": "Passport for the border; tours sell out on weekends."
+      },
+      "confidence": "check"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-11-05",
+      "stayId": "bsas-1",
+      "kind": "work",
+      "title": "Arrive and work",
+      "plan": [
+        {
+          "activityId": "cafe-tortoni",
+          "slot": "evening"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "stayId": "bsas-1",
+      "kind": "work",
+      "title": "Reserve at golden hour",
+      "plan": [
+        {
+          "activityId": "reserva-costanera-sur",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "don-julio",
+          "slot": "evening",
+          "time": "20:30"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-07",
+      "stayId": "iguazu",
+      "kind": "travel",
+      "title": "Fly to Iguazú",
+      "plan": [
+        {
+          "activityId": "jardin-picaflores",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "hito-tres-fronteras",
+          "slot": "evening"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "stayId": "iguazu",
+      "title": "Argentine falls",
+      "note": "Boat at 10:30 first, then the Garganta del Diablo and the Upper Circuit; Lower Circuit to finish.",
+      "plan": [
+        {
+          "activityId": "garganta-del-diablo",
+          "slot": "afternoon",
+          "time": "13:00"
+        },
+        {
+          "activityId": "circuito-superior",
+          "slot": "morning"
+        },
+        {
+          "activityId": "circuito-inferior",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "gran-aventura",
+          "slot": "morning",
+          "time": "10:30"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "stayId": "iguazu",
+      "kind": "work",
+      "title": "Work, then the market",
+      "plan": [
+        {
+          "activityId": "jardin-picaflores",
+          "slot": "afternoon"
+        },
+        {
+          "activityId": "feirinha",
+          "slot": "evening"
+        }
+      ],
+      "note": "Work; at 3 pm the hummingbird garden, then dinner at the Feirinha."
+    },
+    {
+      "date": "2026-11-10",
+      "stayId": "iguazu",
+      "kind": "work",
+      "plan": [
+        {
+          "activityId": "costanera-run",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-11",
+      "stayId": "iguazu",
+      "kind": "work",
+      "plan": [
+        {
+          "activityId": "la-aripuca",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-12",
+      "stayId": "iguazu",
+      "kind": "work"
+    },
+    {
+      "date": "2026-11-13",
+      "stayId": "iguazu",
+      "kind": "travel",
+      "title": "Back to Buenos Aires"
+    },
+    {
+      "date": "2026-11-14",
+      "stayId": "bsas-2",
+      "title": "Recoleta",
+      "note": "Recoleta cemetery in the morning, El Ateneo after lunch.",
+      "plan": [
+        {
+          "activityId": "recoleta-cemetery",
+          "slot": "morning"
+        },
+        {
+          "activityId": "el-ateneo",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2026-11-15",
+      "stayId": "bsas-2",
+      "kind": "travel",
+      "title": "San Telmo and home",
+      "note": "The San Telmo fair end to end, then pack for the 21:00 flight.",
+      "plan": [
+        {
+          "activityId": "feria-san-telmo",
+          "slot": "morning"
+        }
+      ]
+    }
+  ]
+}
