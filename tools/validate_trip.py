@@ -221,6 +221,8 @@ def check_references(trip, rep):
     for where, price in _prices(trip):
         if isinstance(price.get("amount"), (int, float)) and isinstance(price.get("max"), (int, float)) and price["max"] < price["amount"]:
             rep.error(where, "max is below amount")
+        if price.get("unit") == "night" and ".lodging.price" not in where:
+            rep.error(f"{where}.unit", '"night" is only for lodging; give this price for the whole item')
 
     for i, c in enumerate(commits):
         where = f"commitments[{i}] ({c.get('id', '?')})"
@@ -311,7 +313,24 @@ def check_complete(trip, rep):
         if p.get("currency", "USD") != "USD":
             rep.error(where, f"prices are in USD, as an approximate conversion; got {p.get('currency')}. "
                              "Put the local price in its note")
+    stays = trip.get("stays", [])
+    if stays and (trip.get("startDate", "") < stays[0].get("arrive", "") or trip.get("endDate", "") > stays[-1].get("depart", "")):
+        rep.error("stays", "the trip starts before the first stay or ends after the last: add the home airport as a "
+                           "zero-night stay first and last, and the flights as transfers to and from it")
+    flights = [c.get("id", "?") for c in trip.get("commitments", [])
+               if c.get("origin") != "user" and not c.get("booked") and re.search(r"\bflights?\b", c.get("title", ""), re.I)]
+    if flights:
+        rep.error("commitments", f"a flight still to book is a transfer between stays (from the home-airport stay "
+                                 f"for the way out), not a commitment: {_names(flights)}")
     acts = [a for a in trip.get("activities", []) if a.get("origin") != "user"]
+    priced = {}
+    for a in acts:
+        if (a.get("booking") or {}).get("price"):
+            priced.setdefault(a.get("name"), []).append(a.get("stayId"))
+    for name, where in priced.items():
+        if len(where) > 1:
+            rep.warn("activities", f"'{name}' is listed in {len(where)} stays with a price; if more than one is planned, "
+                                   "its price counts more than once. List it once, under the visit it suits")
     no_stars = [a.get("id", "?") for a in acts if "stars" not in a]
     if no_stars:
         rep.error("activities", f"{len(no_stars)} have no stars (1–3): {_names(no_stars)}")

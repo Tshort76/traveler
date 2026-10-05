@@ -52,7 +52,11 @@ object TripReader {
         val errors = mutableListOf<String>()
         val warnings = mutableListOf<String>()
         if (format == null) warnings += "No \"format\" field; read as a Traveler trip anyway."
-        TripJson.unknownFields(element).forEach { warnings += "$it: unknown field (typo?) — ignored" }
+        // One line per field, not per occurrence: an assistant that invents a field uses it everywhere.
+        TripJson.unknownFields(element).groupBy { it.replace(Regex("\\[\\d+\\]"), "[]") }.forEach { (field, at) ->
+            warnings += if (at.size == 1) "${at[0]}: unknown field (typo?) — ignored"
+            else "$field: unknown field, ignored in ${at.size} places. Ask the assistant to fix the file; anything it holds is lost"
+        }
         check(trip, errors, warnings)
         return ReadResult(trip, errors, warnings)
     }
@@ -82,6 +86,7 @@ object TripReader {
         val start = date(trip.startDate, "startDate", errors)
         val end = date(trip.endDate, "endDate", errors)
         if (start != null && end != null && end < start) errors += "endDate is before startDate"
+        trip.travelers?.let { if (it < 1) errors += "travelers: must be 1 or more; got $it" }
         if (trip.title.isBlank()) errors += "title is empty"
         if (trip.stays.isEmpty()) errors += "the trip has no stays"
         fun inTrip(d: LocalDate?) = d == null || start == null || end == null || d in start..end
@@ -111,7 +116,7 @@ object TripReader {
             }
             if (s.place?.hasCoordinates != true) warnings += "$where: no coordinates — not shown on the overview map"
             s.lodging?.status?.let { enum(it, Vocab.lodgingStatuses, "$where.lodging.status", errors) }
-            price(s.lodging?.price, "$where.lodging.price", errors)
+            price(s.lodging?.price, "$where.lodging.price", errors, lodging = true)
             s.lodging?.priority?.let { priority(it, "$where.lodging.priority", errors) }
             checkPlace(s.place, where, errors)
         }
@@ -202,8 +207,10 @@ object TripReader {
         if (value !in allowed) errors += "$where: must be one of ${allowed.joinToString(", ")}; got \"$value\""
     }
 
-    private fun price(p: Price?, where: String, errors: MutableList<String>) {
+    private fun price(p: Price?, where: String, errors: MutableList<String>, lodging: Boolean = false) {
         if (p == null) return
+        p.unit?.let { enum(it, Vocab.priceUnits, "$where.unit", errors) }
+        if (p.unit == UNIT_NIGHT && !lodging) errors += "$where.unit: \"night\" is only for lodging; give this price for the whole item"
         if (p.amount < 0 || (p.max ?: 0.0) < 0) errors += "$where: must not be negative"
         if (p.max != null && p.max < p.amount) errors += "$where: max is below amount"
         if (p.currency != null && !isCurrencyCode(p.currency)) errors += "$where.currency: \"${p.currency}\" is not a currency code like USD"

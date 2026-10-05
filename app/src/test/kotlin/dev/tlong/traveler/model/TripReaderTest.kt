@@ -37,6 +37,7 @@ class TripReaderTest {
             "bad-price" to "max is below amount",
             "price-not-object" to "stays[0] (denver).lodging.price: must be an object",
             "price-without-amount" to "lodging.price: missing required field 'amount'",
+            "night-price-off-lodging" to "\"night\" is only for lodging",
         )
         val names = File(Fixtures.schemaDir, "invalid").listFiles()!!.map { it.name.removeSuffix(".trip.json") }.toSet()
         assertEquals("a new invalid fixture needs its reason here", reasons.keys, names)
@@ -66,6 +67,14 @@ class TripReaderTest {
         val r = TripReader.read(text)
         assertTrue(r.ok)
         assertTrue(r.warnings.toString(), r.warnings.any { "timezon" in it })
+    }
+
+    @Test
+    fun `a field invented in many places is one warning with a count`() {
+        val text = Fixtures.text("iguazu-short.trip.json").replace("\"currency\": \"USD\"", "\"currency\": \"USD\", \"per\": \"x\"")
+        val lodging = TripReader.read(text).warnings.filter { it.startsWith("stays[].lodging.price.per:") }
+        assertEquals(lodging.toString(), 1, lodging.size)
+        assertTrue(lodging.single(), lodging.single().contains("in 3 places"))
     }
 
     @Test

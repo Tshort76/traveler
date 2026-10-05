@@ -10,6 +10,7 @@
   "summary": "Four days in Buenos Aires (two neighbourhoods), three on the Patagonian coast for whales and sea lions.",
   "startDate": "2027-10-17",
   "endDate": "2027-10-25",
+  "travelers": 2,
   "links": [
     {
       "label": "Planning spreadsheet",
@@ -113,10 +114,11 @@
           "lng": -58.3731
         },
         "price": {
-          "amount": 160,
-          "max": 220,
+          "amount": 80,
+          "max": 110,
           "currency": "USD",
-          "note": "2 nights"
+          "unit": "night",
+          "note": "About ARS 95,000–130,000 a night"
         },
         "priority": 2,
         "how": "Hold a refundable room; confirm once the Colón tour time is set.",
@@ -146,10 +148,11 @@
         "status": "undecided",
         "priority": 1,
         "price": {
-          "amount": 270,
-          "max": 360,
+          "amount": 90,
+          "max": 120,
           "currency": "USD",
-          "note": "3 nights"
+          "unit": "night",
+          "note": "Waterfront; about ARS 105,000–140,000 a night"
         },
         "how": "Book on the waterfront (the rambla) so the town is walkable; whale season fills it.",
         "url": "https://www.booking.com/"
@@ -190,7 +193,7 @@
         "price": {
           "amount": 1180,
           "currency": "USD",
-          "note": "Round trip"
+          "note": "Round trip for two, booked"
         }
       }
     },
@@ -219,6 +222,7 @@
           "amount": 140,
           "max": 190,
           "currency": "USD",
+          "unit": "person",
           "note": "One way; about ARS 170,000–230,000"
         },
         "how": "Aerolíneas Argentinas; the morning flight keeps the afternoon free."
@@ -240,7 +244,8 @@
           "amount": 140,
           "max": 190,
           "currency": "USD",
-          "note": "Domestic leg only"
+          "unit": "person",
+          "note": "Domestic leg to Buenos Aires; the flight home is in the round trip"
         },
         "how": "Leave at least 4 hours to change airports in Buenos Aires."
       }
@@ -640,7 +645,8 @@
         "price": {
           "amount": 30,
           "currency": "USD",
-          "note": "Per person; about ARS 35,000"
+          "unit": "person",
+          "note": "About ARS 35,000"
         },
         "how": "Buy online for a morning English tour; they sell out days ahead."
       },
@@ -674,7 +680,8 @@
         "price": {
           "amount": 70,
           "currency": "USD",
-          "note": "Per person with dinner"
+          "unit": "person",
+          "note": "With dinner"
         },
         "how": "Reserve a table a few days ahead."
       }
@@ -1026,7 +1033,8 @@
         "price": {
           "amount": 95,
           "currency": "USD",
-          "note": "Per person, boat only"
+          "unit": "person",
+          "note": "Boat only"
         }
       },
       "url": "https://www.hydrosport.com.ar/"

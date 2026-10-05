@@ -29,6 +29,8 @@ data class Trip(
     val summary: String? = null,
     val startDate: String,
     val endDate: String,
+    /** How many people the trip is for; per-person prices are multiplied by it. Absent means one. */
+    val travelers: Int? = null,
     val links: List<Link> = emptyList(),
     val tripMap: TripMap? = null,
     val stays: List<Stay> = emptyList(),
@@ -103,9 +105,16 @@ data class Lodging(
     val isBooked get() = status == "booked"
 }
 
-/** A cost: [amount] alone is exact (or a single estimate), [amount] to [max] a range. Totals, never per night. */
+/**
+ * A cost: [amount] alone is exact (or a single estimate), [amount] to [max] a range. [unit] says what
+ * it is for: the whole item (the default), one night of a stay, or one traveler; the app does the
+ * multiplying, because assistants quote nightly and per-person rates far more reliably than totals.
+ */
 @Serializable
-data class Price(val amount: Double, val max: Double? = null, val currency: String? = null, val note: String? = null)
+data class Price(val amount: Double, val max: Double? = null, val currency: String? = null, val note: String? = null, val unit: String? = null)
+
+const val UNIT_NIGHT = "night"
+const val UNIT_PERSON = "person"
 
 private val currencyCode = Regex("^[A-Z]{3}$")
 
@@ -306,6 +315,7 @@ enum class DayKind(val key: String, val label: String) {
 }
 
 object Vocab {
+    val priceUnits = listOf("total", UNIT_NIGHT, UNIT_PERSON)
     val slots = Slot.entries.map { it.key }
     val statuses = ItemStatus.entries.map { it.key }
     val dayKinds = DayKind.entries.map { it.key }

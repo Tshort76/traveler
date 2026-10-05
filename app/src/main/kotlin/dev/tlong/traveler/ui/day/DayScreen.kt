@@ -364,7 +364,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     booking?.let { target ->
         val existing = target.existing
         BookingDialog(
-            listOf(date), date, existing, suggestions = trip.activities.filter { it.stayId == stay?.id },
+            listOf(date), date, existing, suggestions = trip.activities.filter { it.stayId == stay?.id }, travelers = trip.travelers ?: 1,
             onDismiss = { booking = null },
             onDelete = existing?.let { c -> {
                 booking = null

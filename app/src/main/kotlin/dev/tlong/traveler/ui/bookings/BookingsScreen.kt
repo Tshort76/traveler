@@ -68,6 +68,7 @@ import dev.tlong.traveler.domain.money
 import dev.tlong.traveler.domain.nights
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.domain.totals
+import dev.tlong.traveler.domain.rateLabel
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.ui.Navigator
 import dev.tlong.traveler.ui.activity.BookingDialog
@@ -198,7 +199,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                 val dates = (linked?.let { trip.stay(it.stayId) }?.let { trip.datesOf(it) } ?: trip.dates()).map { it.toString() }
                 BookingDialog(
                     dates, b.date ?: dates.firstOrNull() ?: trip.startDate, b.record,
-                    suggestions = trip.activities.filter { linked == null || it.stayId == linked.stayId }, initialLinked = linked,
+                    suggestions = trip.activities.filter { linked == null || it.stayId == linked.stayId }, initialLinked = linked, travelers = trip.travelers ?: 1,
                     onDismiss = close,
                     onDelete = b.record?.takeIf { it.origin == "user" }?.let { c -> {
                         close()
@@ -373,6 +374,7 @@ private fun detailLine(trip: Trip, b: Bookable): String = listOfNotNull(
         else -> b.date?.let { "For ${dayName(it)}" + (b.time?.let { t -> ", $t" } ?: "") } ?: "Day not chosen yet"
     },
     if (b.kind == Bookable.Kind.LODGING || b.kind == Bookable.Kind.TRANSFER) null else trip.stay(b.stayId)?.name,
+    b.rate?.rateLabel(),
     b.ref?.let { "Ref $it" },
 ).joinToString(" · ")
 

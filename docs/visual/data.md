@@ -47,6 +47,7 @@ Defined at `model/Trip.kt:20`. Written by an assistant, by `Export.tripFile` (`d
 | `id` | string | Stable across revisions; the merge and the duplicate check depend on it |
 | `revision` | int | The assistant raises it on each new version; export keeps the base revision |
 | `title`, `startDate`, `endDate` | string | ISO dates |
+| `travelers` | int | How many people; per-person prices are multiplied by it. Absent means one |
 | `stays`, `transfers`, `activities`, `commitments`, `days` | lists | The cards below |
 | `links`, `notes`, `warnings`, `tripMap` | various | Trip-level extras |
 | `exportedFrom` | `ExportInfo` | Present only in an exported file |
@@ -79,7 +80,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Stay` — one base, with at most one lodging
 
-Defined at `model/Trip.kt:70`, lodging at `model/Trip.kt:90`.
+Defined at `model/Trip.kt:72`, lodging at `model/Trip.kt:92`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -87,7 +88,7 @@ Defined at `model/Trip.kt:70`, lodging at `model/Trip.kt:90`.
 | `arrive`, `depart` | date | A stay with zero nights at the very start or end is the home airport, and is left off maps and lists |
 | `timezone` | IANA zone | Days, opening hours and work hours are local to it |
 | `place` | `Place` | Query, coordinates, address or place id |
-| `lodging` | `Lodging` | Name, status (`booked`, `tentative`, `undecided`), check-in and out, reference, price, booking advice |
+| `lodging` | `Lodging` | Name, status (`booked`, `tentative`, `undecided`), check-in and out, reference, price (usually a nightly rate), booking advice |
 | `workRhythm` | `WorkRhythm` | Days and hours, optionally in another zone, converted per date |
 | `mapUrl` | string | An optional link you add to a custom map |
 
@@ -126,7 +127,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Activity` — a suggestion, or your own entry
 
-Defined at `model/Trip.kt:164`.
+Defined at `model/Trip.kt:173`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -166,7 +167,7 @@ From `schema/examples/demo.trip.json`, **written to shape**, trimmed to the fiel
 
 ### `Day` and `PlanItem` — what is planned when
 
-Defined at `model/Trip.kt:248` and `model/Trip.kt:259`.
+Defined at `model/Trip.kt:257` and `model/Trip.kt:268`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -197,7 +198,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Commitment` — a fixed-time booking
 
-Defined at `model/Trip.kt:224`. Written by the assistant, or by `Edits.addBooking` when you add one.
+Defined at `model/Trip.kt:233`. Written by the assistant, or by `Edits.addBooking` when you add one.
 
 <details>
 <summary>Example: the whale-watching boat you booked</summary>
@@ -225,7 +226,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `ExportInfo` — how far an exported plan has moved
 
-Defined at `model/Trip.kt:268`. Written by `Export.tripFile` (`domain/Export.kt:18`).
+Defined at `model/Trip.kt:277`. Written by `Export.tripFile` (`domain/Export.kt:18`).
 
 **No fixture found.** No committed file carries an `exportedFrom` block.
 
@@ -241,6 +242,19 @@ Defined at `model/Trip.kt:268`. Written by `Export.tripFile` (`domain/Export.kt:
 Defined at `data/TripStore.kt:26`. Written by `TripStore.backupText` (`data/TripStore.kt:118`).
 
 **No fixture found.** A backup holds `format` (`traveler-backup`), `formatVersion` 1, `createdAt`, and `trips`: for each live trip, the last import, your current plan, whether it is archived, and when it was last updated.
+
+### `Price` — what something costs, and what the amount is for
+
+Defined at `model/Trip.kt:114`. Multiplied out by `Price.total` in `domain/Bookings.kt`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `amount`, `max` | number | One figure, or a range |
+| `currency` | ISO code | Assistants write USD, with the local price in `note` |
+| `unit` | `total`, `night`, `person` | The whole item (the default), one night of a stay (lodging only), or one traveler |
+| `note` | string | |
+
+**Every total the app shows is multiplied out.** The Bookings list, its estimate and the lodging card all show a nightly rate times the stay's nights and a per-person price times `travelers`; the rate itself is shown beside the total only when the multiplication changed it.
 
 ## Storage
 
@@ -292,7 +306,7 @@ Both tables are in `traveler.db`, defined at `data/Database.kt:27` and `data/Dat
 | At most 20 snapshots are kept per trip | `data/TripStore.kt:146` | History stays bounded |
 | A deleted trip is purged 30 days after deletion, with its snapshots and saved maps | `data/TripStore.kt:113`, `AppContainer.kt:100` | Recently deleted is a real undo, and nothing lingers after it |
 | Opening the same content twice makes no duplicate | `data/ImportRouter.kt:41` | Sharing a file twice is harmless |
-| `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:198` | Your entries and notes survive a revision |
+| `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:207` | Your entries and notes survive a revision |
 | Content identity ignores `exportedFrom` | `domain/Export.kt:37` | An exported file reopened is recognised as the same trip |
 
 *Generated from 72c887b on 2026-10-05.*

@@ -61,7 +61,8 @@ PROJECT_INSTRUCTIONS = """You plan my trips. This project's files hold the instr
 Every trip file must have, or --complete fails:
 - `stars` (1-3) on every activity: 3 must do, 2 I'll likely enjoy, 1 worth it with time to spare.
 - A `booking` object {status: "needed", priority, price, url, how} on every activity needing a ticket or reservation, and on every flight, train, bus or boat. Never only a sentence in practical.booking.
-- `price` and `priority` on lodging that isn't booked. Prices in USD (approximate), the local price in `note`; a price only inside lodging, booking or a commitment, never on the activity itself. Priority: 1 book now (sells out, or airfare about to jump), 2 a week or more ahead, 3 fine last minute.
+- `price` and `priority` on lodging that isn't booked. Prices in USD (approximate), the local price in `note`; a price only inside lodging, booking or a commitment, never on the activity itself. Lodging gives the nightly rate with `unit: "night"`; a per-traveler fare or ticket has `unit: "person"`, with `travelers` set at the top. The app multiplies; never add other fields such as `per`.
+- Flights from home are transfers from and to the home-airport stay (zero nights, first and last), never commitments. A return ticket is priced once, on the outbound leg; the return leg gets `amount: 0`. Priority: 1 book now (sells out, or airfare about to jump), 2 a week or more ahead, 3 fine last minute.
 - A tour's or venue's link in that activity's `url`, never in the trip's `links`.
 
 If a profile of me is among the files, follow it.

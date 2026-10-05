@@ -76,6 +76,8 @@ import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.day
 import dev.tlong.traveler.domain.departDate
 import dev.tlong.traveler.domain.label
+import dev.tlong.traveler.domain.rateLabel
+import dev.tlong.traveler.domain.total
 import dev.tlong.traveler.domain.nights
 import dev.tlong.traveler.domain.observesDst
 import dev.tlong.traveler.domain.shortLabel
@@ -366,7 +368,7 @@ private fun InfoTab(session: TripSession, trip: Trip, stay: Stay, pool: List<Act
             }
         }
         item("lodging") {
-            LodgingCard(stay, onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } })
+            LodgingCard(stay, trip.travelers ?: 1, onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } })
         }
         stay.workRhythm?.let { w ->
             item("work") {
@@ -406,7 +408,7 @@ private fun InfoTab(session: TripSession, trip: Trip, stay: Stay, pool: List<Act
 
 /** Where the stay sleeps: the booking's details once booked; before that, what to book and how. */
 @Composable
-private fun LodgingCard(stay: Stay, onLink: (String) -> Unit) {
+private fun LodgingCard(stay: Stay, travelers: Int, onLink: (String) -> Unit) {
     val l = stay.lodging
     val booked = l?.isBooked == true
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
@@ -423,7 +425,11 @@ private fun LodgingCard(stay: Stay, onLink: (String) -> Unit) {
                 l?.checkIn?.takeIf { booked }?.let { "Check-in" to it },
                 l?.checkOut?.takeIf { booked }?.let { "Check-out" to it },
                 l?.ref?.takeIf { booked }?.let { "Confirmation" to it },
-                l?.price?.let { (if (booked) "Paid" else "Estimate") to (it.label() + (it.note?.let { n -> " · $n" } ?: "")) },
+                l?.price?.let { p ->
+                    val total = p.total(stay.nights, travelers)
+                    val rate = p.rateLabel()?.takeIf { total != p.copy(unit = null) }
+                    (if (booked) "Paid" else "Estimate") to listOfNotNull(rate?.let { "${total.label()} ($it)" } ?: total.label(), p.note).joinToString(" · ")
+                },
                 l?.notes?.takeIf { booked }?.let { "Notes" to it },
             ).forEach { (k, v) ->
                 Row { Text(k, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(96.dp)); Text(v, style = MaterialTheme.typography.bodyMedium) }

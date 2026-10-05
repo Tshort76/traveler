@@ -71,6 +71,7 @@ class InvalidFilesAreRejected(unittest.TestCase):
         "bad-price": "max is below amount",
         "price-not-object": "lodging.price: must be an object",
         "price-without-amount": "lodging.price: missing required field 'amount'",
+        "night-price-off-lodging": '"night" is only for lodging',
     }
 
     def test_every_invalid_fixture_fails_for_its_own_reason(self):

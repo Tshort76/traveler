@@ -77,7 +77,7 @@ fun OverlayHost(
         val dates = (trip.stay(a.stayId)?.let { trip.datesOf(it) } ?: trip.dates()).map { it.toString() }
         val initial = trip.placementsOf(a.id).firstOrNull()?.date ?: dates.firstOrNull() ?: trip.startDate
         BookingDialog(
-            dates, initial, existing, suggestions = trip.activities.filter { it.stayId == a.stayId }, initialLinked = a,
+            dates, initial, existing, suggestions = trip.activities.filter { it.stayId == a.stayId }, initialLinked = a, travelers = trip.travelers ?: 1,
             onDismiss = { overlays.booking = null },
             onDelete = existing?.let { c -> {
                 overlays.booking = null

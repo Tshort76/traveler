@@ -5,6 +5,8 @@ import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Price
 import dev.tlong.traveler.model.Trip
+import dev.tlong.traveler.model.UNIT_NIGHT
+import dev.tlong.traveler.model.UNIT_PERSON
 
 /**
  * Everything on the trip that needs reserving, in one list: each stay's lodging, transfers by
@@ -20,7 +22,10 @@ data class Bookable(
     val date: String?,
     val time: String? = null,
     val booked: Boolean,
+    /** What it comes to: a nightly or per-person [rate] already multiplied out. */
     val price: Price? = null,
+    /** The price as the plan gave it, when that was per night or per person. */
+    val rate: Price? = null,
     val ref: String? = null,
     val url: String? = null,
     /** How soon to book it (1 now, 2 a week or more ahead, 3 can wait), and how or where: plan-written guidance. */
@@ -44,18 +49,23 @@ data class Bookable(
 private val ticketedModes = setOf("flight", "train", "bus", "boat", "ferry")
 
 fun Trip.bookables(): List<Bookable> {
+    val people = travelers ?: 1
+    // The rate is worth showing only when multiplying changed it: "$800 per person" for one traveler is noise.
+    fun rate(p: Price?, nights: Int = 1) = p?.takeIf { (it.unit == UNIT_NIGHT || it.unit == UNIT_PERSON) && it.total(nights, people) != it.copy(unit = null) }
     val lodging = stays.filter { it.nights > 0 }.map { s ->
         val l = s.lodging
         Bookable(
             "lodging:${s.id}", Bookable.Kind.LODGING, l?.name ?: "Lodging in ${s.name}", s.arrive,
-            time = l?.checkIn, booked = l?.isBooked == true, price = l?.price, ref = l?.ref, url = l?.url, priority = l?.priority, how = l?.how,
+            time = l?.checkIn, booked = l?.isBooked == true, price = l?.price?.total(s.nights, people), rate = rate(l?.price, s.nights),
+            ref = l?.ref, url = l?.url, priority = l?.priority, how = l?.how,
             stayId = s.id,
         )
     }
     val transfers = transfers.filter { it.booking != null || it.mode in ticketedModes }.map { t ->
         Bookable(
             "transfer:${t.id}", Bookable.Kind.TRANSFER, "${stay(t.from)?.name ?: t.from} → ${stay(t.to)?.name ?: t.to}", t.date,
-            time = t.depart, booked = t.booking?.isBooked == true, price = t.booking?.price, ref = t.booking?.ref, url = t.booking?.url,
+            time = t.depart, booked = t.booking?.isBooked == true, price = t.booking?.price?.total(travelers = people),
+            rate = rate(t.booking?.price), ref = t.booking?.ref, url = t.booking?.url,
             priority = t.booking?.priority, how = t.booking?.how ?: t.details, stayId = t.to, glyph = t.shownMode,
         )
     }
@@ -65,7 +75,8 @@ fun Trip.bookables(): List<Bookable> {
         val placed = placementsOf(a.id).firstOrNull()
         Bookable(
             "activity:${a.id}", Bookable.Kind.ACTIVITY, a.name, c?.date ?: placed?.date, time = c?.start ?: placed?.item?.time,
-            booked = c != null || a.booking?.isBooked == true, price = c?.price ?: a.booking?.price, ref = c?.ref ?: a.booking?.ref,
+            booked = c != null || a.booking?.isBooked == true, price = (c?.price ?: a.booking?.price)?.total(travelers = people),
+            rate = rate(c?.price ?: a.booking?.price), ref = c?.ref ?: a.booking?.ref,
             url = c?.url ?: a.booking?.url ?: a.url, priority = a.booking?.priority, how = a.booking?.how ?: a.practical?.booking,
             stayId = a.stayId, glyph = a.tag, record = c,
         )
@@ -73,7 +84,8 @@ fun Trip.bookables(): List<Bookable> {
     val folded = needsBooking.map { it.id }.toSet()
     val bookings = commitments.filter { (it.kind == "booking" || it.isBooked) && it.activityId !in folded }.map { c ->
         Bookable(
-            "commitment:${c.id}", Bookable.Kind.BOOKING, c.title, c.date, time = c.start, booked = c.isBooked, price = c.price,
+            "commitment:${c.id}", Bookable.Kind.BOOKING, c.title, c.date, time = c.start, booked = c.isBooked,
+            price = c.price?.total(travelers = people), rate = rate(c.price),
             ref = c.ref, url = c.url, priority = c.priority, how = c.how, stayId = c.stayId, glyph = c.activityId?.let { activity(it)?.tag }, record = c,
         )
     }
@@ -114,6 +126,26 @@ fun money(amount: Double, currency: String?): String {
     f.maximumFractionDigits = if (amount % 1.0 == 0.0) 0 else 2
     f.minimumFractionDigits = f.maximumFractionDigits
     return f.format(amount).replace(Regex("^([A-Z]{3})(\\d)"), "$1 $2")
+}
+
+/**
+ * What a price comes to: a nightly rate times [nights], a per-person price times [travelers], and
+ * anything else as given. The result is a plain total, so it can be shown, summed and saved as one.
+ */
+fun Price.total(nights: Int = 1, travelers: Int = 1): Price {
+    val times = when (unit) {
+        UNIT_NIGHT -> nights
+        UNIT_PERSON -> travelers
+        else -> return if (unit == null) this else copy(unit = null)
+    }.toDouble()
+    return copy(amount = amount * times, max = max?.let { it * times }, unit = null)
+}
+
+/** "$65/night", "$45 per person"; null for a price that is already a total. */
+fun Price.rateLabel(): String? = when (unit) {
+    UNIT_NIGHT -> label() + "/night"
+    UNIT_PERSON -> label() + " per person"
+    else -> null
 }
 
 /** "$120", or "$120–200" for a range. */

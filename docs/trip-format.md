@@ -38,6 +38,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 | `kicker` | | string | Short line above the title. |
 | `summary` | | string | One line: the shape of the trip. |
 | `startDate`, `endDate` | ✓ | ISO date | First and last day of the trip, inclusive. |
+| `travelers` | | integer ≥ 1 | How many people the trip is for; per-person prices are multiplied by it. Absent means one. |
 | `links` | | Link[] | Planning spreadsheet, the planning chat, docs. |
 | `tripMap` | | TripMap | A custom Google map and/or an overview image. |
 | `stays` | ✓ | Stay[] | In visit order. At least one. A zero-night stay (arrive = depart) first or last is the home airport, there so the flights out and back have a `from` and `to`; the app shows those flights but no stay card or map pin for it. |
@@ -74,9 +75,9 @@ A stay is a period based in one location. A return to the same city is a **separ
 | `mapUrl` | | URL | A custom Google map for this stay. |
 | `links` | | Link[] | |
 
-**Lodging** — `{ "name"?, "place"?, "status": "booked" | "tentative" | "undecided", "checkIn"?, "checkOut"?, "ref"?, "url"?, "priority"?, "how"?, "notes"?, "price"? }`. Leave `name` out when no hotel is chosen yet. `price` is for the whole stay, not per night.
+**Lodging** — `{ "name"?, "place"?, "status": "booked" | "tentative" | "undecided", "checkIn"?, "checkOut"?, "ref"?, "url"?, "priority"?, "how"?, "notes"?, "price"? }`. Leave `name` out when no hotel is chosen yet. `price` is usually the nightly rate with `"unit": "night"`, which the app multiplies by the stay's nights; without `unit` it is the whole stay.
 
-**Price** — `{ "amount": number, "max"?: number, "currency"?: "USD", "note"? }`. `amount` alone is one figure; `amount` to `max` is a range. `currency` is an ISO code and defaults to USD; assistants write USD, converted approximately, with the local price in `note`. Until the item is booked, a price is an estimate; once booked, it is what was paid. The app's Bookings screen totals them per currency.
+**Price** — `{ "amount": number, "max"?: number, "currency"?: "USD", "unit"?: "total" | "night" | "person", "note"? }`. `amount` alone is one figure; `amount` to `max` is a range. `unit` says what it is for: the whole item (the default), one night (lodging only; multiplied by the stay's nights), or one traveler (multiplied by the trip's `travelers`). A return ticket's later legs carry `amount` 0, so the fare counts once. `currency` is an ISO code and defaults to USD; assistants write USD, converted approximately, with the local price in `note`. Until the item is booked, a price is an estimate; once booked, it is what was paid. The app's Bookings screen totals them per currency.
 
 **Booking guidance**, on lodging, a Booking and a commitment: `url` is where to book (the official site or the operator), `priority` how soon to book it, and `how` one or two sentences on how to book it. Priority 1 means book now: it sells out early, or it is airfare likely to jump soon. 2 means book a week or more ahead: venues that usually fill a week out, and any other airfare. 3 means it can be booked last minute without penalty or risk. The Bookings screen tags them P1 (red), P2 (orange) and P3 (green) and can sort by them.
 

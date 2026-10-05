@@ -130,6 +130,30 @@ class BookingsTest {
     }
 
     @Test
+    fun `a nightly lodging rate is multiplied by the nights, and a per-person price by the travelers`() {
+        val nightly = Price(65.0, 80.0, "USD", unit = "night")
+        val perPerson = Price(30.0, currency = "USD", unit = "person")
+        val t = trip.copy(
+            travelers = 2,
+            stays = trip.stays.map { if (it.id == "iguazu") it.copy(lodging = it.lodging?.copy(price = nightly)) else it },
+            activities = trip.activities.map { if (it.id == "garganta-del-diablo") it.copy(booking = it.booking?.copy(price = perPerson)) else it },
+        )
+        val lodging = t.bookables().single { it.key == "lodging:iguazu" }
+        val nights = t.stay("iguazu")!!.nights
+        assertEquals(listOf(65.0 * nights, 80.0 * nights), listOf(lodging.price?.amount, lodging.price?.max))
+        assertEquals(nightly, lodging.rate)
+        assertEquals(60.0, t.bookables().single { it.key == "activity:garganta-del-diablo" }.price?.amount)
+        assertEquals("$65–80/night", nightly.rateLabel())
+    }
+
+    @Test
+    fun `a price without a unit is the whole item, whatever the travelers`() {
+        val b = trip.copy(travelers = 3).bookables().single { it.key == "transfer:fly-bsas-iguazu" }
+        assertEquals(item("transfer:fly-bsas-iguazu").price, b.price)
+        assertEquals(null, b.rate)
+    }
+
+    @Test
     fun `prices read as money, with ranges sharing the symbol`() {
         assertEquals("$120–180", Price(120.0, 180.0, "USD").label())
         assertEquals("$45.50", Price(45.5).label())

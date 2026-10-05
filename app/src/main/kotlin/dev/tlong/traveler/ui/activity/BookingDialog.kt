@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.activity
 
+import dev.tlong.traveler.domain.total
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,7 +63,7 @@ fun saveBooking(session: TripSession, existing: Commitment?, b: BookingInput): B
 @Composable
 fun BookingDialog(
     dates: List<String>, initialDate: String, existing: Commitment?, suggestions: List<Activity>,
-    onDismiss: () -> Unit, onDelete: (() -> Unit)?, initialLinked: Activity? = null, onSave: (BookingInput) -> Unit,
+    onDismiss: () -> Unit, onDelete: (() -> Unit)?, initialLinked: Activity? = null, travelers: Int = 1, onSave: (BookingInput) -> Unit,
 ) {
     var date by remember { mutableStateOf(existing?.date ?: initialDate) }
     var dayMenu by remember { mutableStateOf(false) }
@@ -72,7 +73,8 @@ fun BookingDialog(
     var ref by remember { mutableStateOf(existing?.ref.orEmpty()) }
     var notes by remember { mutableStateOf(existing?.notes.orEmpty()) }
     var url by remember { mutableStateOf(existing?.url.orEmpty()) }
-    val price = rememberPriceInput(existing?.price ?: initialLinked?.booking?.price)
+    // A per-person estimate starts multiplied out: what is typed here is what the booking cost.
+    val price = rememberPriceInput((existing?.price ?: initialLinked?.booking?.price)?.total(travelers = travelers))
     var linked by remember { mutableStateOf(suggestions.firstOrNull { it.id == existing?.activityId } ?: initialLinked) }
     var menu by remember { mutableStateOf(false) }
     val s = normalizeTime(start)

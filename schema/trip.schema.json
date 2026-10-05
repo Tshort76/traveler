@@ -51,6 +51,11 @@
     "endDate": {
       "$ref": "#/$defs/date"
     },
+    "travelers": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "How many people the trip is for; per-person prices are multiplied by it. Absent means one."
+    },
     "links": {
       "type": "array",
       "items": {
@@ -221,6 +226,15 @@
         },
         "note": {
           "type": "string"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "total",
+            "night",
+            "person"
+          ],
+          "description": "What the amount is for: the whole item (default), one night of a stay (lodging only), or one traveler. The app multiplies it out."
         }
       }
     },

@@ -92,7 +92,7 @@ flowchart LR
 
 **The merge is three-way and by id.** `Merge.plan` (`domain/Merge.kt:115`) takes the last import as the common ancestor, so a field changed only in the file is taken, a field changed only by you is kept, and a field changed on both sides becomes a conflict that defaults to keeping yours. Days are matched by date, everything else by `id`.
 
-**The app's own fields never come from a file.** `origin`, `userEdited` and `userNote` (`model/Trip.kt:198`) always keep the local value in a merge, which is how your entries and notes survive a round trip through an assistant.
+**The app's own fields never come from a file.** `origin`, `userEdited` and `userNote` (`model/Trip.kt:207`) always keep the local value in a merge, which is how your entries and notes survive a round trip through an assistant.
 
 **`domain/` and `model/` have no Android imports.** Their tests run as plain JVM tests; only the store and the screens need Robolectric.
 
