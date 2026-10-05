@@ -18,7 +18,7 @@ sealed interface PendingImport {
     data class NewTrip(override val source: String, val trip: Trip, val warnings: List<String>, val check: FileCheck = FileCheck()) : PendingImport
 
     /** The same content as the copy already in use: nothing to do, and no duplicate is made. */
-    data class AlreadyImported(override val source: String, val trip: Trip, val deleted: Boolean) : PendingImport
+    data class AlreadyImported(override val source: String, val trip: Trip, val deleted: Boolean, val check: FileCheck = FileCheck()) : PendingImport
 
     data class Revision(
         override val source: String, val plan: Merge.Plan, val warnings: List<String>, val deleted: Boolean, val check: FileCheck = FileCheck(),
@@ -46,7 +46,7 @@ class ImportRouter(private val store: TripStore) {
         val stored = store.load(trip.id) ?: return PendingImport.NewTrip(source, trip, read.warnings, check)
         val deleted = stored.row.deletedAt != null
         if (Export.hash(trip) == stored.row.baseHash || Export.hash(trip) == Export.hash(stored.local)) {
-            return PendingImport.AlreadyImported(source, stored.local, deleted)
+            return PendingImport.AlreadyImported(source, stored.local, deleted, check)
         }
         return PendingImport.Revision(source, Merge.plan(stored.base, stored.local, trip), read.warnings, deleted, check)
     }

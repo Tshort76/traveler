@@ -40,6 +40,14 @@ class TripStoreTest {
     }
 
     @Test
+    fun `reopening an imported file still reports what the assistant should fix`() = runBlocking {
+        val text = Fixtures.text("minimal.trip.json")
+        store.importNew((router.route(text, "a") as PendingImport.NewTrip).trip)
+        val again = router.route(text, "again") as PendingImport.AlreadyImported
+        assertEquals(1, again.check.forAssistant.size)
+    }
+
+    @Test
     fun `an edit survives reopening`() = runBlocking {
         store.importNew(Fixtures.iguazu)
         val stored = store.load("argentina-2026-11")!!

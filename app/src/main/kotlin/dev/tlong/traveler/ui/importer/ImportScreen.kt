@@ -117,6 +117,7 @@ fun ImportScreen(navigator: Navigator) {
                 ) {
                     Text("“${p.trip.title}” revision ${p.trip.revision} is already on this phone with the same content. Nothing was added, so there is no duplicate.")
                     if (p.deleted) Text("It is in Recently deleted.", style = MaterialTheme.typography.bodyMedium)
+                    AssistantCheck(p.check)
                 }
                 is PendingImport.Revision -> RevisionReview(p, onCancel = close) { decisions ->
                     scope.launch { navigator.overview(container.acceptRevision(p, decisions), replaceStack = true) }
