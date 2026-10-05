@@ -49,7 +49,7 @@ Nothing here needs a key or an account, and nothing sends your trip. Importing, 
 
 **A trip picture is taken once per trip, size and set of stays.** `rememberBackdrop` (`ui/map/TripBackdrop.kt:52`) looks for a saved WebP first and calls the snapshotter only when there is none and the phone is online.
 
-**The Settings page understates this.** Its Privacy text says the one request the app makes on its own is the trip's overview image. The map tile requests above are also made on their own, though none carries trip data beyond the area being viewed.
+**The Settings page says the same.** Its Privacy text names both requests the app makes on its own, map tiles for the area on screen and the trip's overview image, and says no trip details are sent.
 
 **The style never comes from the network.** Every map builds its style from `terrainStyle` (`ui/map/AreaMap.kt:66`) in the app; only tiles are fetched, and no fonts or sprites, because the style draws no text.
 
