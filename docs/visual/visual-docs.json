@@ -1,0 +1,18 @@
+{
+  "path_root": "app/src/main/kotlin/dev/tlong/traveler",
+  "sha": "72c887b",
+  "runtime": [
+    "traveler.db",
+    "keystore.properties",
+    "local.properties",
+    "filesDir/trip-maps",
+    "filesDir/images",
+    "cacheDir/exports",
+    "tools/cache",
+    "build/skill/"
+  ],
+  "not_paths": [
+    "tiles.openfreemap.org/planet",
+    "tripId/stayId"
+  ]
+}

@@ -1,0 +1,56 @@
+classes: {
+  entry: { style: { fill: "#E06D14"; stroke: "#A64F0E"; stroke-width: 2; font-color: "#1A1A1A" } }
+  stage: { style: { fill: "#1F6F8B"; stroke: "#0B3C5D"; stroke-width: 2; font-color: "#FFFFFF" } }
+  store: { style: { fill: "#387B5B"; stroke: "#255740"; stroke-width: 2; font-color: "#FFFFFF" } }
+  ext:   { style: { fill: "#D9381E"; stroke: "#9E2815"; stroke-width: 2; font-color: "#FFFFFF" } }
+  focus: { style: { fill: "#5C3D67"; stroke: "#3D2845"; stroke-width: 2; font-color: "#FFFFFF" } }
+  edge:  { style: { stroke: "#0B3C5D"; stroke-width: 2 } }
+  cross: { style: { stroke: "#0B3C5D"; stroke-width: 2; stroke-dash: 4 } }
+}
+direction: right
+
+you: "You" { class: entry; shape: person }
+assistant: "Assistant\nClaude or ChatGPT" { class: ext }
+
+contract: "Trip format\nschema/" { class: focus }
+prompts: "Prompts\nprompts/" { class: store }
+
+phone: "Android app · app/" {
+  style: { fill: transparent; stroke: "#7A8B99"; stroke-dash: 4 }
+  ui: "Screens\nui/" { class: stage }
+  model: "Reader\nmodel/" { class: stage }
+  domain: "Rules and merge\ndomain/" { class: stage }
+  data: "Sessions and store\ndata/" { class: stage }
+  db: "traveler.db" { class: store; shape: cylinder }
+  maps: "Map tiles and pictures" { class: store; shape: cylinder }
+}
+
+tools: "Repo tools · tools/" {
+  style: { fill: transparent; stroke: "#7A8B99"; stroke-dash: 4 }
+  validator: "Validator\nvalidate_trip.py" { class: stage }
+  skill: "Skill builder\nmake_skill.py" { class: stage }
+  fixtures: "Fixture builder\nmake_fixtures.py" { class: stage }
+}
+
+skillzip: "build/skill/" { class: store; shape: cylinder }
+tiles: "OpenFreeMap" { class: ext }
+gmaps: "Google Maps" { class: ext }
+
+you -> assistant: "asks, with the prompt" { class: cross }
+assistant -> phone.ui: "trip file" { class: cross }
+you -> phone.ui: "plans" { class: edge }
+phone.ui -> phone.model: "import" { class: edge }
+phone.ui -> phone.domain: "edit" { class: edge }
+phone.ui -> phone.data: "save" { class: edge }
+phone.data -> phone.db { class: edge }
+phone.ui -> phone.maps { class: edge }
+phone.ui -> tiles: "tiles" { class: cross }
+phone.ui -> gmaps: "links" { class: cross }
+phone.ui -> assistant: "exported file" { class: cross }
+contract -> phone.model: "same rules" { class: edge }
+contract -> tools.validator: "same rules" { class: edge }
+tools.fixtures -> contract: "examples" { class: edge }
+prompts -> tools.skill { class: edge }
+tools.skill -> skillzip { class: edge }
+skillzip -> assistant: "uploaded" { class: cross }
+prompts -> phone.ui: "Copy instructions" { class: edge }
