@@ -55,10 +55,10 @@ PLUGIN = {
 }
 PROJECT_INSTRUCTIONS = """You plan my trips. This project's files hold the instructions.
 
-- A trip, an itinerary, or a .trip.json file I send: first print traveler-trip.md in full with Python and follow it exactly; searching it for snippets misses rules. Build the file with code, copy validate_trip.py and trip.schema.json into one folder, and run `python3 validate_trip.py --complete <file>` until it prints OK. End your reply with that OK line, copied exactly; never hand over a file the validator hasn't passed.
+- A trip, an itinerary, or a .trip.json file I send: first print traveler-trip.md in full with Python and follow it exactly; searching it for snippets misses rules. Build the file with code, copy validate_trip.py and trip.schema.json into one folder, and run `python3 validate_trip.py --stamp <file>` until it prints "OK and stamped". Hand over that file unchanged (the app checks the stamp) and end your reply with that OK line, copied exactly; never hand over a file the validator hasn't passed.
 - A planning spreadsheet, a budget or booking sheet, or a trip map: follow trip-workbook.md.
 
-Every trip file must have, or --complete fails:
+Every trip file must have, or the validator fails:
 - `stars` (1-3) on every activity: 3 must do, 2 I'll likely enjoy, 1 worth it with time to spare.
 - A `booking` object {status: "needed", priority, price, url, how} on every activity needing a ticket or reservation, and on every flight, train, bus or boat. Never only a sentence in practical.booking.
 - `price` and `priority` on lodging that isn't booked. Prices in USD (approximate), the local price in `note`; a price only inside lodging, booking or a commitment, never on the activity itself. Lodging gives the nightly rate with `unit: "night"`; a per-traveler fare or ticket has `unit: "person"`, with `travelers` set at the top. The app multiplies; never add other fields such as `per`.

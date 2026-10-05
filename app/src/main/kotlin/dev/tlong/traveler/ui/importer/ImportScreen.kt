@@ -1,5 +1,10 @@
 package dev.tlong.traveler.ui.importer
 
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import dev.tlong.traveler.ui.common.copyToClipboard
+import dev.tlong.traveler.model.Stamp
+import dev.tlong.traveler.data.FileCheck
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -98,6 +103,7 @@ fun ImportScreen(navigator: Navigator) {
                     },
                 ) {
                     TripPreview(p.trip, p.source)
+                    AssistantCheck(p.check)
                     Warnings(p.warnings)
                 }
                 is PendingImport.AlreadyImported -> WithActions(
@@ -155,6 +161,7 @@ private fun Invalid(p: PendingImport.Invalid) {
         "If an assistant wrote this file, send it these problems and ask for a corrected trip file.",
         style = MaterialTheme.typography.bodyMedium,
     )
+    CopyFixRequest(p.errors)
     Warnings(p.warnings)
 }
 
@@ -177,6 +184,46 @@ private fun TripPreview(trip: Trip, source: String) {
         style = MaterialTheme.typography.bodyMedium,
     )
 }
+
+/**
+ * Whether the assistant ran the validator on this exact file (its stamp matches), and what the
+ * strict checks found anyway. Nothing here blocks the import; it is for sending back.
+ */
+@Composable
+private fun AssistantCheck(check: FileCheck) {
+    when (check.stamp) {
+        Stamp.Check.MATCHES -> Text("✓ Checked by the validator", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+        Stamp.Check.CHANGED -> Text("⚠ The validator's stamp doesn't match: the file changed after it was checked.", style = MaterialTheme.typography.bodyMedium)
+        Stamp.Check.NONE -> Text("Not checked by the validator", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    val problems = check.forAssistant
+    if (problems.isEmpty()) return
+    var open by remember { mutableStateOf(false) }
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("${problems.size} problem${if (problems.size == 1) "" else "s"} for the assistant to fix — you can still import", style = MaterialTheme.typography.titleSmall)
+            (if (open) problems else problems.take(4)).forEach { Text("• $it", style = MaterialTheme.typography.bodySmall) }
+            if (problems.size > 4) TextButton(onClick = { open = !open }) { Text(if (open) "Show fewer" else "Show all") }
+            CopyFixRequest(problems)
+        }
+    }
+}
+
+/** Copies a message to paste back into the assistant's chat: what failed, and how to hand the file back. */
+@Composable
+private fun CopyFixRequest(problems: List<String>) {
+    val context = LocalContext.current
+    var copied by remember { mutableStateOf(false) }
+    OutlinedButton(onClick = {
+        copyToClipboard(context, "Fix request", fixRequest(problems))
+        copied = true
+    }) { Text(if (copied) "Copied — paste it into the chat" else "Copy fix request") }
+}
+
+internal fun fixRequest(problems: List<String>): String =
+    "The trip file you sent does not pass validate_trip.py --complete. Fix these problems, run " +
+        "`python3 validate_trip.py --stamp <file>` until it prints OK, and send the whole corrected file, " +
+        "ending your reply with the validator's OK line.\n\n" + problems.joinToString("\n") { "- $it" }
 
 @Composable
 private fun Warnings(warnings: List<String>) {
@@ -266,6 +313,7 @@ private fun RevisionReview(p: PendingImport.Revision, onCancel: () -> Unit, onAp
         Text("Nothing booked is moved automatically; adjust these in the day plan.", style = MaterialTheme.typography.bodySmall)
     }
 
+    AssistantCheck(p.check)
     Warnings(p.warnings)
     }
 }

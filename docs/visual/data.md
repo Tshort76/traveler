@@ -20,12 +20,12 @@ flowchart LR
     OUT[("trip file")]
     BK[("backup")]
   end
-  TXT -- "TripReader.kt:24" --> RR
-  RR -- "ImportRouter.kt:29" --> PI
+  TXT -- "TripReader.kt:31" --> RR
+  RR -- "ImportRouter.kt:35" --> PI
   PI -- "TripStore.kt:53" --> ROW
   ROW -- "TripStore.kt:47" --> TR
   TR -- "TripStore.kt:65" --> ROW
-  TR -- "Export.kt:28" --> OUT
+  TR -- "Export.kt:29" --> OUT
   ROW -- "TripStore.kt:118" --> BK
   classDef stage fill:#1F6F8B,stroke:#0B3C5D,stroke-width:2px,color:#ffffff
   classDef store fill:#387B5B,stroke:#255740,stroke-width:2px,color:#ffffff
@@ -51,6 +51,7 @@ Defined at `model/Trip.kt:20`. Written by an assistant, by `Export.tripFile` (`d
 | `stays`, `transfers`, `activities`, `commitments`, `days` | lists | The cards below |
 | `links`, `notes`, `warnings`, `tripMap` | various | Trip-level extras |
 | `exportedFrom` | `ExportInfo` | Present only in an exported file |
+| `validated` | `{by, hash}` | The validator's stamp; the preview recomputes it. Dropped on export |
 | `userEdited` | list of strings | Trip fields you changed |
 
 <details>
@@ -80,7 +81,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Stay` — one base, with at most one lodging
 
-Defined at `model/Trip.kt:72`, lodging at `model/Trip.kt:92`.
+Defined at `model/Trip.kt:77`, lodging at `model/Trip.kt:97`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -127,7 +128,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Activity` — a suggestion, or your own entry
 
-Defined at `model/Trip.kt:173`.
+Defined at `model/Trip.kt:178`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -167,7 +168,7 @@ From `schema/examples/demo.trip.json`, **written to shape**, trimmed to the fiel
 
 ### `Day` and `PlanItem` — what is planned when
 
-Defined at `model/Trip.kt:257` and `model/Trip.kt:268`.
+Defined at `model/Trip.kt:262` and `model/Trip.kt:273`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -198,7 +199,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `Commitment` — a fixed-time booking
 
-Defined at `model/Trip.kt:233`. Written by the assistant, or by `Edits.addBooking` when you add one.
+Defined at `model/Trip.kt:238`. Written by the assistant, or by `Edits.addBooking` when you add one.
 
 <details>
 <summary>Example: the whale-watching boat you booked</summary>
@@ -226,7 +227,7 @@ From `schema/examples/demo.trip.json`, **written to shape**.
 
 ### `ExportInfo` — how far an exported plan has moved
 
-Defined at `model/Trip.kt:277`. Written by `Export.tripFile` (`domain/Export.kt:18`).
+Defined at `model/Trip.kt:282`. Written by `Export.tripFile` (`domain/Export.kt:18`).
 
 **No fixture found.** No committed file carries an `exportedFrom` block.
 
@@ -245,7 +246,7 @@ Defined at `data/TripStore.kt:26`. Written by `TripStore.backupText` (`data/Trip
 
 ### `Price` — what something costs, and what the amount is for
 
-Defined at `model/Trip.kt:114`. Multiplied out by `Price.total` in `domain/Bookings.kt`.
+Defined at `model/Trip.kt:119`. Multiplied out by `Price.total` in `domain/Bookings.kt`.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -305,8 +306,8 @@ Both tables are in `traveler.db`, defined at `data/Database.kt:27` and `data/Dat
 | A trip is snapshotted before a revision, restore or backup replaces it | `data/TripStore.kt:72` | Every import can be undone from History |
 | At most 20 snapshots are kept per trip | `data/TripStore.kt:146` | History stays bounded |
 | A deleted trip is purged 30 days after deletion, with its snapshots and saved maps | `data/TripStore.kt:113`, `AppContainer.kt:100` | Recently deleted is a real undo, and nothing lingers after it |
-| Opening the same content twice makes no duplicate | `data/ImportRouter.kt:41` | Sharing a file twice is harmless |
-| `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:207` | Your entries and notes survive a revision |
+| Opening the same content twice makes no duplicate | `data/ImportRouter.kt:48` | Sharing a file twice is harmless |
+| `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:212` | Your entries and notes survive a revision |
 | Content identity ignores `exportedFrom` | `domain/Export.kt:37` | An exported file reopened is recognised as the same trip |
 
 *Generated from 72c887b on 2026-10-05.*

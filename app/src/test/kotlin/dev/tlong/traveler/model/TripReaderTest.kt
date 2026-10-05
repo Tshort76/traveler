@@ -66,15 +66,57 @@ class TripReaderTest {
         val text = Fixtures.text("minimal.trip.json").replace("\"timezone\"", "\"timezon\": \"x\", \"timezone\"")
         val r = TripReader.read(text)
         assertTrue(r.ok)
-        assertTrue(r.warnings.toString(), r.warnings.any { "timezon" in it })
+        assertTrue(r.forAssistant.toString(), r.forAssistant.any { "timezon" in it })
     }
 
     @Test
     fun `a field invented in many places is one warning with a count`() {
         val text = Fixtures.text("iguazu-short.trip.json").replace("\"currency\": \"USD\"", "\"currency\": \"USD\", \"per\": \"x\"")
-        val lodging = TripReader.read(text).warnings.filter { it.startsWith("stays[].lodging.price.per:") }
+        val lodging = TripReader.read(text).forAssistant.filter { it.startsWith("stays[].lodging.price.per:") }
         assertEquals(lodging.toString(), 1, lodging.size)
-        assertTrue(lodging.single(), lodging.single().contains("in 3 places"))
+        assertTrue(lodging.single(), lodging.single().contains("(3 places)"))
+    }
+
+    @Test
+    fun `the strict checks find what validate_trip --complete finds in the examples`() {
+        // validate_trip.py --complete passes demo and both iguazu files, fails minimal once and long-synthetic 19 times.
+        listOf("demo.trip.json", "iguazu-short.trip.json", "iguazu-short.r2.trip.json").forEach {
+            assertEquals(it, emptyList<String>(), TripReader.read(Fixtures.text(it)).forAssistant)
+        }
+        assertEquals(listOf("stay denver.lodging: needs price and priority"), TripReader.read(Fixtures.text("minimal.trip.json")).forAssistant)
+        val synthetic = TripReader.read(Fixtures.text("long-synthetic.trip.json")).forAssistant
+        assertEquals(synthetic.toString(), 19, synthetic.size)
+        assertEquals(13, synthetic.count { it.startsWith("transfer ") && "a ticketed transfer needs a booking" in it })
+        assertEquals(5, synthetic.count { it.startsWith("stay ") && it.endsWith(".lodging: needs price and priority") })
+        assertTrue(synthetic.toString(), "activities: 322 have no stars (1–3): lima-a01, lima-a02, lima-a03, lima-a04, lima-a05, lima-a06 and 316 more" in synthetic)
+    }
+
+    @Test
+    fun `an unbooked flight written as a commitment, and a trip with no home airport, go back to the assistant`() {
+        val trip = Fixtures.iguazu
+        val text = TripJson.encode(trip.copy(
+            startDate = "2026-11-04",
+            commitments = trip.commitments + Commitment("fly-out", "Flight to Buenos Aires", "2026-11-04", kind = "booking"),
+        ))
+        val problems = TripReader.read(text).forAssistant
+        assertTrue(problems.toString(), problems.any { it.startsWith("stays: the trip starts before the first stay") })
+        assertTrue(problems.toString(), problems.any { "not a commitment: fly-out" in it })
+    }
+
+    @Test
+    fun `the validator's stamp matches the demo, and stops matching when the file changes`() {
+        val demo = Fixtures.text("demo.trip.json")
+        assertEquals(Stamp.Check.MATCHES, TripReader.read(demo).stamp)
+        assertEquals(Stamp.Check.MATCHES, TripReader.read(demo.replace("\n", " ").replace("  ", " ")).stamp)
+        assertEquals(Stamp.Check.CHANGED, TripReader.read(demo.replace("\"travelers\": 2", "\"travelers\": 3")).stamp)
+        assertEquals(Stamp.Check.NONE, TripReader.read(Fixtures.text("iguazu-short.trip.json")).stamp)
+    }
+
+    @Test
+    fun `an exported file drops the stamp, since the traveler's edits change what it vouched for`() {
+        val demo = TripReader.read(Fixtures.text("demo.trip.json")).trip!!
+        assertTrue(demo.validated?.hash != null)
+        assertEquals(null, dev.tlong.traveler.domain.Export.tripFile(demo, demo).validated)
     }
 
     @Test

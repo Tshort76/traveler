@@ -87,7 +87,7 @@ Tags (one emoji per activity): 🏛️ architecture · 🌿 nature · ☕ coffee
 
 ### Before you hand it over
 
-If you can run code, run `python3 validate_trip.py --complete <file>`, fix every ERROR, and run it again until it prints OK. `--complete` also fails on missing stars, prices, priorities and booking objects. If you can't run code, check the cross-references by hand:
+If you can run code, run `python3 validate_trip.py --stamp <file>`, fix every ERROR, and run it again until it prints "OK and stamped". It checks everything `--complete` does (missing stars, prices, priorities and booking objects too), and on OK writes a `validated` stamp into the file; the app shows the traveler whether the stamp matches, so hand over the stamped file unchanged. If you can't run code, check the cross-references by hand:
 - every `stayId` and `activityId` exists;
 - every `id` is unique within its list;
 - every date is `YYYY-MM-DD` and every time is `HH:MM` on a 24-hour clock.

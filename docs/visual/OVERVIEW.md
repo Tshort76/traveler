@@ -111,7 +111,7 @@ flowchart LR
 |---|---|---|---|
 | File | trip JSON | `schema/trip.schema.json` | `schema/examples/demo.trip.json` |
 | Read | `ReadResult` | `model/TripReader.kt:18` | a trip plus lists of errors and warnings |
-| Routed | `PendingImport` | `data/ImportRouter.kt:12` | new trip, already imported, revision with a merge plan, backup, or invalid |
+| Routed | `PendingImport` | `data/ImportRouter.kt:13` | new trip, already imported, revision with a merge plan, backup, or invalid |
 | Stored | `TripRow` | `data/Database.kt:27` | the last import and the current plan, both as JSON text |
 | Edited | `Trip` | `model/Trip.kt:20` | the plan in memory, one per open trip |
 | Exported | trip JSON plus `exportedFrom` | `domain/Export.kt:18` | the same format, carrying how far the plan has moved |

@@ -26,7 +26,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew compileDebugKotlin   # faste
 - The format is versioned (`formatVersion`). Additive, optional fields stay at version 1; anything an older app would misread needs a bump, and the reader refuses newer versions with a plain message.
 - Ids are stable across revisions; the merge depends on it.
 - Fields the app writes (`origin: "user"`, `userNote`, `userEdited`) must survive a round trip through an assistant, so the prompt tells it to keep them.
-- `schema/examples/demo.trip.json` is the demo trip (**Settings → Load the demo trip**). It should show every feature: when you add one, give the demo an instance of it and keep it passing `validate_trip.py --complete`. It must hold no personal data.
+- `schema/examples/demo.trip.json` is the demo trip (**Settings → Load the demo trip**). It should show every feature: when you add one, give the demo an instance of it and keep it passing and stamped: `python3 tools/validate_trip.py --stamp schema/examples/demo.trip.json` after every edit (a test fails on a stale stamp). It must hold no personal data.
 
 ## Traps
 

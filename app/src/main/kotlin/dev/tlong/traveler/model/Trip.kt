@@ -42,7 +42,12 @@ data class Trip(
     val warnings: List<String> = emptyList(),
     val exportedFrom: ExportInfo? = null,
     val userEdited: List<String> = emptyList(),
+    /** The validator's stamp; see [Stamp]. Dropped on export, since the app's edits change the content. */
+    val validated: Validated? = null,
 )
+
+@Serializable
+data class Validated(val by: String? = null, val hash: String? = null)
 
 @Serializable
 data class Link(val label: String? = null, val url: String, val kind: String? = null)

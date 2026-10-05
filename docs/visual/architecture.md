@@ -82,6 +82,8 @@ flowchart LR
 | Component | Path | What it does |
 |---|---|---|
 | Reader | `model/TripReader.kt` | Pulls the JSON out of pasted text, refuses a newer format version, decodes, lists unknown fields as warnings, then runs the same cross-checks as the validator |
+| Strict checks | `model/Completeness.kt` | Repeats the validator's `--complete` checks in its words: invented fields (one line each, with a count), non-USD prices, a missing home airport, unbooked flights written as commitments, missing stars, prices and priorities, places priced in several stays |
+| Stamp | `model/Stamp.kt` | Rebuilds the validator's canonical form of the file, hashes it, and compares it with the `validated` stamp |
 | JSON | `model/TripJson.kt` | Reads leniently, writes pretty or compact, converts to and from a JSON tree, finds unknown fields, turns serializer errors into plain sentences |
 | Calendar | `domain/TripCalendar.kt` | Lists the trip's dates, finds the stay for a date, tells home-airport stays apart, normalizes days and plans, and converts work hours between zones |
 | Merge | `domain/Merge.kt` | Compares the last import, your plan and the new file field by field, lists changes, conflicts, removals and restorables with defaults, then applies your decisions |
@@ -92,7 +94,7 @@ flowchart LR
 
 **The merge is three-way and by id.** `Merge.plan` (`domain/Merge.kt:115`) takes the last import as the common ancestor, so a field changed only in the file is taken, a field changed only by you is kept, and a field changed on both sides becomes a conflict that defaults to keeping yours. Days are matched by date, everything else by `id`.
 
-**The app's own fields never come from a file.** `origin`, `userEdited` and `userNote` (`model/Trip.kt:207`) always keep the local value in a merge, which is how your entries and notes survive a round trip through an assistant.
+**The app's own fields never come from a file.** `origin`, `userEdited` and `userNote` (`model/Trip.kt:212`) always keep the local value in a merge, which is how your entries and notes survive a round trip through an assistant.
 
 **`domain/` and `model/` have no Android imports.** Their tests run as plain JVM tests; only the store and the screens need Robolectric.
 

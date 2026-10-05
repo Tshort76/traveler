@@ -48,6 +48,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 | `days` | | Day[] | Any dates left out get an empty day. |
 | `notes`, `warnings` | | string[] | Trip-wide logistics. Shown once, not per day. |
 | `exportedFrom` | | object | Written by the app on export: `{app, exportedAt, basedOnRevision, localChanges}`. |
+| `validated` | | object | Written by `validate_trip.py --stamp` when the file passes: `{by, hash}`, a fingerprint of everything else in the file (whitespace and key order ignored, numbers as written). The import preview shows whether it matches. The app drops it on export. |
 
 **Link** — `{ "label": "Planning sheet", "url": "https://…", "kind": "spreadsheet" | "chat" | "map" | "doc" | "booking" | "other" }`
 

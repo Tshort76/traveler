@@ -1,5 +1,6 @@
 """Tests for validate_trip.py. Run: cd tools && python3 -m unittest test_validate_trip"""
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -55,6 +56,18 @@ class CompletenessCheck(unittest.TestCase):
         lodging["status"] = "tentative"
         lodging.pop("price", None)
         self.assertIn("needs price", " ".join(self.errors(self.trip)))
+
+
+class Stamp(unittest.TestCase):
+    def test_the_demo_carries_a_current_stamp(self):
+        text = (ROOT / "schema" / "examples" / "demo.trip.json").read_text()
+        self.assertEqual(json.loads(text)["validated"]["hash"], v.stamp_hash(text),
+                         "re-stamp it: python3 tools/validate_trip.py --stamp schema/examples/demo.trip.json")
+
+    def test_the_stamp_ignores_layout_but_not_content(self):
+        text = (ROOT / "schema" / "examples" / "iguazu-short.trip.json").read_text()
+        self.assertEqual(v.stamp_hash(text), v.stamp_hash(re.sub(r"\n\s+", "\n", text)))
+        self.assertNotEqual(v.stamp_hash(text), v.stamp_hash(text.replace("Iguaz", "Iguas", 1)))
 
 
 class InvalidFilesAreRejected(unittest.TestCase):

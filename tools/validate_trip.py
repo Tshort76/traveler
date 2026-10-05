@@ -4,6 +4,7 @@
 Usage:
     python3 validate_trip.py trip.json [more.json ...]
     python3 validate_trip.py --complete trip.json   # also require stars, prices, priorities and booking objects
+    python3 validate_trip.py --stamp trip.json      # --complete, and on OK write the "validated" stamp into the file
 
 Prints OK with a one-line summary, or each problem as ERROR / WARNING.
 Exits 1 when any file has an error. Errors stop the app importing the file;
@@ -25,6 +26,53 @@ try:
     from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 except ImportError:  # Python < 3.9: skip the time-zone check rather than fail
     ZoneInfo = None
+
+
+class Raw(str):
+    """A number exactly as the file writes it, so the fingerprint matches the app's, which reads the same text."""
+
+
+def _canonical(v):
+    """The fingerprinted form: no whitespace, keys sorted, numbers as written. The app builds the same string."""
+    if isinstance(v, dict):
+        return "{" + ",".join(_quote(k) + ":" + _canonical(v[k]) for k in sorted(v)) + "}"
+    if isinstance(v, list):
+        return "[" + ",".join(_canonical(x) for x in v) + "]"
+    if isinstance(v, Raw):
+        return str(v)
+    if v is True:
+        return "true"
+    if v is False:
+        return "false"
+    if v is None:
+        return "null"
+    if isinstance(v, str):
+        return _quote(v)
+    return json.dumps(v)
+
+
+def _quote(s):
+    out = []
+    for ch in s:
+        if ch in '"\\':
+            out.append("\\" + ch)
+        elif ord(ch) < 0x20:
+            out.append("\\u%04x" % ord(ch))
+        else:
+            out.append(ch)
+    return '"' + "".join(out) + '"'
+
+
+def stamp_hash(text):
+    """The fingerprint of a trip file's text: everything but the stamp itself, in canonical form."""
+    import hashlib
+    doc = json.loads(text, parse_float=Raw, parse_int=Raw)
+    doc.pop("validated", None)
+    return hashlib.sha256(_canonical(doc).encode("utf-8")).hexdigest()[:16]
+
+
+def dump(trip):
+    return json.dumps(trip, ensure_ascii=False, indent=2) + "\n"
 
 
 def load_schema():
@@ -372,12 +420,14 @@ def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 2
-    complete = "--complete" in argv
+    stamp = "--stamp" in argv
+    complete = stamp or "--complete" in argv
     schema = load_schema()
     failed = False
-    for name in [a for a in argv[1:] if a != "--complete"]:
+    for name in [a for a in argv[1:] if a not in ("--complete", "--stamp")]:
         try:
-            trip = json.loads(strip_fences(Path(name).read_text()))
+            text = strip_fences(Path(name).read_text())
+            trip = json.loads(text)
         except (OSError, json.JSONDecodeError) as e:
             print(f"{name}: ERROR: cannot read as JSON — {e}")
             failed = True
@@ -385,6 +435,9 @@ def main(argv):
         rep, s = validate(trip, schema)
         if complete:
             check_complete(trip, rep)
+        old = (trip.get("validated") or {}).get("hash")
+        if old and not stamp and old != stamp_hash(text):
+            rep.warn("validated", "the file changed after it was stamped; run with --stamp again")
         for e in rep.errors:
             print(f"{name}: ERROR: {e}")
         for w in rep.warnings:
@@ -393,7 +446,11 @@ def main(argv):
             failed = True
             print(f"{name}: INVALID — {len(rep.errors)} error(s); fix them and re-run")
         else:
-            print(f"{name}: OK — '{trip.get('title')}' r{trip.get('revision')}: {s['stays']} stays, "
+            if stamp:
+                trip.pop("validated", None)
+                trip["validated"] = {"by": "validate_trip.py", "hash": stamp_hash(dump(trip))}
+                Path(name).write_text(dump(trip))
+            print(f"{name}: OK{' and stamped' if stamp else ''} — '{trip.get('title')}' r{trip.get('revision')}: {s['stays']} stays, "
                   f"{s['days']} days, {s['activities']} activities ({s['planned']} planned), "
                   f"{s['commitments']} commitments, {len(rep.warnings)} warning(s)")
     return 1 if failed else 0

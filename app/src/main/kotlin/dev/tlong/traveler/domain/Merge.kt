@@ -65,7 +65,7 @@ object Merge {
     )
 
     private val tripLists = listOf("stays", "transfers", "activities", "commitments", "days")
-    private val ignoredTripFields = setOf("exportedFrom", "revision", "generatedAt", "generatedBy", "format", "formatVersion")
+    private val ignoredTripFields = setOf("exportedFrom", "revision", "generatedAt", "generatedBy", "format", "formatVersion", "validated")
 
     private fun categoryOf(kind: String, field: String): Category = when (kind) {
         "stays" -> when (field) { "arrive", "depart" -> Category.DATES; "lodging" -> Category.BOOKINGS; else -> Category.STAYS }

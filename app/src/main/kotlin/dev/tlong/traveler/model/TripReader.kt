@@ -15,7 +15,14 @@ import java.time.ZoneId
  * tools/validate_trip.py: errors block the import, warnings are shown on the preview.
  * Both run against the same fixtures in schema/ (TripReaderTest).
  */
-data class ReadResult(val trip: Trip?, val errors: List<String>, val warnings: List<String>) {
+data class ReadResult(
+    val trip: Trip?,
+    val errors: List<String>,
+    val warnings: List<String>,
+    /** What `validate_trip.py --complete` would also reject: for the assistant to fix, not blocking. */
+    val forAssistant: List<String> = emptyList(),
+    val stamp: Stamp.Check = Stamp.Check.NONE,
+) {
     val ok get() = trip != null && errors.isEmpty()
 }
 
@@ -52,13 +59,8 @@ object TripReader {
         val errors = mutableListOf<String>()
         val warnings = mutableListOf<String>()
         if (format == null) warnings += "No \"format\" field; read as a Traveler trip anyway."
-        // One line per field, not per occurrence: an assistant that invents a field uses it everywhere.
-        TripJson.unknownFields(element).groupBy { it.replace(Regex("\\[\\d+\\]"), "[]") }.forEach { (field, at) ->
-            warnings += if (at.size == 1) "${at[0]}: unknown field (typo?) — ignored"
-            else "$field: unknown field, ignored in ${at.size} places. Ask the assistant to fix the file; anything it holds is lost"
-        }
         check(trip, errors, warnings)
-        return ReadResult(trip, errors, warnings)
+        return ReadResult(trip, errors, warnings, Completeness.problems(trip, TripJson.unknownFields(element)), Stamp.check(element))
     }
 
     private fun fail(msg: String) = ReadResult(null, listOf(msg), emptyList())

@@ -31,8 +31,9 @@ sequenceDiagram
   IS-->>You: the trip's overview
 ```
 
-- **A file and shared text arrive the same way.** `MainActivity.handle` (`MainActivity.kt:37`) turns a VIEW into `openUri` and a SEND into `openUri` or `openText`; both end in `ImportRouter.route` (`data/ImportRouter.kt:29`).
+- **A file and shared text arrive the same way.** `MainActivity.handle` (`MainActivity.kt:37`) turns a VIEW into `openUri` and a SEND into `openUri` or `openText`; both end in `ImportRouter.route` (`data/ImportRouter.kt:35`).
 - **Navigation follows the pending import.** `ui/Nav.kt:56` opens the import screen whenever `pendingImport` is set, from wherever you were.
+- **The preview grades the file before you decide.** `TripReader.read` also runs `Completeness.problems` (`model/Completeness.kt`) and `Stamp.check` (`model/Stamp.kt`); the preview shows whether the validator's stamp matches, lists what the assistant should fix, and offers **Copy fix request**. None of it blocks the import.
 - **The new trip's two documents start identical.** `TripStore.importNew` (`data/TripStore.kt:53`) writes the normalized trip as both the last import and your plan.
 
 The router's other answers change only what the preview offers: invalid shows the errors, already imported offers to open (or restore) it, a backup offers the trips to restore, and a revision goes to the merge review below.
@@ -66,7 +67,7 @@ sequenceDiagram
   IS-->>You: the merged overview
 ```
 
-- **Same content is not a revision.** Before planning a merge, `data/ImportRouter.kt:41` compares content hashes with the last import and with your plan, and returns already imported instead.
+- **Same content is not a revision.** Before planning a merge, `data/ImportRouter.kt:48` compares content hashes with the last import and with your plan, and returns already imported instead.
 - **The defaults are safe without reading anything.** `Merge.Plan.defaults` (`domain/Merge.kt:57`) keeps yours on every conflict and removes only what the file dropped that you had neither scheduled nor edited.
 - **The open screen picks up the result.** `TripSession.replaced` (`data/TripSession.kt:86`) swaps in the new documents and clears undo, so no undo step can cross an import.
 
@@ -121,7 +122,7 @@ sequenceDiagram
 ```
 
 - **The export keeps the base revision.** `Export.tripFile` (`domain/Export.kt:18`) leaves `revision` at the last import and adds `exportedFrom` with the number of local changes; the assistant raises the revision.
-- **The file name says whether you edited.** `Export.fileName` (`domain/Export.kt:30`) adds `-edited` when there are local changes.
+- **The file name says whether you edited.** `Export.fileName` (`domain/Export.kt:31`) adds `-edited` when there are local changes.
 - **"Unexported changes" is a hash comparison.** The overview compares the plan's hash with the one saved at the last export (`ui/overview/OverviewScreen.kt:181`).
 
 Save trip file and Copy JSON in the same menu differ only in where the text goes.

@@ -2,6 +2,7 @@ package dev.tlong.traveler.data
 
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
+import dev.tlong.traveler.model.Stamp
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.model.TripJson
 import dev.tlong.traveler.model.TripReader
@@ -14,15 +15,20 @@ sealed interface PendingImport {
 
     data class Invalid(override val source: String, val errors: List<String>, val warnings: List<String>) : PendingImport
 
-    data class NewTrip(override val source: String, val trip: Trip, val warnings: List<String>) : PendingImport
+    data class NewTrip(override val source: String, val trip: Trip, val warnings: List<String>, val check: FileCheck = FileCheck()) : PendingImport
 
     /** The same content as the copy already in use: nothing to do, and no duplicate is made. */
     data class AlreadyImported(override val source: String, val trip: Trip, val deleted: Boolean) : PendingImport
 
-    data class Revision(override val source: String, val plan: Merge.Plan, val warnings: List<String>, val deleted: Boolean) : PendingImport
+    data class Revision(
+        override val source: String, val plan: Merge.Plan, val warnings: List<String>, val deleted: Boolean, val check: FileCheck = FileCheck(),
+    ) : PendingImport
 
     data class Backup(override val source: String, val file: BackupFile, val existing: Set<String>) : PendingImport
 }
+
+/** What the strict checks found for the assistant to fix, and whether the validator's stamp matches. */
+data class FileCheck(val forAssistant: List<String> = emptyList(), val stamp: Stamp.Check = Stamp.Check.NONE)
 
 class ImportRouter(private val store: TripStore) {
 
@@ -36,12 +42,13 @@ class ImportRouter(private val store: TripStore) {
         val read = TripReader.read(text)
         val trip = read.trip
         if (!read.ok || trip == null) return PendingImport.Invalid(source, read.errors, read.warnings)
-        val stored = store.load(trip.id) ?: return PendingImport.NewTrip(source, trip, read.warnings)
+        val check = FileCheck(read.forAssistant, read.stamp)
+        val stored = store.load(trip.id) ?: return PendingImport.NewTrip(source, trip, read.warnings, check)
         val deleted = stored.row.deletedAt != null
         if (Export.hash(trip) == stored.row.baseHash || Export.hash(trip) == Export.hash(stored.local)) {
             return PendingImport.AlreadyImported(source, stored.local, deleted)
         }
-        return PendingImport.Revision(source, Merge.plan(stored.base, stored.local, trip), read.warnings, deleted)
+        return PendingImport.Revision(source, Merge.plan(stored.base, stored.local, trip), read.warnings, deleted, check)
     }
 
     private fun looksLikeBackup(text: String): Boolean = runCatching {

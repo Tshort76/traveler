@@ -135,6 +135,23 @@
     },
     "userEdited": {
       "$ref": "#/$defs/userEdited"
+    },
+    "validated": {
+      "type": "object",
+      "description": "Written by validate_trip.py --stamp when the file passes --complete: a fingerprint of the rest of the file, which the app recomputes to show whether the file was checked.",
+      "properties": {
+        "by": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        }
+      },
+      "required": [
+        "hash"
+      ],
+      "additionalProperties": false
     }
   },
   "$defs": {

@@ -17,6 +17,7 @@ object Export {
      */
     fun tripFile(base: Trip, local: Trip, now: Instant = Instant.now()): Trip = local.compact().copy(
         revision = base.revision,
+        validated = null,
         exportedFrom = ExportInfo(
             app = APP_NAME,
             exportedAt = now.truncatedTo(ChronoUnit.SECONDS).toString(),
@@ -34,7 +35,7 @@ object Export {
 
     /** Identity of a document's content, used to spot the same file opened twice. */
     fun hash(trip: Trip): String {
-        val bytes = MessageDigest.getInstance("SHA-256").digest(TripJson.encodeCompact(trip.copy(exportedFrom = null).normalized()).toByteArray())
+        val bytes = MessageDigest.getInstance("SHA-256").digest(TripJson.encodeCompact(trip.copy(exportedFrom = null, validated = null).normalized()).toByteArray())
         return bytes.take(12).joinToString("") { "%02x".format(it) }
     }
 }
