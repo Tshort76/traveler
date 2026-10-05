@@ -27,7 +27,7 @@ SKILLS = {
             "scripts/validate_trip.py": "tools/validate_trip.py",
             "scripts/trip.schema.json": "schema/trip.schema.json",
             "references/trip-format.md": "docs/trip-format.md",
-            "references/iguazu-short.trip.json": "schema/examples/iguazu-short.trip.json",
+            "references/demo.trip.json": "schema/examples/demo.trip.json",
         },
     },
     "trip-workbook": {

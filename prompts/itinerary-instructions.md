@@ -9,7 +9,7 @@ How to use:
   • ChatGPT, or Claude as a skill — `make skill` packages this file as the traveler-trip
     skill; see integrations/skill/README.md.
   • Any other LLM — paste everything below the line at the start of the conversation,
-    with schema/examples/iguazu-short.trip.json attached as a worked example if the chat
+    with schema/examples/demo.trip.json attached as a worked example if the chat
     accepts files.
 -->
 
