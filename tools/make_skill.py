@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Builds build/skill/: the traveler-trip and trip-workbook skills for ChatGPT and Claude, and a
-plugin wrapping both.
+"""Builds build/skill/: the traveler-trip skill for ChatGPT and Claude, and a plugin wrapping it.
 
 Each SKILL.md is a preamble from integrations/skill/ (front matter, and for traveler-trip the
 working rules) followed by the matching prompt from prompts/, minus its usage comment, so the
@@ -30,25 +29,19 @@ SKILLS = {
             "references/demo.trip.json": "schema/examples/demo.trip.json",
         },
     },
-    "trip-workbook": {
-        "preamble": "workbook-preamble.md",
-        "prompt": "workbook-instructions.md",
-        "display": ("Trip Planning Workbook", "Drafts a trip's route as a spreadsheet and My Maps file"),
-        "files": {},
-    },
 }
 AUTHOR = "Tshort76"
 PLUGIN = {
     "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
     "name": "traveler",
-    "version": "1.0.1",
-    "description": "Plans and revises trips as files for the Traveler Android app, with a planning spreadsheet and map.",
+    "version": "1.1.0",
+    "description": "Plans and revises trips as files for the Traveler Android app.",
     "author": {"name": AUTHOR},
     "extensions": {"com.openai": {"interface": {
         "displayName": "Traveler",
-        "shortDescription": "Trip files, sheets and maps",
-        "longDescription": "Plans a trip as a file for the Traveler Android app, revises an exported trip without losing "
-                           "the traveler's edits, and builds a planning spreadsheet and a Google My Maps file.",
+        "shortDescription": "Trip files for the Traveler app",
+        "longDescription": "Plans a trip as a file for the Traveler Android app and revises an exported trip without "
+                           "losing the traveler's edits.",
         "developerName": AUTHOR,
         "category": "Productivity",
     }}},
@@ -56,7 +49,6 @@ PLUGIN = {
 PROJECT_INSTRUCTIONS = """You plan my trips. This project's files hold the instructions.
 
 - A trip, an itinerary, or a .trip.json file I send: first print traveler-trip.md in full with Python and follow it exactly; searching it for snippets misses rules. Build the file with code, copy validate_trip.py and trip.schema.json into one folder, and run `python3 validate_trip.py --stamp <file>` until it prints "OK and stamped". Hand over that file unchanged (the app checks the stamp) and end your reply with that OK line, copied exactly; never hand over a file the validator hasn't passed.
-- A planning spreadsheet, a route or budget sheet, or a trip map: follow trip-workbook.md. It drafts the route (stays, dates, travel between them); once I've settled it, its Stays tab is the plan the trip file follows.
 
 Every trip file must have, or the validator fails:
 - `stars` (1-3) on every activity: 3 must do, 2 I'll likely enjoy, 1 worth it with time to spare.

@@ -22,7 +22,7 @@ Keep your profile files in the project as they are; they never belong in this re
 
 ## Using it with ChatGPT (or as a Claude skill)
 
-`make skill` builds two skills that ChatGPT and Claude both load, plus a ChatGPT plugin wrapping both for the phone. `traveler-trip` writes trip files for the app. `trip-workbook` drafts the route as a spreadsheet (`.xlsx` for Google Sheets): the stays, their dates and the travel between them, before there is a trip file. It also writes a Google My Maps file; the app copies its prompt from **Settings → Copy spreadsheet instructions**. [integrations/skill/README.md](integrations/skill/README.md) covers uploading it.
+`make skill` builds the `traveler-trip` skill, which ChatGPT and Claude both load and which writes trip files for the app, plus a ChatGPT plugin wrapping it for the phone. [integrations/skill/README.md](integrations/skill/README.md) covers uploading it.
 
 ## What's in the repository
 
@@ -32,7 +32,6 @@ Keep your profile files in the project as they are; they never belong in this re
 | `schema/trip.schema.json` | The same format as JSON Schema |
 | `schema/examples/` | Example trips; they also ship inside the app ("Try the example trip", and the full-feature demo under **Settings → Load the demo trip**) |
 | `prompts/itinerary-instructions.md` | The assistant prompt for trip files |
-| `prompts/workbook-instructions.md` | The assistant prompt for the route-drafting spreadsheet and My Maps file |
 | `integrations/skill/` | The assistant skill and plugin (ChatGPT and Claude) |
 | `tools/` | Validator, fixture and basemap generators, emulator helper |
 | `app/` | The Android app (Kotlin, Jetpack Compose, Room) |

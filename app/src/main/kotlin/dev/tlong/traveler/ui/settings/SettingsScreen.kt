@@ -110,11 +110,6 @@ fun SettingsScreen(navigator: Navigator) {
                             shareTextFile(context, "example.trip.json", text, "Send example trip")
                         }) { Text("Share an example") }
                     }
-                    Text(
-                        "To draft the route first (the stays, their dates and the travel between them) as a spreadsheet for Google Sheets, with a map file for Google My Maps:",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    OutlinedButton(onClick = { copyPrompt("workbook-instructions.md", "Spreadsheet instructions") }) { Text("Copy spreadsheet instructions") }
                 }
             }
             item {
