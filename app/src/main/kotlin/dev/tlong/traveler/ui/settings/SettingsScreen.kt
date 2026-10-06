@@ -106,12 +106,12 @@ fun SettingsScreen(navigator: Navigator) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(onClick = { copyPrompt("itinerary-instructions.md", "Trip file instructions") }) { Text("Copy instructions") }
                         OutlinedButton(onClick = {
-                            val text = context.assets.open("iguazu-short.trip.json").bufferedReader().use { it.readText() }
+                            val text = context.assets.open("demo.trip.json").bufferedReader().use { it.readText() }
                             shareTextFile(context, "example.trip.json", text, "Send example trip")
                         }) { Text("Share an example") }
                     }
                     Text(
-                        "For a planning spreadsheet you open in Google Sheets, and a map file for Google My Maps, with or without a trip file:",
+                        "To draft the route first (the stays, their dates and the travel between them) as a spreadsheet for Google Sheets, with a map file for Google My Maps:",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     OutlinedButton(onClick = { copyPrompt("workbook-instructions.md", "Spreadsheet instructions") }) { Text("Copy spreadsheet instructions") }

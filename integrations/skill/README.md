@@ -3,7 +3,7 @@
 Two skills, in the open Agent Skills format (a folder with a `SKILL.md`) that ChatGPT and Claude both load:
 
 - `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`.
-- `trip-workbook` builds a planning spreadsheet and a Google My Maps file. `workbook-preamble.md` holds its front matter; the rest is `prompts/workbook-instructions.md`.
+- `trip-workbook` drafts a trip's route as a spreadsheet and writes a Google My Maps file. `workbook-preamble.md` holds its front matter; the rest is `prompts/workbook-instructions.md`.
 
 OpenAI is retiring custom GPTs on 11 December 2026 in favour of plugins built from skills, so this replaces a custom GPT.
 

@@ -33,7 +33,7 @@ SKILLS = {
     "trip-workbook": {
         "preamble": "workbook-preamble.md",
         "prompt": "workbook-instructions.md",
-        "display": ("Trip Planning Workbook", "Builds a trip planning spreadsheet and My Maps file"),
+        "display": ("Trip Planning Workbook", "Drafts a trip's route as a spreadsheet and My Maps file"),
         "files": {},
     },
 }
@@ -56,7 +56,7 @@ PLUGIN = {
 PROJECT_INSTRUCTIONS = """You plan my trips. This project's files hold the instructions.
 
 - A trip, an itinerary, or a .trip.json file I send: first print traveler-trip.md in full with Python and follow it exactly; searching it for snippets misses rules. Build the file with code, copy validate_trip.py and trip.schema.json into one folder, and run `python3 validate_trip.py --stamp <file>` until it prints "OK and stamped". Hand over that file unchanged (the app checks the stamp) and end your reply with that OK line, copied exactly; never hand over a file the validator hasn't passed.
-- A planning spreadsheet, a budget or booking sheet, or a trip map: follow trip-workbook.md.
+- A planning spreadsheet, a route or budget sheet, or a trip map: follow trip-workbook.md. It drafts the route (stays, dates, travel between them); once I've settled it, its Stays tab is the plan the trip file follows.
 
 Every trip file must have, or the validator fails:
 - `stars` (1-3) on every activity: 3 must do, 2 I'll likely enjoy, 1 worth it with time to spare.

@@ -19,6 +19,8 @@ Any request for a trip, a multi-day plan, or "what should I do in X" produces a 
 
 Reply with the file plus 3–5 sentences: the shape of the plan, the judgment calls, and what to cut first. Restate dates and fixed constraints in one line at the top. End the reply with the validator's last line, copied exactly (it starts with the file name and says OK); if you could not run it, say so instead.
 
+When the traveler sends a route workbook (an `.xlsx` whose Stays tab lists stays, nights and how to get between them), that tab is the plan: build stays and transfers that match it row for row, then plan the activities.
+
 ### When the traveler sends you a trip file
 
 That file is an export from the app, and it contains the traveler's own changes. Revise it; never rebuild it from scratch.
