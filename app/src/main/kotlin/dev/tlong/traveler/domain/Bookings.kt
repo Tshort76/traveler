@@ -7,6 +7,8 @@ import dev.tlong.traveler.model.Price
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.model.UNIT_NIGHT
 import dev.tlong.traveler.model.UNIT_PERSON
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 /**
  * Everything on the trip that needs reserving, in one list: each stay's lodging, transfers by
@@ -28,7 +30,7 @@ data class Bookable(
     val rate: Price? = null,
     val ref: String? = null,
     val url: String? = null,
-    /** How soon to book it (1 now, 2 a week or more ahead, 3 can wait), and how or where: plan-written guidance. */
+    /** How soon to book it (1 now, 2 a week or more ahead, 3 can wait), as the plan wrote it but raised by [urgency]; and how or where. */
     val priority: Int? = null,
     val how: String? = null,
     val stayId: String? = null,
@@ -48,7 +50,7 @@ data class Bookable(
 
 private val ticketedModes = setOf("flight", "train", "bus", "boat", "ferry")
 
-fun Trip.bookables(): List<Bookable> {
+fun Trip.bookables(today: LocalDate = LocalDate.now()): List<Bookable> {
     val people = travelers ?: 1
     // The rate is worth showing only when multiplying changed it: "$800 per person" for one traveler is noise.
     fun rate(p: Price?, nights: Int = 1) = p?.takeIf { (it.unit == UNIT_NIGHT || it.unit == UNIT_PERSON) && it.total(nights, people) != it.copy(unit = null) }
@@ -89,11 +91,24 @@ fun Trip.bookables(): List<Bookable> {
             ref = c.ref, url = c.url, priority = c.priority, how = c.how, stayId = c.stayId, glyph = c.activityId?.let { activity(it)?.tag }, record = c,
         )
     }
-    return (lodging + transfers + activities + bookings).sortedWith(compareBy({ it.date ?: "9999" }, { it.time ?: "" }))
+    return (lodging + transfers + activities + bookings).map { it.copy(priority = urgency(it.priority, it.date, it.booked, today)) }
+        .sortedWith(compareBy({ it.date ?: "9999" }, { it.time ?: "" }))
+}
+
+/** Days before its date at which an open "a week or more ahead" item has no slack left. */
+const val P2_DUE_WITHIN_DAYS = 14L
+
+/**
+ * The plan's priority is written once, but its meaning runs out as the date nears: a P2 two weeks
+ * off or less is now a P1. A P3 ("fine last minute") stays as it is, and a booked item is left alone.
+ */
+fun urgency(priority: Int?, date: String?, booked: Boolean, today: LocalDate): Int? {
+    val days = date?.toDate()?.let { ChronoUnit.DAYS.between(today, it) } ?: return priority
+    return if (!booked && priority == 2 && days <= P2_DUE_WITHIN_DAYS) 1 else priority
 }
 
 /** What to book as soon as possible: every unbooked P1, on a day or not, except an activity only ever skipped. */
-fun Trip.bookAhead(): List<Bookable> = bookables().filter { b ->
+fun Trip.bookAhead(today: LocalDate = LocalDate.now()): List<Bookable> = bookables(today).filter { b ->
     !b.booked && b.priority == 1 &&
         !(b.kind == Bookable.Kind.ACTIVITY && placementsOf(b.id).let { p -> p.isNotEmpty() && p.all { ItemStatus.of(it.item.status) == ItemStatus.SKIPPED } })
 }

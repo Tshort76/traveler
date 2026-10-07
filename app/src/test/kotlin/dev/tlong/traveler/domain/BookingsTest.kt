@@ -7,8 +7,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 
 class BookingsTest {
+    private val longBefore = LocalDate.parse("2026-01-01")
     private val trip = Fixtures.iguazu.normalized()
     private val items = trip.bookables()
     private fun item(key: String) = items.single { it.key == key }
@@ -53,12 +55,28 @@ class BookingsTest {
     }
 
     @Test
+    fun `an open P2 becomes a P1 two weeks before its date`() {
+        val today = LocalDate.parse("2026-10-06")
+        listOf(
+            Triple(2, "2026-10-20", false) to 1,
+            Triple(2, "2026-10-21", false) to 2,
+            Triple(2, "2026-10-01", false) to 1,
+            Triple(2, "2026-10-08", true) to 2,
+            Triple(3, "2026-10-08", false) to 3,
+            Triple(1, "2026-12-01", false) to 1,
+            Triple(2, null, false) to 2,
+        ).forEach { (input, expected) -> assertEquals(input.toString(), expected, urgency(input.first, input.second, input.third, today)) }
+        val ahead = trip.bookAhead(LocalDate.parse("2026-10-25")).map { it.key }
+        assertTrue(ahead.toString(), "lodging:bsas-1" in ahead && "transfer:fly-iguazu-bsas" !in ahead)
+    }
+
+    @Test
     fun `book ahead lists open P1s, planned or not, but not an activity only skipped`() {
-        assertEquals(listOf("lodging:iguazu", "transfer:fly-bsas-iguazu"), trip.bookAhead().map { it.key })
+        assertEquals(listOf("lodging:iguazu", "transfer:fly-bsas-iguazu"), trip.bookAhead(longBefore).map { it.key })
         val p1 = trip.copy(activities = trip.activities.map { a -> if (a.id == "garganta-del-diablo") a.copy(booking = a.booking?.copy(priority = 1)) else a })
-        assertTrue("activity:garganta-del-diablo" in p1.bookAhead().map { it.key })
+        assertTrue("activity:garganta-del-diablo" in p1.bookAhead(longBefore).map { it.key })
         val skipped = p1.copy(days = p1.days.map { d -> d.copy(plan = d.plan.map { if (it.activityId == "garganta-del-diablo") it.copy(status = "skipped") else it }) })
-        assertFalse("activity:garganta-del-diablo" in skipped.bookAhead().map { it.key })
+        assertFalse("activity:garganta-del-diablo" in skipped.bookAhead(longBefore).map { it.key })
     }
 
     @Test
