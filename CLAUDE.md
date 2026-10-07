@@ -21,7 +21,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew compileDebugKotlin   # faste
 
 ## The format is a contract, kept in four places
 
-`docs/trip-format.md` (for people), `schema/trip.schema.json`, `tools/validate_trip.py`, and `model/` + `TripReader.kt` in the app. A format change touches all four, plus `prompts/itinerary-instructions.md` and the examples. `make skill` packages the prompt as the assistant skill; after a change, `make assistant` stages the files to re-upload. `TripReaderTest` and `tools/test_validate_trip.py` run the same `schema/examples` and `schema/invalid` fixtures, which keeps the app and the validator agreeing.
+`docs/trip-format.md` (for people), `schema/trip.schema.json`, `tools/validate_trip.py`, and `model/` + `TripReader.kt` in the app. A format change touches all four, plus `prompts/itinerary-instructions.md` and the examples. `make skill` packages the prompt as the assistant skill; re-upload it after a change. `TripReaderTest` and `tools/test_validate_trip.py` run the same `schema/examples` and `schema/invalid` fixtures, which keeps the app and the validator agreeing.
 
 - The format is versioned (`formatVersion`). Additive, optional fields stay at version 1; anything an older app would misread needs a bump, and the reader refuses newer versions with a plain message.
 - Ids are stable across revisions; the merge depends on it.
