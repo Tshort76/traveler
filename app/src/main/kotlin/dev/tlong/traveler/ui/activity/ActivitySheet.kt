@@ -27,7 +27,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,11 +37,13 @@ import androidx.compose.ui.unit.dp
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.MapsLinks
+import dev.tlong.traveler.domain.MapsLocation
 import dev.tlong.traveler.domain.activity
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.placementsOf
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.model.Activity
+import dev.tlong.traveler.model.Place
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Trip
@@ -53,6 +57,7 @@ import dev.tlong.traveler.ui.common.effortLabel
 import dev.tlong.traveler.ui.common.fitLabel
 import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rememberOnline
+import dev.tlong.traveler.ui.common.resolveMapsLink
 import dev.tlong.traveler.ui.common.rich
 
 /** Everything about one activity, in a sheet over the current screen. */
@@ -77,6 +82,7 @@ fun ActivitySheet(
     var note by remember(activityId) { mutableStateOf(a.userNote.orEmpty()) }
     var confirmDelete by remember { mutableStateOf(false) }
     var editingLink by remember { mutableStateOf(false) }
+    var editingPlace by remember { mutableStateOf(false) }
     val currentNote by rememberUpdatedState(note)
     // The note is saved when the sheet closes, as one undoable edit rather than one per keystroke.
     DisposableEffect(activityId) {
@@ -115,6 +121,16 @@ fun ActivitySheet(
                     "You're offline. Google Maps opens, but shows places only if you downloaded an offline area there.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            TextButton(onClick = { editingPlace = true }) { Text(if (a.place?.hasCoordinates == true) "Fix location on the map" else "Set location for the map") }
+            if (editingPlace) LocationDialog(a.name, onDismiss = { editingPlace = false }) { at, link ->
+                editingPlace = false
+                session.edit("Set location") {
+                    Edits.updateActivity(it, activityId) { x -> x.copy(place = (x.place ?: Place()).copy(
+                        lat = at.lat, lng = at.lng, placeId = null, query = null,
+                        mapsUrl = link ?: "https://www.google.com/maps/search/?api=1&query=${at.lat},${at.lng}",
+                    )) }
+                }
             }
 
             a.detail.forEach { Text(rich(it), style = MaterialTheme.typography.bodyLarge) }
@@ -200,4 +216,43 @@ fun ActivitySheet(
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel") } },
         )
     }
+}
+
+/** Takes what Google Maps lets you copy (a shared link or a pin's coordinates) and finds the coordinates in it. */
+@Composable
+private fun LocationDialog(name: String, onDismiss: () -> Unit, onSave: (MapsLocation.LatLng, String?) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Location of $name") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "In Google Maps, open the place and tap Share, then Copy link. Or press and hold a spot and copy the coordinates at the top. Paste either here.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                OutlinedTextField(text, { text = it; error = null }, label = { Text("Link or coordinates") }, modifier = Modifier.fillMaxWidth())
+                if (busy) Text("Looking up the link…", style = MaterialTheme.typography.bodySmall)
+                error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !busy && text.isNotBlank(), onClick = {
+                val link = MapsLocation.firstUrl(text)
+                MapsLocation.coordinates(text)?.let { return@TextButton onSave(it, link) }
+                if (link == null) { error = "No coordinates or link in that. Paste a Google Maps link, or coordinates like -34.6037, -58.3816."; return@TextButton }
+                busy = true
+                scope.launch {
+                    val at = resolveMapsLink(link)
+                    busy = false
+                    if (at != null) onSave(at, link)
+                    else error = "Couldn't find coordinates in that link (or you're offline). In Google Maps, press and hold the spot and copy its coordinates instead."
+                }
+            }) { Text("Save") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }

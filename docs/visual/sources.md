@@ -13,6 +13,7 @@ flowchart LR
     BACK["Trip picture · ui/map/TripBackdrop.kt"]
     IMG["Trip image · ui/common/Files.kt"]
     LINKS["Links · ui/common/Common.kt"]
+    SHORT["Short Maps links · ui/common/MapsLinkResolver.kt"]
   end
   BASEMAP["Basemap builder · tools/make_basemap.py"]
   OFM{{"OpenFreeMap tiles"}}
@@ -26,11 +27,12 @@ flowchart LR
   BACK -. "relief tiles" .-> NE
   IMG -. "one GET" .-> HOST
   LINKS -. "URL intent" .-> APPS
+  SHORT -. "redirects" .-> GOOG{{"Google short links"}}
   BASEMAP -. "one GET" .-> GH
   classDef stage fill:#1F6F8B,stroke:#0B3C5D,stroke-width:2px,color:#ffffff
   classDef ext fill:#D9381E,stroke:#9E2815,stroke-width:2px,color:#ffffff
-  class AREA,OFF,BACK,IMG,LINKS,BASEMAP stage
-  class OFM,NE,HOST,APPS,GH ext
+  class AREA,OFF,BACK,IMG,LINKS,SHORT,BASEMAP stage
+  class OFM,NE,HOST,APPS,GH,GOOG ext
 ```
 
 Nothing here needs a key or an account, and nothing sends your trip. Importing, planning, booking, exporting and backing up work with no network at all.
@@ -42,6 +44,7 @@ Nothing here needs a key or an account, and nothing sends your trip. Importing, 
 | OpenFreeMap vector tiles, `tiles.openfreemap.org/planet` | Tile requests (zoom, x, y) for the area on screen or being saved, with MapLibre's user agent | OpenStreetMap vector tiles, which the app's own style draws | none | The stay map shows plain land with the pins and the scale bar. Tiles already viewed (up to 100 MB) and saved regions still draw |
 | Natural Earth relief tiles, on the same host | Tile requests up to zoom 6, only while taking a trip picture | Shaded-relief images | none | The picture is not taken; the trip map draws the offline country outlines instead |
 | The trip's own image, at the `tripMap.imageUrl` the file names | One GET to that address, once | An image, kept in `filesDir/images` | none | No image is shown; the map and stay list stand alone |
+| Google's short-link redirect, for a `maps.app.goo.gl` link you paste under **Set location** | A request for that link and each address it redirects to (at most six), only when you tap Save | Redirects; the app reads coordinates only from the redirect addresses, never from the page, whose map is centred on the requester's own location | none | The dialog says it couldn't find coordinates and suggests copying them from a dropped pin |
 | Google Maps, Google search, booking and activity links | Nothing from the app: it hands the URL to the phone, which opens the Maps app or a browser | — | none | The other app reports it. Map links say so first when the phone is offline |
 | Natural Earth country outlines, from GitHub | One GET at build time, from `tools/make_basemap.py`, cached in `tools/cache` | 1:50m country polygons | none | The script fails; the committed outlines in `app/src/main/assets/basemap/countries.txt` stay as they are |
 
@@ -49,7 +52,7 @@ Nothing here needs a key or an account, and nothing sends your trip. Importing, 
 
 **A trip picture is taken once per trip, size and set of stays.** `rememberBackdrop` (`ui/map/TripBackdrop.kt:52`) looks for a saved WebP first and calls the snapshotter only when there is none and the phone is online.
 
-**The Settings page says the same.** Its Privacy text names both requests the app makes on its own, map tiles for the area on screen and the trip's overview image, and says no trip details are sent.
+**The Settings page says the same.** Its Privacy text names both requests the app makes on its own, map tiles for the area on screen and the trip's overview image, and the short-link lookup you trigger by pasting one, and says no trip details are sent.
 
 **The style never comes from the network.** Every map builds its style from `terrainStyle` (`ui/map/AreaMap.kt:66`) in the app; only tiles are fetched, and no fonts or sprites, because the style draws no text.
 
