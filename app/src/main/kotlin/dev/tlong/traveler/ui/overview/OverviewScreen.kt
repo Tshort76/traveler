@@ -74,6 +74,7 @@ import dev.tlong.traveler.ui.bookings.glyph
 import dev.tlong.traveler.ui.bookings.tallyLabel
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.TripPhase
+import dev.tlong.traveler.domain.tallyByStay
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.dateRangeLabel
 import dev.tlong.traveler.domain.departDate
@@ -270,8 +271,16 @@ private fun Overview(session: TripSession, navigator: Navigator) {
             item("stays-title") { SectionTitle("Stays", Modifier.padding(top = 6.dp)) }
             // Every stay, so the flights out and back still show, but no card for the home airport.
             val numbers = trip.destinations.withIndex().associate { (i, s) -> s.id to i + 1 }
+            val tallies = trip.bookables().tallyByStay()
             trip.stays.forEachIndexed { i, stay ->
-                numbers[stay.id]?.let { n -> item("stay-${stay.id}") { StayCard(n, stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { it.marked(trip.isBooked(it)) }) { navigator.stay(trip.id, stay.id) } } }
+                numbers[stay.id]?.let { n ->
+                    item("stay-${stay.id}") {
+                        StayCard(
+                            n, stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { it.marked(trip.isBooked(it)) },
+                            tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
+                        ) { navigator.stay(trip.id, stay.id) }
+                    }
+                }
                 trip.stays.getOrNull(i + 1)?.let { next ->
                     trip.transfers.filter { it.from == stay.id && it.to == next.id }.forEach { t ->
                         item("t-${t.id}") {
@@ -409,7 +418,10 @@ private fun MapCard(
 }
 
 @Composable
-private fun StayCard(number: Int, stay: Stay, standouts: List<String>, onClick: () -> Unit) {
+private fun StayCard(
+    number: Int, stay: Stay, standouts: List<String>, tally: Map<Bookable.Group, Pair<Int, Int>>,
+    onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
+) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Pill("$number", container = MaterialTheme.colorScheme.primary, content = MaterialTheme.colorScheme.onPrimary)
@@ -423,6 +435,17 @@ private fun StayCard(number: Int, stay: Stay, standouts: List<String>, onClick: 
                 // Bullets, not prose: the must-dos, or the plan's priorities when nothing has three stars.
                 (standouts.map { "• $it" }.ifEmpty { stay.priorities.map { "• $it" } }).take(3).forEach {
                     Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
+                if (tally.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Bookable.Group.entries.forEach { g ->
+                        tally[g]?.let { (booked, planned) ->
+                            AssistChip(
+                                onClick = { onBookings(g) },
+                                label = { Text("${if (booked == planned) "✅ " else ""}${g.label} $booked/$planned") },
+                            )
+                        }
+                    }
                 }
             }
         }

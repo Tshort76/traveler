@@ -24,6 +24,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import dev.tlong.traveler.domain.shortLabel
+import dev.tlong.traveler.domain.arriveDate
+import dev.tlong.traveler.domain.departDate
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.InputChip
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
@@ -97,9 +103,9 @@ import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rich
 
 @Composable
-fun BookingsScreen(tripId: String, date: String?, navigator: Navigator) {
+fun BookingsScreen(tripId: String, date: String?, navigator: Navigator, stayId: String? = null, group: String? = null) {
     val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
-    BookingsContent(session, date, navigator)
+    BookingsContent(session, date, navigator, stayId, group)
 }
 
 fun Bookable.glyph(): String = when (kind) {
@@ -115,7 +121,7 @@ fun List<Bookable>.tallyLabel(): String? =
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BookingsContent(session: TripSession, focusDate: String?, navigator: Navigator) {
+private fun BookingsContent(session: TripSession, focusDate: String?, navigator: Navigator, focusStay: String?, focusGroup: String?) {
     val trip by session.trip.collectAsStateWithLifecycle()
     val saveState by session.saveState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -125,10 +131,16 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     val (unplanned, items) = remember(all) { all.partition { it.unplanned } }
     var plannedOnly by rememberSaveable { mutableStateOf(false) }
     var openOnly by rememberSaveable { mutableStateOf(false) }
-    var order by rememberSaveable { mutableStateOf(Order.DATE) }
-    val groups = remember(all, order, plannedOnly, openOnly) {
-        val shown = (if (plannedOnly) items else all).filter { !openOnly || !it.booked }
+    var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
+    var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
+    var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
+    val groups = remember(all, order, plannedOnly, openOnly, group, onlyStay) {
+        val shown = (if (plannedOnly) items else all)
+            .filter { (!openOnly || !it.booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
+            Order.STAY -> shown.groupBy { it.stayId }.toList()
+                .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
+                .associate { (id, list) -> (trip.stay(id)?.let { "${it.name} · ${it.arriveDate.shortLabel()} – ${it.departDate.shortLabel()}" } ?: "No stay") to list }
             Order.DATE -> shown.groupBy { it.date?.let(::dayName) ?: "Not scheduled yet" }
             Order.PRIORITY -> priorityGroups(shown)
             Order.TYPE -> shown.sortedBy { it.kind }.groupBy { typeName(it) }
@@ -163,12 +175,19 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             item("summary") { Summary(items, unplanned) }
             item("order") {
                 Column {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Order.entries.forEach { o -> FilterChip(order == o, onClick = { order = o }, label = { Text(o.label) }) }
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Bookable.Group.entries.forEach { g ->
+                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.label) })
+                        }
                         FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("Not booked") })
                         if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("Planned only") })
+                        onlyStay?.let { id ->
+                            InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
+                                trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay") })
+                        }
                     }
                 }
             }
@@ -185,8 +204,8 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             }
             if (all.isEmpty()) item("empty") {
                 Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
-            } else if (groups.isEmpty() && openOnly) item("empty") {
-                Text("Everything here is booked.", style = MaterialTheme.typography.bodyMedium)
+            } else if (groups.isEmpty()) item("empty") {
+                Text(if (openOnly) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -250,7 +269,7 @@ private fun Summary(items: List<Bookable>, unplanned: List<Bookable>) {
     }
 }
 
-private enum class Order(val label: String) { DATE("By date"), PRIORITY("By priority"), TYPE("By type") }
+private enum class Order(val label: String) { DATE("By date"), STAY("By stay"), PRIORITY("By priority"), TYPE("By type") }
 
 /** The group for "By type": lodging, then each way of travelling, then each kind of activity. */
 private fun typeName(b: Bookable): String = when (b.kind) {

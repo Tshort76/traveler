@@ -41,6 +41,16 @@ data class Bookable(
 ) {
     enum class Kind { LODGING, TRANSFER, ACTIVITY, BOOKING }
 
+    /** The two things a traveler books: getting there and sleeping (logistics), and what they go to do (events). */
+    enum class Group(val label: String) { LOGISTICS("Logistics"), EVENTS("Events") }
+
+    val group: Group get() = when (kind) {
+        Kind.LODGING, Kind.TRANSFER -> Group.LOGISTICS
+        Kind.ACTIVITY -> Group.EVENTS
+        // A booking of the traveler's own: an event unless it reads like travel or a bed.
+        Kind.BOOKING -> if (record?.activityId == null && logisticsWords.containsMatchIn(title)) Group.LOGISTICS else Group.EVENTS
+    }
+
     /** An activity that needs booking but is on no day yet: not a booking until it is planned. */
     val unplanned get() = kind == Kind.ACTIVITY && date == null && !booked
 
@@ -49,6 +59,10 @@ data class Bookable(
 }
 
 private val ticketedModes = setOf("flight", "train", "bus", "boat", "ferry")
+private val logisticsWords = Regex(
+    """\b(flights?|airline|hotel|hostel|lodge|apartment|airbnb|cabin|car|rental|train|bus|ferry|shuttle|transfer|taxi|parking)\b""",
+    RegexOption.IGNORE_CASE,
+)
 
 fun Trip.bookables(today: LocalDate = LocalDate.now()): List<Bookable> {
     val people = travelers ?: 1
@@ -68,7 +82,9 @@ fun Trip.bookables(today: LocalDate = LocalDate.now()): List<Bookable> {
             "transfer:${t.id}", Bookable.Kind.TRANSFER, "${stay(t.from)?.name ?: t.from} → ${stay(t.to)?.name ?: t.to}", t.date,
             time = t.depart, booked = t.booking?.isBooked == true, price = t.booking?.price?.total(travelers = people),
             rate = rate(t.booking?.price), ref = t.booking?.ref, url = t.booking?.url,
-            priority = t.booking?.priority, how = t.booking?.how ?: t.details, stayId = t.to, glyph = t.shownMode,
+            priority = t.booking?.priority, how = t.booking?.how ?: t.details, glyph = t.shownMode,
+            // The leg counts toward the stay it reaches, except the flight home, which belongs to the stay it leaves.
+            stayId = if ((stay(t.to)?.nights ?: 0) > 0 || (stay(t.from)?.nights ?: 0) == 0) t.to else t.from,
         )
     }
     val needsBooking = activities.filter { it.booking != null }
@@ -88,12 +104,19 @@ fun Trip.bookables(today: LocalDate = LocalDate.now()): List<Bookable> {
         Bookable(
             "commitment:${c.id}", Bookable.Kind.BOOKING, c.title, c.date, time = c.start, booked = c.isBooked,
             price = c.price?.total(travelers = people), rate = rate(c.price),
-            ref = c.ref, url = c.url, priority = c.priority, how = c.how, stayId = c.stayId, glyph = c.activityId?.let { activity(it)?.tag }, record = c,
+            ref = c.ref, url = c.url, priority = c.priority, how = c.how,
+            stayId = c.stayId ?: c.date.toDate()?.let { stayFor(it)?.id }, glyph = c.activityId?.let { activity(it)?.tag }, record = c,
         )
     }
     return (lodging + transfers + activities + bookings).map { it.copy(priority = urgency(it.priority, it.date, it.booked, today)) }
         .sortedWith(compareBy({ it.date ?: "9999" }, { it.time ?: "" }))
 }
+
+/** Booked out of planned, per stay and group: the items on a day, or lodging and transport, not suggestions left unplanned. */
+fun List<Bookable>.tallyByStay(): Map<String, Map<Bookable.Group, Pair<Int, Int>>> = filterNot { it.unplanned }
+    .filter { it.stayId != null }
+    .groupBy { it.stayId!! }
+    .mapValues { (_, list) -> list.groupBy { it.group }.mapValues { (_, g) -> g.count { it.booked } to g.size } }
 
 /** Days before its date at which an open "a week or more ahead" item has no slack left. */
 const val P2_DUE_WITHIN_DAYS = 14L

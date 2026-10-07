@@ -26,7 +26,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class DayRoute(val tripId: String, val date: String)
 @Serializable data object ImportRoute
 @Serializable data class HistoryRoute(val tripId: String)
-@Serializable data class BookingsRoute(val tripId: String, val date: String? = null)
+/** [stayId] and [group] (a [dev.tlong.traveler.domain.Bookable.Group] name) open the list filtered to them. */
+@Serializable data class BookingsRoute(val tripId: String, val date: String? = null, val stayId: String? = null, val group: String? = null)
 @Serializable data object SettingsRoute
 
 /** Navigation callbacks the screens share, so none of them holds the controller. */
@@ -41,7 +42,8 @@ class Navigator(private val nav: NavHostController) {
         if (replace) nav.currentBackStackEntry?.destination?.id?.let { popUpTo(it) { inclusive = true } }
     }
     fun history(tripId: String) = nav.navigate(HistoryRoute(tripId))
-    fun bookings(tripId: String, date: String? = null) = nav.navigate(BookingsRoute(tripId, date))
+    fun bookings(tripId: String, date: String? = null, stayId: String? = null, group: String? = null) =
+        nav.navigate(BookingsRoute(tripId, date, stayId, group))
     fun settings() = nav.navigate(SettingsRoute)
 }
 
@@ -62,7 +64,7 @@ fun TravelerNav() {
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }
         composable<ImportRoute> { ImportScreen(navigator) }
-        composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator) }
+        composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator, r.stayId, r.group) }
         composable<HistoryRoute> { HistoryScreen(it.toRoute<HistoryRoute>().tripId, navigator) }
         composable<SettingsRoute> { SettingsScreen(navigator) }
     }

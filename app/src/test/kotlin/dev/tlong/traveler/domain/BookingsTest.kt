@@ -55,6 +55,27 @@ class BookingsTest {
     }
 
     @Test
+    fun `booked out of planned, per stay, split into logistics and events`() {
+        val L = Bookable.Group.LOGISTICS
+        val E = Bookable.Group.EVENTS
+        assertEquals(
+            mapOf(
+                "bsas-1" to mapOf(L to (0 to 1), E to (0 to 1)),
+                "iguazu" to mapOf(L to (0 to 2), E to (1 to 2)),
+                "bsas-2" to mapOf(L to (1 to 3)),
+            ),
+            items.tallyByStay(),
+        )
+    }
+
+    @Test
+    fun `the flight home counts toward the stay it leaves, not the hidden home airport`() {
+        val demo = Fixtures.trip("demo.trip.json").normalized().bookables()
+        assertEquals("madryn", demo.single { it.key == "transfer:fly-home" }.stayId)
+        assertEquals("palermo", demo.single { it.key == "transfer:fly-out" }.stayId)
+    }
+
+    @Test
     fun `an open P2 becomes a P1 two weeks before its date`() {
         val today = LocalDate.parse("2026-10-06")
         listOf(
