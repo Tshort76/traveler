@@ -7,6 +7,8 @@ import dev.tlong.traveler.ui.common.marked
 import androidx.compose.foundation.layout.width
 import dev.tlong.traveler.ui.bookings.PriorityTag
 import dev.tlong.traveler.domain.Bookable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import dev.tlong.traveler.domain.bookAhead
 import dev.tlong.traveler.domain.destinations
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -426,7 +428,11 @@ private fun StayCard(
         Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Pill("$number", container = MaterialTheme.colorScheme.primary, content = MaterialTheme.colorScheme.onPrimary)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(stay.name, style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
+                    Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
+                }
                 Text(
                     "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()} · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
                         (stay.region?.let { " · $it" } ?: ""),
@@ -436,19 +442,25 @@ private fun StayCard(
                 (standouts.map { "• $it" }.ifEmpty { stay.priorities.map { "• $it" } }).take(3).forEach {
                     Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
-                if (tally.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Bookable.Group.entries.forEach { g ->
-                        tally[g]?.let { (booked, planned) ->
-                            AssistChip(
-                                onClick = { onBookings(g) },
-                                label = { Text("${if (booked == planned) "✅ " else ""}${g.label} $booked/$planned") },
-                            )
-                        }
-                    }
-                }
             }
         }
+    }
+}
+
+/** A glyph and "1/3". Compose widens a small clickable's touch area to 48dp, so it stays easy to tap without padding the row. */
+@Composable
+private fun BookingTally(group: Bookable.Group, booked: Int, planned: Int, onClick: () -> Unit) {
+    val done = booked == planned
+    Row(
+        Modifier.clip(RoundedCornerShape(50)).clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 4.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "${group.label}: $booked of $planned booked" },
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Text(group.glyph(), style = MaterialTheme.typography.labelMedium)
+        Text(
+            if (done) "✓" else "$booked/$planned", style = MaterialTheme.typography.labelMedium,
+            color = if (done) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

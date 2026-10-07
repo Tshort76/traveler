@@ -24,12 +24,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ArrowDropDown
 import dev.tlong.traveler.domain.shortLabel
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.departDate
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.InputChip
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
@@ -108,6 +113,11 @@ fun BookingsScreen(tripId: String, date: String?, navigator: Navigator, stayId: 
     BookingsContent(session, date, navigator, stayId, group)
 }
 
+fun Bookable.Group.glyph(): String = when (this) {
+    Bookable.Group.LOGISTICS -> "🧳"
+    Bookable.Group.EVENTS -> "🎟️"
+}
+
 fun Bookable.glyph(): String = when (kind) {
     Bookable.Kind.LODGING -> "🏨"
     Bookable.Kind.TRANSFER -> modeEmoji(glyph)
@@ -174,20 +184,33 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
         ) {
             item("summary") { Summary(items, unplanned) }
             item("order") {
-                Column {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Order.entries.forEach { o -> FilterChip(order == o, onClick = { order = o }, label = { Text(o.label) }) }
+                var sorting by remember { mutableStateOf(false) }
+                // One line: the sort as a menu, then the filters in a row that scrolls sideways.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box {
+                        TextButton(onClick = { sorting = true }) {
+                            Text(order.label)
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Change order")
+                        }
+                        DropdownMenu(sorting, onDismissRequest = { sorting = false }) {
+                            Order.entries.forEach { o ->
+                                DropdownMenuItem(
+                                    text = { Text(o.label) }, onClick = { order = o; sorting = false },
+                                    leadingIcon = { if (order == o) Icon(Icons.Default.Check, contentDescription = null) },
+                                )
+                            }
+                        }
                     }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        onlyStay?.let { id ->
+                            InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
+                                trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay", Modifier.size(18.dp)) })
+                        }
                         Bookable.Group.entries.forEach { g ->
-                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.label) })
+                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text("${g.glyph()} ${g.label}") })
                         }
                         FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("Not booked") })
                         if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("Planned only") })
-                        onlyStay?.let { id ->
-                            InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
-                                trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay") })
-                        }
                     }
                 }
             }
