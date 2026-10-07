@@ -124,9 +124,10 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     val all = remember(trip) { trip.bookables() }
     val (unplanned, items) = remember(all) { all.partition { it.unplanned } }
     var plannedOnly by rememberSaveable { mutableStateOf(false) }
+    var openOnly by rememberSaveable { mutableStateOf(false) }
     var order by rememberSaveable { mutableStateOf(Order.DATE) }
-    val groups = remember(all, order, plannedOnly) {
-        val shown = if (plannedOnly) items else all
+    val groups = remember(all, order, plannedOnly, openOnly) {
+        val shown = (if (plannedOnly) items else all).filter { !openOnly || !it.booked }
         when (order) {
             Order.DATE -> shown.groupBy { it.date?.let(::dayName) ?: "Not scheduled yet" }
             Order.PRIORITY -> priorityGroups(shown)
@@ -165,7 +166,10 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Order.entries.forEach { o -> FilterChip(order == o, onClick = { order = o }, label = { Text(o.label) }) }
                     }
-                    if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("Planned only") })
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("Not booked") })
+                        if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("Planned only") })
+                    }
                 }
             }
             groups.forEach { (title, list) ->
@@ -181,6 +185,8 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             }
             if (all.isEmpty()) item("empty") {
                 Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
+            } else if (groups.isEmpty() && openOnly) item("empty") {
+                Text("Everything here is booked.", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
