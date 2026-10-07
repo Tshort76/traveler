@@ -21,6 +21,19 @@ This writes `build/skill/`:
 
 Rebuild and re-upload whenever the prompt or the format changes.
 
+## Updating the uploaded copies
+
+Neither upload can be scripted. ChatGPT has no API for Project files, and Claude's Skills API uploads to an API workspace that claude.ai never sees. So `make assistant` cuts the manual step down to the files that actually changed:
+
+```bash
+make assistant        # rebuild, then stage what changed since the last upload
+make assistant-done   # once uploaded: record this build as the uploaded one
+```
+
+`make assistant` lists each Project file to replace and copies only those to `build/assistant-upload/`. It opens that folder in Finder, so you delete the old copies in the Project and drag the folder's contents in at once. When `INSTRUCTIONS.txt` changed, it is put on the clipboard to paste over the Project's instructions. When the skill changed, it reveals `traveler-trip.zip` and opens claude.ai's skill settings. Set `TRAVELER_CHATGPT_PROJECT_URL` to your Project's address to open the Project itself rather than chatgpt.com. The first run has no record to compare against, so it lists everything.
+
+For Claude Code, `make claude-code-skill` installs the skill into `~/.claude/skills/` in one step.
+
 ## ChatGPT
 
 On a personal plan (Plus or Pro), ChatGPT on the web and phone refuses uploaded skills and fails with "Couldn't add plugin". Reports say the desktop app and Business, Enterprise and Edu plans accept them. A plugin reaches a personal account only through OpenAI's reviewed directory, which is a developer submission and not worth it for one user.
@@ -36,7 +49,7 @@ If you use the desktop app or a business plan, you can instead upload `traveler-
 ## Claude
 
 - **claude.ai**: Settings → Capabilities → Skills → upload `traveler-trip.zip`. This can replace the Concierge project's itinerary files: the project's own instructions and profile stay, and the skill brings the format, the validator and the example.
-- **Claude Code**: copy `build/skill/traveler-trip/` into `~/.claude/skills/`.
+- **Claude Code**: `make claude-code-skill` copies `build/skill/traveler-trip/` into `~/.claude/skills/`.
 
 ## From the phone
 

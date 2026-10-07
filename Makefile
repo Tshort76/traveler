@@ -10,7 +10,7 @@ EMULATOR := $(SDK_DIR)/emulator/emulator
 PKG := dev.tlong.traveler
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor debug release install test check validate fixtures skill tools-test emulator screenshot push-examples clean
+.PHONY: help doctor debug release install test check validate fixtures skill assistant assistant-done claude-code-skill tools-test emulator screenshot push-examples clean
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -43,6 +43,15 @@ validate: ## Validate every example trip file
 
 skill: ## Build the traveler-trip skill and plugin for ChatGPT and Claude (integrations/skill)
 	@python3 tools/make_skill.py
+
+assistant: skill ## Stage the assistant files that changed since the last upload, and open where they go
+	@python3 tools/stage_assistant.py
+
+assistant-done: ## Record the current build as uploaded to ChatGPT and claude.ai
+	@python3 tools/stage_assistant.py --done
+
+claude-code-skill: skill ## Install the skill for Claude Code (~/.claude/skills/traveler-trip)
+	@rm -rf ~/.claude/skills/traveler-trip && mkdir -p ~/.claude/skills && cp -R build/skill/traveler-trip ~/.claude/skills/ && echo "installed ~/.claude/skills/traveler-trip"
 
 fixtures: ## Regenerate the derived example trips
 	@python3 tools/make_fixtures.py
