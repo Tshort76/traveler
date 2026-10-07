@@ -382,6 +382,10 @@ def check_complete(trip, rep):
     no_stars = [a.get("id", "?") for a in acts if "stars" not in a]
     if no_stars:
         rep.error("activities", f"{len(no_stars)} have no stars (1–3): {_names(no_stars)}")
+    unplaced = [a.get("id", "?") for a in acts if not {"lat", "lng"} <= set(a.get("place") or {})]
+    if unplaced:
+        rep.error("activities", f"{len(unplaced)} have no place.lat/lng, so the stay map can't show them: {_names(unplaced)}. "
+                                "Give every activity's coordinates")
     loose = [a.get("id", "?") for a in acts if (a.get("practical") or {}).get("booking") and "booking" not in a]
     if loose:
         rep.error("activities", f"booking advice only in practical.booking, with no booking object "

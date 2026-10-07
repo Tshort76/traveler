@@ -321,7 +321,9 @@
       "rank": 4,
       "stars": 2,
       "place": {
-        "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú"
+        "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú",
+        "lat": -25.6817,
+        "lng": -54.4436
       },
       "duration": {
         "minutes": 90

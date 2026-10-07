@@ -104,6 +104,15 @@ class TripReaderTest {
     }
 
     @Test
+    fun `an activity placed only by a search phrase goes back to the assistant, since the stay map needs coordinates`() {
+        val trip = Fixtures.iguazu
+        val first = trip.activities[0]
+        val text = TripJson.encode(trip.copy(activities = listOf(first.copy(place = Place(query = "Somewhere, Puerto Iguazú"))) + trip.activities.drop(1)))
+        val problems = TripReader.read(text).forAssistant
+        assertTrue(problems.toString(), problems.any { it.startsWith("activities: 1 have no place.lat/lng") && first.id in it })
+    }
+
+    @Test
     fun `the validator's stamp matches the demo, and stops matching when the file changes`() {
         val demo = Fixtures.text("demo.trip.json")
         assertEquals(Stamp.Check.MATCHES, TripReader.read(demo).stamp)

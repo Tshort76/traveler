@@ -114,7 +114,7 @@
       "detail": ["A truck ride through the forest down to the river, then a speedboat up the gorge and under the edge of the falls. You will be soaked."],
       "rank": 4,
       "stars": 2,
-      "place": { "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú" },
+      "place": { "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú", "lat": -25.6817, "lng": -54.4436 },
       "duration": { "minutes": 90 }, "fit": "short", "effort": "easy",
       "practical": { "booking": "Booked — see the commitment for the time.", "tips": "Dry bag for phone and passport." },
       "booking": { "status": "needed", "price": { "amount": 110, "currency": "USD" } },
@@ -228,7 +228,7 @@
       "detail": ["A short boat crossing to an island in the middle of the falls with a steep climb to viewpoints. Often closed when the river is high."],
       "rank": 10,
       "stars": 1,
-      "place": { "query": "Isla San Martín, Parque Nacional Iguazú" },
+      "place": { "query": "Isla San Martín, Parque Nacional Iguazú", "lat": -25.6879, "lng": -54.4388 },
       "duration": { "minutes": 90 }, "fit": "short", "effort": "moderate",
       "practical": { "access": "Depends on the water level; ask at the park on the day." },
       "confidence": "check"

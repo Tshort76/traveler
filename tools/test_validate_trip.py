@@ -51,6 +51,10 @@ class CompletenessCheck(unittest.TestCase):
         self.assertIn(".price: not part of the format", errs)
         self.assertIn("prices are in USD", errs)
 
+    def test_an_activity_without_coordinates_fails(self):
+        self.trip["activities"][0]["place"] = {"query": "Somewhere, Puerto Iguazú"}
+        self.assertIn("have no place.lat/lng", " ".join(self.errors(self.trip)))
+
     def test_unbooked_lodging_needs_price_and_priority(self):
         lodging = self.trip["stays"][0]["lodging"]
         lodging["status"] = "tentative"

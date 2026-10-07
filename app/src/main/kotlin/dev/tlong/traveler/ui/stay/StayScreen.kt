@@ -257,6 +257,12 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
+        else if (pool.isNotEmpty()) item("map") {
+            Text(
+                "No map: none of these places has coordinates. Ask the assistant to add lat/lng to every activity's place.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         item("show") {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 Show.entries.forEachIndexed { i, s ->

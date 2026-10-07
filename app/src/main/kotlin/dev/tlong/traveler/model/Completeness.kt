@@ -35,6 +35,9 @@ object Completeness {
         acts.filter { it.stars == null }.map { it.id }.takeIf { it.isNotEmpty() }?.let {
             out += "activities: ${it.size} have no stars (1–3): ${names(it)}"
         }
+        acts.filter { it.place?.hasCoordinates != true }.map { it.id }.takeIf { it.isNotEmpty() }?.let {
+            out += "activities: ${it.size} have no place.lat/lng, so the stay map can't show them: ${names(it)}. Give every activity's coordinates"
+        }
         acts.filter { it.practical?.booking != null && it.booking == null }.map { it.id }.takeIf { it.isNotEmpty() }?.let {
             out += "activities: booking advice only in practical.booking, with no booking object {status, priority, price, url?, how}: ${names(it)}"
         }

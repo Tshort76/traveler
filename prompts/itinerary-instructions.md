@@ -61,7 +61,7 @@ That file is an export from the app, and it contains the traveler's own changes.
   - `short` is 10 words or fewer. `why` is one line on why it fits this traveler.
   - `rank`: 1 is the strongest pick in the stay.
   - `stars`: how well it fits this traveler. 3 = a must do for this traveler; 2 = they will likely enjoy it; 1 = a common pick, worth doing if there's time. Be stingy with 3: a stay has one or two, and some have none.
-  - `place`: `{query, lat?, lng?}`, where `query` is what you'd type into Google Maps.
+  - `place`: `{query, lat, lng}`, where `query` is what you'd type into Google Maps. Always give `lat`/`lng`, looked up for the actual place: the stay map numbers the activities from them, which is how the traveler sees what is near what and groups a day. The validator's full check fails without them.
   - `duration`: `{minutes, maxMinutes?, includesTravel?}`.
   - `fit`: short|half-day|full-day|evening. `bestTime`: any of morning, afternoon, evening. `effort`: easy|moderate|hard.
   - `conditions`: rainy-day, short-morning, free-afternoon, hot-day, needs-car, …
