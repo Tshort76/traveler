@@ -13,6 +13,11 @@ import dev.tlong.traveler.domain.destinations
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -427,11 +432,18 @@ private fun StayCard(
     onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Pill("$number", container = MaterialTheme.colorScheme.primary, content = MaterialTheme.colorScheme.onPrimary)
+        Row(Modifier.padding(14.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    // The stay's number on the map, beside its booking counts rather than in a column of its own.
+                    Text(
+                        "$number", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 4.dp).size(20.dp).clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary).wrapContentHeight()
+                            .semantics { contentDescription = "Stay $number on the map" },
+                    )
                     // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
                     Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
                 }
