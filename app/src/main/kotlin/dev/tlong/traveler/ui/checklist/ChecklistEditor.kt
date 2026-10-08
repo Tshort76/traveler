@@ -54,6 +54,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
@@ -221,30 +222,30 @@ private fun AddBar(kind: Kind, sections: List<String>, target: String?, onTarget
     var picking by remember { mutableStateOf(false) }
     var naming by remember { mutableStateOf(false) }
     fun add() { if (text.isNotBlank()) { onAdd(text); text = "" } }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp)) {
-        Box {
-            TextButton(onClick = { picking = true }, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                Text("Section: ${target ?: "none"}", style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 260.dp))
-                Icon(Icons.Default.KeyboardArrowDown, null, Modifier.size(16.dp))
+    // One line: the section picker leads the field, and the placeholder says where the item goes.
+    OutlinedTextField(
+        text, { text = it }, singleLine = true,
+        placeholder = { Text((if (kind == Kind.TODO) "Add a to-do" else "Add something to pack") + (target?.let { " to $it" } ?: ""), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = {
+            Box {
+                IconButton(onClick = { picking = true }) {
+                    Text("#", style = MaterialTheme.typography.titleMedium,
+                        color = if (target != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.semantics { contentDescription = "Section: ${target ?: "none"}" })
+                }
+                DropdownMenu(picking, onDismissRequest = { picking = false }) {
+                    DropdownMenuItem(text = { Text("No section") }, onClick = { picking = false; onTarget(null) })
+                    sections.forEach { s -> DropdownMenuItem(text = { Text(s) }, onClick = { picking = false; onTarget(s) }) }
+                    DropdownMenuItem(text = { Text("New section…") }, onClick = { picking = false; naming = true })
+                }
             }
-            DropdownMenu(picking, onDismissRequest = { picking = false }) {
-                DropdownMenuItem(text = { Text("No section") }, onClick = { picking = false; onTarget(null) })
-                sections.forEach { s -> DropdownMenuItem(text = { Text(s) }, onClick = { picking = false; onTarget(s) }) }
-                DropdownMenuItem(text = { Text("New section…") }, onClick = { picking = false; naming = true })
-            }
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                text, { text = it }, singleLine = true,
-                placeholder = { Text(if (kind == Kind.TODO) "Add a to-do" else "Add something to pack") },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                // Done adds the item and keeps the keyboard up for the next one.
-                keyboardActions = KeyboardActions(onDone = { add() }),
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(onClick = ::add, enabled = text.isNotBlank()) { Icon(Icons.Default.Add, "Add") }
-        }
-    }
+        },
+        trailingIcon = { if (text.isNotBlank()) IconButton(onClick = ::add) { Icon(Icons.Default.Add, "Add") } },
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+        // Done adds the item and keeps the keyboard up for the next one.
+        keyboardActions = KeyboardActions(onDone = { add() }),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
+    )
     if (naming) NameDialog("New section", "", "Section name", onDismiss = { naming = false }) { naming = false; onTarget(it) }
 }
 

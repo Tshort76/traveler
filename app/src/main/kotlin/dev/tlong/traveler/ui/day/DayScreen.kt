@@ -230,13 +230,10 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            local?.label() ?: date, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.semantics { contentDescription = local?.longLabel() ?: date },
-                        )
-                        Text(stay?.name.orEmpty(), style = MaterialTheme.typography.bodySmall)
-                    }
+                    Text(
+                        local?.label() ?: date, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.semantics { contentDescription = local?.longLabel() ?: date },
+                    )
                 },
                 navigationIcon = { BackButton(navigator) },
                 actions = {

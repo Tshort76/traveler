@@ -71,12 +71,7 @@ private fun Notes(session: TripSession, navigator: Navigator) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("Notes")
-                        Text(trip.title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                },
+                title = { Text("Notes") },
                 navigationIcon = { BackButton(navigator) },
                 actions = { SaveIndicator(saveState, session::retrySave) },
             )

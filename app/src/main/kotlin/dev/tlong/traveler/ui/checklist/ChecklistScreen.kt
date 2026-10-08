@@ -88,12 +88,7 @@ private fun TripChecklist(session: TripSession, startKind: Kind, navigator: Navi
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("Checklist")
-                        Text(trip.title, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                },
+                title = { Text("Checklist") },
                 navigationIcon = { BackButton(navigator) },
                 actions = {
                     SaveIndicator(saveState, session::retrySave)

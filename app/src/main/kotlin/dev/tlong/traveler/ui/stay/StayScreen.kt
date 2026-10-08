@@ -144,15 +144,7 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text(stay.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(
-                            "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()} · ${stay.nights} night${if (stay.nights == 1) "" else "s"}",
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                },
+                title = { Text(stay.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { BackButton(navigator) },
                 actions = { SaveIndicator(saveState, session::retrySave) },
             )

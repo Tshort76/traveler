@@ -1,5 +1,13 @@
 package dev.tlong.traveler.ui.activity
 
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import dev.tlong.traveler.model.Commitment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -98,7 +106,21 @@ fun ActivitySheet(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(listOfNotNull(a.tag, a.name).joinToString("  "), style = MaterialTheme.typography.headlineSmall)
+            var more by remember { mutableStateOf(false) }
+            // Secondary actions live behind ⋮ so the sheet reads as the activity, not a form.
+            Row(verticalAlignment = Alignment.Top) {
+                Text(listOfNotNull(a.tag, a.name).joinToString("  "), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                Box {
+                    IconButton(onClick = { more = true }) { Icon(Icons.Default.MoreVert, "More for ${a.name}") }
+                    DropdownMenu(more, onDismissRequest = { more = false }) {
+                        DropdownMenuItem(text = { Text("Edit") }, onClick = { more = false; onEdit(a) })
+                        DropdownMenuItem(text = { Text("I booked this…") }, onClick = { more = false; onBook(a, null) })
+                        DropdownMenuItem(text = { Text(if (a.place?.hasCoordinates == true) "Fix location" else "Set location") }, onClick = { more = false; editingPlace = true })
+                        DropdownMenuItem(text = { Text(if (a.url == null) "Add link" else "Edit link") }, onClick = { more = false; editingLink = true })
+                        DropdownMenuItem(text = { Text("Delete", color = MaterialTheme.colorScheme.error) }, onClick = { more = false; confirmDelete = true })
+                    }
+                }
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (a.isCustom) Pill("Your entry")
                 starLabel(a.stars)?.let { Pill(it) }
@@ -118,11 +140,10 @@ fun ActivitySheet(
                     }) { Text("Directions") }
                 }
                 if (!online) Text(
-                    "You're offline. Google Maps opens, but shows places only if you downloaded an offline area there.",
+                    "Offline: Maps shows only areas you downloaded.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TextButton(onClick = { editingPlace = true }) { Text(if (a.place?.hasCoordinates == true) "Fix location on the map" else "Set location for the map") }
             if (editingPlace) LocationDialog(a.name, onDismiss = { editingPlace = false }) { at, link ->
                 editingPlace = false
                 session.edit("Set location") {
@@ -157,10 +178,7 @@ fun ActivitySheet(
                 HorizontalDivider()
                 facts.forEach { (k, v) -> LabeledText(k, v) }
             }
-            Row {
-                a.url?.let { url -> TextButton(onClick = { openUrl(context, url) }) { Text("Website") } }
-                TextButton(onClick = { editingLink = true }) { Text(if (a.url == null) "+ Add link" else "Edit link") }
-            }
+            a.url?.let { url -> TextButton(onClick = { openUrl(context, url) }) { Text("Website ↗") } }
             if (editingLink) UrlDialog("Link for ${a.name}", "The venue, tour or booking page.", a.url, onDismiss = { editingLink = false }) { url ->
                 editingLink = false
                 session.edit("Edit link") { Edits.updateActivity(it, activityId) { x -> x.copy(url = url) } }
@@ -168,9 +186,7 @@ fun ActivitySheet(
 
             HorizontalDivider()
             val placements = trip.placementsOf(a.id)
-            if (placements.isEmpty()) {
-                Text("Not on any day yet.", style = MaterialTheme.typography.bodyMedium)
-            } else {
+            if (placements.isNotEmpty()) {
                 Text("Planned", style = MaterialTheme.typography.labelLarge)
                 placements.forEach { p ->
                     val status = ItemStatus.of(p.item.status).takeIf { it != ItemStatus.PROPOSED }?.let { " · ${it.label}" }.orEmpty()
@@ -185,19 +201,11 @@ fun ActivitySheet(
                     Text("🔒 Booked ${dayName(c.date)}${c.start?.let { " $it" } ?: ""}${c.ref?.let { " · $it" } ?: ""}")
                 }
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onPlace(a) }) { Text(if (placements.isEmpty()) "Add to a day…" else "Add again…") }
-                OutlinedButton(onClick = { onBook(a, null) }) { Text("I booked this…") }
-                OutlinedButton(onClick = { onEdit(a) }) { Text("Edit") }
-            }
+            Button(onClick = { onPlace(a) }) { Text(if (placements.isEmpty()) "Add to a day…" else "Add again…") }
 
             OutlinedTextField(
-                note, { note = it }, label = { Text("Your note") }, modifier = Modifier.fillMaxWidth(), minLines = 2,
-                supportingText = { Text("Kept when the trip is revised.") },
+                note, { note = it }, label = { Text("Note") }, modifier = Modifier.fillMaxWidth(), minLines = 2,
             )
-            TextButton(onClick = { confirmDelete = true }) {
-                Text(if (a.isCustom) "Delete this entry" else "Delete this activity", color = MaterialTheme.colorScheme.error)
-            }
         }
     }
 
