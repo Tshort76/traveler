@@ -183,7 +183,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             Modifier.fillMaxSize().padding(padding), state = listState,
             contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            item("summary") { Summary(items, unplanned) }
+            item("summary") { Summary(items) }
             item("order") {
                 var sorting by remember { mutableStateOf(false) }
                 // One line: the sort as a menu, then the filters in a row that scrolls sideways.
@@ -207,11 +207,15 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                             InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
                                 trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay", Modifier.size(18.dp)) })
                         }
+                        // Glyphs, like the trip page's row; each says its name to TalkBack.
                         Bookable.Group.entries.forEach { g ->
-                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text("${g.glyph()} ${g.label}") })
+                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.glyph()) },
+                                modifier = Modifier.semantics { contentDescription = g.label })
                         }
-                        FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("Not booked") })
-                        if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("Planned only") })
+                        FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("☐") },
+                            modifier = Modifier.semantics { contentDescription = "Not booked" })
+                        if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("🗓️") },
+                            modifier = Modifier.semantics { contentDescription = "Planned only" })
                     }
                 }
             }
@@ -263,33 +267,27 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     }
 }
 
+/** One dense line and a bar: how many are booked, the money, and what is urgent. */
 @Composable
-private fun Summary(items: List<Bookable>, unplanned: List<Bookable>) {
+private fun Summary(items: List<Bookable>) {
     val booked = items.count { it.booked }
     val open = items.filterNot { it.booked }
-    val p1 = open.count { it.priority == 1 }
-    val p2 = open.count { it.priority == 2 }
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
-        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text((if (items.isNotEmpty() && booked == items.size) "✅ " else "") + "$booked of ${items.size} booked", style = MaterialTheme.typography.titleMedium)
-            if (items.isNotEmpty()) LinearProgressIndicator(progress = { booked.toFloat() / items.size }, modifier = Modifier.fillMaxWidth())
-            items.totals().forEach { t ->
-                Text("Estimated ${t.estimate} · booked ${money(t.booked, t.currency)}", style = MaterialTheme.typography.bodyMedium)
-            }
-            if (p1 + p2 > 0) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (p1 > 0) { PriorityTag(1); Text("$p1 to book now", style = MaterialTheme.typography.bodyMedium) }
-                if (p2 > 0) { PriorityTag(2); Text("$p2 to book soon", style = MaterialTheme.typography.bodyMedium) }
-            }
-            unplanned.totals().forEach { t ->
-                Text("+ ${t.estimate} if you add the ${unplanned.size} not planned", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            // A sell-out activity left off every day still needs a decision soon.
-            unplanned.count { it.priority == 1 }.takeIf { it > 0 }?.let { n ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PriorityTag(1); Text("$n not planned yet: decide soon", style = MaterialTheme.typography.bodyMedium)
+    Column(Modifier.fillMaxWidth().padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                (listOf("$booked/${items.size} booked") + items.totals().map { "${money(it.booked, it.currency)} of ${it.estimate}" }).joinToString(" · "),
+                style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f, fill = false),
+            )
+            listOf(1, 2).forEach { p ->
+                open.count { it.priority == p }.takeIf { it > 0 }?.let { n ->
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$n priority $p open" }) {
+                        PriorityTag(p); Text("$n", style = MaterialTheme.typography.labelMedium)
+                    }
                 }
             }
         }
+        if (items.isNotEmpty()) LinearProgressIndicator(progress = { booked.toFloat() / items.size }, modifier = Modifier.fillMaxWidth())
     }
 }
 

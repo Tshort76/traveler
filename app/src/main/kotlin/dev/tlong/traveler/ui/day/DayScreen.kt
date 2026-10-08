@@ -1,5 +1,9 @@
 package dev.tlong.traveler.ui.day
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -265,42 +269,50 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             item("head") {
+                var addMenu by remember { mutableStateOf(false) }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     KindChip(DayKind.of(day.kind)) { k -> session.edit("Change day type") { Edits.setDayKind(it, date, k.key) } }
+                    // Only when the stay's zone differs from the phone's: the offset alone.
                     stay?.zone?.takeIf { it != ZoneId.systemDefault() }?.let {
-                        Text("Times are ${shortZone(it, local)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("UTC" + it.rules.getOffset(local.atTime(12, 0).atZone(it).toInstant()).id.replace("Z", ""),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.semantics { contentDescription = "Times are ${shortZone(it, local)}" })
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Box {
+                        IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add a booking or note") }
+                        DropdownMenu(addMenu, onDismissRequest = { addMenu = false }) {
+                            DropdownMenuItem(text = { Text("Booking…") }, onClick = { addMenu = false; booking = BookingTarget(null) })
+                            if (day.note == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
+                            if (bookings.isNotEmpty()) DropdownMenuItem(text = { Text("This day's bookings") }, onClick = { addMenu = false; navigator.bookings(trip.id, date) })
+                        }
                     }
                 }
             }
-            item("fixed") {
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Fixed", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
-                                bookings.tallyLabel()?.let { TextButton(onClick = { navigator.bookings(trip.id, date) }) { Text(it) } }
-                                TextButton(onClick = { booking = BookingTarget(null) }) {
-                                    Icon(Icons.Default.Add, null, Modifier.size(18.dp)); Text("Add booking")
-                                }
-                            }
-                            work?.let { Text("💻 Work ${it.label}" + (it.sourceLabel?.let { s -> " ($s)" } ?: ""), style = MaterialTheme.typography.bodyMedium) }
-                            transfers.forEach { t ->
-                                Text("${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} ${listOfNotNull(t.depart, t.arrive).joinToString("–")} ${t.details ?: ""}".trim(), style = MaterialTheme.typography.bodyMedium)
-                            }
-                            fixed.forEach { c ->
-                                Text(
-                                    (if (c.isBooked) "🔒 " else "• ") + listOfNotNull(c.start, c.end).joinToString("–").let { if (it.isEmpty()) "" else "$it " } + c.title +
-                                        (if (c.isBooked) " · booked" else ""),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.fillMaxWidth().clickable(onClickLabel = "Edit booking") { booking = BookingTarget(c) }.padding(vertical = 4.dp)
-                                        .semantics { contentDescription = (if (c.isBooked) "Booked: " else "") + "${c.title} ${c.start ?: ""} to ${c.end ?: ""}" },
-                                )
-                            }
-                        }
+            // The day's fixed points are its first rows, not a card: work, transfers, then bookings.
+            work?.let { w ->
+                item("work") {
+                    Column(Modifier.padding(vertical = 2.dp)) {
+                        Text("💻 Work ${w.label}", style = MaterialTheme.typography.bodyMedium)
+                        w.sourceLabel?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 26.dp)) }
                     }
+                }
             }
-            item("note") {
-                if (day.note == null && !editingNote) TextButton(onClick = { editingNote = true }, contentPadding = PaddingValues(0.dp)) { Text("+ Add a note") }
-                else NoteCard(day.note, editing = editingNote, onEdit = { editingNote = true }, onCancel = { editingNote = false }) { text ->
+            items(transfers, key = { "t-" + it.id }) { t ->
+                Text("${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} ${listOfNotNull(t.depart, t.arrive).joinToString("–")} ${t.details ?: ""}".trim(),
+                    style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp))
+            }
+            items(fixed, key = { "c-" + it.id }) { c ->
+                Text(
+                    (if (c.isBooked) "🔒 " else "• ") + listOfNotNull(c.start, c.end).joinToString("–").let { if (it.isEmpty()) "" else "$it " } + c.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = "Edit booking") { booking = BookingTarget(c) }
+                        .wrapContentHeight(Alignment.CenterVertically)
+                        .semantics { contentDescription = (if (c.isBooked) "Booked: " else "") + "${c.title} ${c.start ?: ""} to ${c.end ?: ""}" },
+                )
+            }
+            if (day.note != null || editingNote) item("note") {
+                NoteCard(day.note, editing = editingNote, onEdit = { editingNote = true }, onCancel = { editingNote = false }) { text ->
                     editingNote = false
                     if (session.edit("Edit day note") { Edits.setDayNote(it, date, text) }) undoable("Saved your note for ${dayName(date)}")
                 }
@@ -313,7 +325,12 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             items(rows, key = { it.key }) { row ->
                 ReorderableItem(reorder, key = row.key) { isDragging ->
                     when (row) {
-                        is Row.Header -> SlotHeader(row.slot, empty = rows.dropWhile { it != row }.drop(1).firstOrNull() !is Row.Item) { picker = row.slot }
+                        is Row.Header -> {
+                            val empty = rows.dropWhile { it != row }.drop(1).firstOrNull() !is Row.Item
+                            // An empty "All day" shows only while dragging, so there is somewhere to drop.
+                            if (row.slot == Slot.ALLDAY && empty && dragging == null) Spacer(Modifier.height(1.dp))
+                            else SlotHeader(row.slot) { picker = row.slot }
+                        }
                         is Row.Item -> {
                             val a = trip.activity(row.item.activityId)
                             val ref = Edits.ItemRef(date, row.index)
@@ -434,7 +451,7 @@ private fun NoteCard(note: String?, editing: Boolean, onEdit: () -> Unit, onCanc
 }
 
 @Composable
-private fun SlotHeader(slot: Slot, empty: Boolean, onAdd: () -> Unit) {
+private fun SlotHeader(slot: Slot, onAdd: () -> Unit) {
     Column {
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             SectionTitle(slot.label, Modifier.weight(1f))
@@ -443,7 +460,6 @@ private fun SlotHeader(slot: Slot, empty: Boolean, onAdd: () -> Unit) {
             }
         }
         HorizontalDivider()
-        if (empty) Text("Nothing planned", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 6.dp))
     }
 }
 
