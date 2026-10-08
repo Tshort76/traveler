@@ -42,6 +42,8 @@ data class Trip(
     val warnings: List<String> = emptyList(),
     val exportedFrom: ExportInfo? = null,
     val userEdited: List<String> = emptyList(),
+    /** The traveler's own notes on the whole trip, written in the app; a line starting "- " is a bullet. */
+    val userNote: String? = null,
     /** The validator's stamp; see [Stamp]. Dropped on export, since the app's edits change the content. */
     val validated: Validated? = null,
 )

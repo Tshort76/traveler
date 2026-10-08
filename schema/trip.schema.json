@@ -136,6 +136,10 @@
     "userEdited": {
       "$ref": "#/$defs/userEdited"
     },
+    "userNote": {
+      "type": "string",
+      "description": "App-written: the traveler's own notes on the whole trip. A line starting \"- \" is a bullet."
+    },
     "validated": {
       "type": "object",
       "description": "Written by validate_trip.py --stamp when the file passes --complete: a fingerprint of the rest of the file, which the app recomputes to show whether the file was checked.",

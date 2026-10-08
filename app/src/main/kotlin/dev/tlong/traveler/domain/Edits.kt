@@ -191,6 +191,8 @@ object Edits {
         b.copy(userEdited = (b.userEdited + changed).distinct())
     })
 
+    fun setTripNote(trip: Trip, note: String): Trip = trip.copy(userNote = note.trimEnd().ifBlank { null })
+
     fun setUserNote(trip: Trip, id: String, note: String): Trip =
         trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userNote = note.ifBlank { null }) else it })
 

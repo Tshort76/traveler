@@ -172,6 +172,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var menu by remember { mutableStateOf(false) }
     var exportMenu by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf(false) }
+    var editingNotes by remember { mutableStateOf(false) }
     var editingLink by remember { mutableStateOf<LinkTarget?>(null) }
     var showLinks by remember { mutableStateOf(false) }
     var offlineMaps by remember { mutableStateOf(false) }
@@ -257,6 +258,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
             if (bookAhead.isNotEmpty()) item("book-ahead") {
                 BookAhead(bookAhead, expanded = showBookAhead, onToggle = { showBookAhead = !showBookAhead }) { navigator.bookings(trip.id) }
             }
+            item("your-notes") { TripNotesCard(trip.userNote) { editingNotes = true } }
             item("map") { MapCard(trip, points, segments, online, onExpand = { fullMap = true }) }
             if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
                 val stay = trip.stayFor(today)
@@ -318,6 +320,10 @@ private fun Overview(session: TripSession, navigator: Navigator) {
         }
     }
     if (offlineMaps) OfflineMapsDialog(trip, online) { offlineMaps = false }
+    if (editingNotes) TripNotesDialog(trip.userNote, onDismiss = { editingNotes = false }) { text ->
+        editingNotes = false
+        session.edit("Edit notes") { Edits.setTripNote(it, text) }
+    }
     if (renaming) RenameDialog(trip.title, onDismiss = { renaming = false }) { name ->
         renaming = false
         session.edit("Rename trip") { Edits.rename(it, name) }

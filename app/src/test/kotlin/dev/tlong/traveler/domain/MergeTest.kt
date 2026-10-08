@@ -112,6 +112,14 @@ class MergeTest {
     }
 
     @Test
+    fun `my trip notes survive a revision that changes or drops them`() {
+        val mine = Edits.setTripNote(base, "- Bring the adapter")
+        listOf(incoming, incoming.copy(userNote = "assistant wrote this")).forEach { file ->
+            assertEquals("- Bring the adapter", Merge.apply(Merge.plan(base, mine, file)).userNote)
+        }
+    }
+
+    @Test
     fun `local change count reflects edits`() {
         assertEquals(0, Merge.localChangeCount(base, base.normalized()))
         assertEquals(9, Merge.localChangeCount(base, local))
