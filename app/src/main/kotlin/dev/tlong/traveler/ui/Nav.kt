@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import dev.tlong.traveler.ui.checklist.ChecklistScreen
+import dev.tlong.traveler.ui.overview.NotesScreen
 import dev.tlong.traveler.ui.checklist.TemplateScreen
 import dev.tlong.traveler.ui.checklist.TemplatesScreen
 import dev.tlong.traveler.ui.bookings.BookingsScreen
@@ -32,7 +33,8 @@ import kotlinx.serialization.Serializable
 /** [stayId] and [group] (a [dev.tlong.traveler.domain.Bookable.Group] name) open the list filtered to them. */
 @Serializable data class BookingsRoute(val tripId: String, val date: String? = null, val stayId: String? = null, val group: String? = null)
 @Serializable data object SettingsRoute
-@Serializable data class ChecklistRoute(val tripId: String, val tab: Int = 0, val pick: Boolean = false)
+@Serializable data class ChecklistRoute(val tripId: String, val tab: Int = 0)
+@Serializable data class NotesRoute(val tripId: String)
 @Serializable data object TemplatesRoute
 @Serializable data class TemplateRoute(val id: String)
 
@@ -51,7 +53,8 @@ class Navigator(private val nav: NavHostController) {
     fun bookings(tripId: String, date: String? = null, stayId: String? = null, group: String? = null) =
         nav.navigate(BookingsRoute(tripId, date, stayId, group))
     fun settings() = nav.navigate(SettingsRoute)
-    fun checklist(tripId: String, tab: Int = 0, pick: Boolean = false) = nav.navigate(ChecklistRoute(tripId, tab, pick))
+    fun checklist(tripId: String, tab: Int = 0) = nav.navigate(ChecklistRoute(tripId, tab))
+    fun notes(tripId: String) = nav.navigate(NotesRoute(tripId))
     fun templates() = nav.navigate(TemplatesRoute)
     fun template(id: String) = nav.navigate(TemplateRoute(id))
 }
@@ -76,7 +79,8 @@ fun TravelerNav() {
         composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator, r.stayId, r.group) }
         composable<HistoryRoute> { HistoryScreen(it.toRoute<HistoryRoute>().tripId, navigator) }
         composable<SettingsRoute> { SettingsScreen(navigator) }
-        composable<ChecklistRoute> { val r = it.toRoute<ChecklistRoute>(); ChecklistScreen(r.tripId, r.tab, r.pick, navigator) }
+        composable<ChecklistRoute> { val r = it.toRoute<ChecklistRoute>(); ChecklistScreen(r.tripId, r.tab, navigator) }
+        composable<NotesRoute> { NotesScreen(it.toRoute<NotesRoute>().tripId, navigator) }
         composable<TemplatesRoute> { TemplatesScreen(navigator) }
         composable<TemplateRoute> { TemplateScreen(it.toRoute<TemplateRoute>().id, navigator) }
     }

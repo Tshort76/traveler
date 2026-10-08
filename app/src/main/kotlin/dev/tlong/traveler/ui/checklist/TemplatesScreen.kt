@@ -66,12 +66,6 @@ fun TemplatesScreen(navigator: Navigator) {
         },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item {
-                Text(
-                    "Reusable to-dos and packing items, such as “Every trip” or “International”. Adding one to a trip copies its items, so you can change the trip's list without changing the template.",
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             if (templates?.isEmpty() == true) item { Text("No templates yet.", style = MaterialTheme.typography.bodyMedium) }
             items(templates.orEmpty(), key = { it.id }) { t ->
                 Card(onClick = { navigator.template(t.id) }, modifier = Modifier.fillMaxWidth()) {
@@ -139,8 +133,6 @@ fun TemplateScreen(id: String, navigator: Navigator) {
                     val r = snackbar.showSnackbar("Deleted “${item.text}”", actionLabel = "Undo", withDismissAction = true)
                     if (r == SnackbarResult.ActionPerformed) template?.let { cur -> save(cur.copy(items = Checklists.insert(Checklist(cur.items), index, item).items)) }
                 } },
-                empty = if (kind == Kind.TODO) "No to-dos in this template. Type below, or paste a list (⋮ menu)."
-                else "Nothing to pack in this template. Type below, or paste a list (⋮ menu).",
                 modifier = Modifier.weight(1f),
             )
         }

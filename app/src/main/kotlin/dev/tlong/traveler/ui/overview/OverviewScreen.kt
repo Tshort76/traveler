@@ -69,9 +69,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.TripSession
-import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Edits
-import dev.tlong.traveler.ui.checklist.ChecklistCard
 import dev.tlong.traveler.domain.bookables
 import dev.tlong.traveler.domain.totals
 import dev.tlong.traveler.ui.bookings.glyph
@@ -174,7 +172,6 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var menu by remember { mutableStateOf(false) }
     var exportMenu by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf(false) }
-    var editingNotes by remember { mutableStateOf(false) }
     val notes by session.notes.collectAsStateWithLifecycle()
     val checklist by session.checklist.collectAsStateWithLifecycle()
     var editingLink by remember { mutableStateOf<LinkTarget?>(null) }
@@ -257,15 +254,18 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            item("bookings") { BookingsCard(trip) { navigator.bookings(trip.id) } }
+            item("shortcuts") {
+                TripShortcuts(
+                    trip, checklist, hasNotes = notes != null,
+                    onBookings = { navigator.bookings(trip.id) },
+                    onChecklist = { navigator.checklist(trip.id, it) },
+                    onNotes = { navigator.notes(trip.id) },
+                )
+            }
             val bookAhead = trip.bookAhead()
             if (bookAhead.isNotEmpty()) item("book-ahead") {
                 BookAhead(bookAhead, expanded = showBookAhead, onToggle = { showBookAhead = !showBookAhead }) { navigator.bookings(trip.id) }
             }
-            item("checklist") {
-                ChecklistCard(checklist, onToggle = { session.setChecklist(Checklists.toggle(checklist, it)) }) { tab, pick -> navigator.checklist(trip.id, tab, pick) }
-            }
-            item("your-notes") { TripNotesCard(notes) { editingNotes = true } }
             item("map") { MapCard(trip, points, segments, online, onExpand = { fullMap = true }) }
             if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
                 val stay = trip.stayFor(today)
@@ -327,10 +327,6 @@ private fun Overview(session: TripSession, navigator: Navigator) {
         }
     }
     if (offlineMaps) OfflineMapsDialog(trip, online) { offlineMaps = false }
-    if (editingNotes) TripNotesDialog(notes, onDismiss = { editingNotes = false }) { text ->
-        editingNotes = false
-        session.setNotes(text)
-    }
     if (renaming) RenameDialog(trip.title, onDismiss = { renaming = false }) { name ->
         renaming = false
         session.edit("Rename trip") { Edits.rename(it, name) }
@@ -481,27 +477,6 @@ private fun BookingTally(group: Bookable.Group, booked: Int, planned: Int, onCli
 private fun LinkChip(link: Link, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val icon = when (link.kind ?: linkKind(link.url)) { "spreadsheet" -> "📊"; "chat" -> "💬"; "map" -> "🗺️"; "doc" -> "📄"; "booking" -> "🎫"; else -> "🔗" }
     AssistChip(onClick = onClick, modifier = modifier, label = { Text("$icon ${link.label ?: link.url}", maxLines = 1, overflow = TextOverflow.Ellipsis) })
-}
-
-@Composable
-private fun BookingsCard(trip: Trip, onOpen: () -> Unit) {
-    val items = remember(trip) { trip.bookables().filterNot { it.unplanned } }
-    Card(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Bookings", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                Text("Open", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-            }
-            Text(
-                listOfNotNull(
-                    items.tallyLabel() ?: "Nothing to book",
-                    items.totals().joinToString(" + ") { "est. " + it.estimate }.ifEmpty { null },
-                ).joinToString(" · "),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            items.firstOrNull { !it.booked }?.let { Text("Next to book: ${it.glyph()} ${it.title}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        }
-    }
 }
 
 /** The P1s still open, collapsed to a count: things that sell out or jump in price if left. */

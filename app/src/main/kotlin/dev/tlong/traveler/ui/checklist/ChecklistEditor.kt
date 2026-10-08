@@ -90,8 +90,8 @@ fun ChecklistEditor(
     checkable: Boolean,
     onChange: (Checklist) -> Unit,
     onRemoved: (index: Int, item: CheckItem) -> Unit,
-    empty: String,
     modifier: Modifier = Modifier,
+    onFromTemplate: (() -> Unit)? = null,
 ) {
     val items = Checklists.of(list, kind)
     val open = if (checkable) items.filterNot { it.done } else items
@@ -113,7 +113,10 @@ fun ChecklistEditor(
     Column(modifier) {
         LazyColumn(Modifier.weight(1f).fillMaxWidth(), state = scroll, contentPadding = PaddingValues(bottom = 8.dp)) {
             if (items.isEmpty()) item("empty") {
-                Text(empty, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp))
+                Row(Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Nothing yet", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    onFromTemplate?.let { TextButton(onClick = it) { Text("Add from a template") } }
+                }
             }
             Checklists.sections(open).forEach { (section, rows) ->
                 if (section != null) item("s-$section") {

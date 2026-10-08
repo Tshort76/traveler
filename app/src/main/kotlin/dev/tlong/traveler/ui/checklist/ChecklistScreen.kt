@@ -53,14 +53,14 @@ import dev.tlong.traveler.ui.overview.LoadingScaffold
 import kotlinx.coroutines.launch
 
 @Composable
-fun ChecklistScreen(tripId: String, tab: Int, pick: Boolean, navigator: Navigator) {
+fun ChecklistScreen(tripId: String, tab: Int, navigator: Navigator) {
     val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
-    TripChecklist(session, Kind.entries[tab], pick, navigator)
+    TripChecklist(session, Kind.entries[tab], navigator)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TripChecklist(session: TripSession, startKind: Kind, pick: Boolean, navigator: Navigator) {
+private fun TripChecklist(session: TripSession, startKind: Kind, navigator: Navigator) {
     val container = LocalContainer.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -70,7 +70,7 @@ private fun TripChecklist(session: TripSession, startKind: Kind, pick: Boolean, 
     val templates by container.templates.templates.collectAsState(emptyList())
     var kind by rememberSaveable { mutableStateOf(startKind) }
     var menu by remember { mutableStateOf(false) }
-    var picking by rememberSaveable { mutableStateOf(pick) }
+    var picking by rememberSaveable { mutableStateOf(false) }
     var pasting by remember { mutableStateOf(false) }
     var savingAs by remember { mutableStateOf(false) }
 
@@ -124,9 +124,8 @@ private fun TripChecklist(session: TripSession, startKind: Kind, pick: Boolean, 
                     val r = snackbar.showSnackbar("Deleted “${item.text}”", actionLabel = "Undo", withDismissAction = true)
                     if (r == SnackbarResult.ActionPerformed) session.setChecklist(Checklists.insert(session.checklist.value, index, item))
                 } },
-                empty = if (kind == Kind.TODO) "Nothing to do yet. Add from a template (⋮ menu) or type below."
-                else "Nothing to pack yet. Add from a template (⋮ menu) or type below.",
                 modifier = Modifier.weight(1f),
+                onFromTemplate = { picking = true },
             )
         }
     }
@@ -149,7 +148,7 @@ private fun TripChecklist(session: TripSession, startKind: Kind, pick: Boolean, 
         val names = templates.associateBy { it.name.lowercase() }
         NameDialog(
             "Save as a template", "", "Template name", onDismiss = { savingAs = false },
-            note = "Saves this trip's to-dos and packing list, unticked, for other trips. A template with the same name is replaced.",
+            note = "Replaces a template with the same name.",
         ) { name ->
             savingAs = false
             val id = names[name.lowercase()]?.id ?: newItemId()
@@ -178,7 +177,7 @@ private fun TemplatePicker(
         title = { Text("Add from a template") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                if (templates.isEmpty()) Text("No templates yet. A template is a reusable set of to-dos and packing items.")
+                if (templates.isEmpty()) Text("No templates yet.")
                 templates.forEach { t ->
                     CheckRow(t.name, counts(Checklist(t.items)), checked = t.id in chosen) { chosen = if (it) chosen + t.id else chosen - t.id }
                 }
