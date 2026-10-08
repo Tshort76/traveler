@@ -9,7 +9,6 @@ import dev.tlong.traveler.ui.bookings.PriorityTag
 import dev.tlong.traveler.domain.Bookable
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import dev.tlong.traveler.domain.bookAhead
 import dev.tlong.traveler.domain.destinations
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -172,14 +171,12 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var menu by remember { mutableStateOf(false) }
     var exportMenu by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf(false) }
-    val notes by session.notes.collectAsStateWithLifecycle()
     val checklist by session.checklist.collectAsStateWithLifecycle()
     var editingLink by remember { mutableStateOf<LinkTarget?>(null) }
     var showLinks by remember { mutableStateOf(false) }
     var offlineMaps by remember { mutableStateOf(false) }
     var fullMap by remember { mutableStateOf(false) }
     var showNotes by rememberSaveable { mutableStateOf(false) }
-    var showBookAhead by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
@@ -256,15 +253,11 @@ private fun Overview(session: TripSession, navigator: Navigator) {
             }
             item("shortcuts") {
                 TripShortcuts(
-                    trip, checklist, hasNotes = notes != null,
+                    trip, checklist,
                     onBookings = { navigator.bookings(trip.id) },
                     onChecklist = { navigator.checklist(trip.id, it) },
                     onNotes = { navigator.notes(trip.id) },
                 )
-            }
-            val bookAhead = trip.bookAhead()
-            if (bookAhead.isNotEmpty()) item("book-ahead") {
-                BookAhead(bookAhead, expanded = showBookAhead, onToggle = { showBookAhead = !showBookAhead }) { navigator.bookings(trip.id) }
             }
             item("map") { MapCard(trip, points, segments, online, onExpand = { fullMap = true }) }
             if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
@@ -477,30 +470,6 @@ private fun BookingTally(group: Bookable.Group, booked: Int, planned: Int, onCli
 private fun LinkChip(link: Link, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val icon = when (link.kind ?: linkKind(link.url)) { "spreadsheet" -> "📊"; "chat" -> "💬"; "map" -> "🗺️"; "doc" -> "📄"; "booking" -> "🎫"; else -> "🔗" }
     AssistChip(onClick = onClick, modifier = modifier, label = { Text("$icon ${link.label ?: link.url}", maxLines = 1, overflow = TextOverflow.Ellipsis) })
-}
-
-/** The P1s still open, collapsed to a count: things that sell out or jump in price if left. */
-@Composable
-private fun BookAhead(items: List<Bookable>, expanded: Boolean, onToggle: () -> Unit, onOpen: () -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer), modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
-            Row(Modifier.fillMaxWidth().clickable(onClickLabel = if (expanded) "Collapse" else "Expand", onClick = onToggle).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                PriorityTag(1)
-                Text("Advance bookings required (${items.size})", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(start = 8.dp))
-                Icon(if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, null)
-            }
-            if (expanded) items.forEach { b ->
-                Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Open bookings", onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(b.glyph(), modifier = Modifier.width(30.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(b.title, style = MaterialTheme.typography.bodyMedium)
-                        Text(b.date?.let { "For ${dayName(it)}" } ?: "Not planned on a day yet", style = MaterialTheme.typography.bodySmall)
-                    }
-                    b.price?.let { Text(it.label(), style = MaterialTheme.typography.bodyMedium) }
-                }
-            }
-        }
-    }
 }
 
 @Composable
