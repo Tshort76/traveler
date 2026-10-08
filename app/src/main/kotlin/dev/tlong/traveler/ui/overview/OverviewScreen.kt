@@ -435,8 +435,9 @@ private fun StayCard(
         Row(Modifier.padding(14.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    // The stay's number on the map, beside its booking counts rather than in a column of its own.
+                    // The map number follows the name, so it reads as part of it; a long name wraps before pushing it off.
+                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                    Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f, fill = false))
                     Text(
                         "$number", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary,
                         textAlign = TextAlign.Center,
@@ -444,6 +445,7 @@ private fun StayCard(
                             .background(MaterialTheme.colorScheme.primary).wrapContentHeight()
                             .semantics { contentDescription = "Stay $number on the map" },
                     )
+                    }
                     // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
                     Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
                 }
