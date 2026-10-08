@@ -92,12 +92,12 @@ fun BookingDialog(
                         dates.forEach { d -> DropdownMenuItem(text = { Text(dayName(d)) }, onClick = { date = d; dayMenu = false }) }
                     }
                 }
-                OutlinedTextField(title, { title = it }, label = { Text("What (e.g. Louvre guided tour)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(title, { title = it }, label = { Text("What") }, placeholder = { Text("Louvre guided tour") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val number = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    OutlinedTextField(start, { start = it }, label = { Text("Starts (1200)") }, singleLine = true, keyboardOptions = number,
+                    OutlinedTextField(start, { start = it }, label = { Text("Starts") }, placeholder = { Text("1200") }, singleLine = true, keyboardOptions = number,
                         isError = start.isNotBlank() && s == null, modifier = Modifier.weight(1f))
-                    OutlinedTextField(end, { end = it }, label = { Text("Ends (optional)") }, singleLine = true, keyboardOptions = number,
+                    OutlinedTextField(end, { end = it }, label = { Text("Ends") }, singleLine = true, keyboardOptions = number,
                         isError = end.isNotBlank() && (e == null || (s != null && e <= s)), modifier = Modifier.weight(1f))
                 }
                 Box {

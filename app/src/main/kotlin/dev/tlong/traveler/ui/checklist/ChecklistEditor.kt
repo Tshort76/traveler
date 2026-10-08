@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -66,7 +67,7 @@ import dev.tlong.traveler.domain.Checklist
 import dev.tlong.traveler.domain.Checklists
 
 fun Kind.label() = when (this) { Kind.TODO -> "To do"; Kind.PACK -> "Packing" }
-fun Kind.glyph() = when (this) { Kind.TODO -> "✅"; Kind.PACK -> "🎒" }
+fun Kind.glyph() = when (this) { Kind.TODO -> "☑️"; Kind.PACK -> "🎒" }
 
 /** "To do 3/12" on a trip, where items are ticked; "To do (12)" on a template, where they are not. */
 @Composable
@@ -176,8 +177,9 @@ fun ChecklistEditor(
 private fun SectionHeader(name: String, onClick: () -> Unit) {
     Text(
         name.uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 6.dp).clickable(onClickLabel = "Move or rename", onClick = onClick)
-            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp).semantics { heading() },
+        // A full 48dp target, with the label sitting at its foot just above the items it heads.
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = "Move or rename", onClick = onClick)
+            .wrapContentHeight(Alignment.Bottom).padding(start = 16.dp, end = 16.dp, bottom = 4.dp).semantics { heading() },
     )
 }
 
@@ -195,7 +197,7 @@ private fun ItemRow(item: CheckItem, checkable: Boolean, onToggle: () -> Unit, o
         },
     ) {
         Surface {
-            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (checkable) {
                     Checkbox(item.done, { onToggle() }, Modifier.padding(start = 4.dp))
                 } else {

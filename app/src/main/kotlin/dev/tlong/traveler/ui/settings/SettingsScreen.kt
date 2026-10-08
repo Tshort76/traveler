@@ -1,5 +1,9 @@
 package dev.tlong.traveler.ui.settings
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.clickable
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -80,10 +84,6 @@ fun SettingsScreen(navigator: Navigator) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionTitle("Backup")
-                    Text(
-                        "One file with every trip, your edits and the version each was last imported from. Keep it somewhere outside this phone.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(onClick = { saveBackup.launch(backupName) }) { Text("Save backup…") }
                         OutlinedButton(onClick = { scope.launch { shareTextFile(context, backupName, backupText(), "Send backup") } }) { Text("Share") }
@@ -94,20 +94,12 @@ fun SettingsScreen(navigator: Navigator) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionTitle("Checklist templates")
-                    Text(
-                        "Reusable to-dos and packing items to start a trip's checklist from.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                     OutlinedButton(onClick = navigator::templates) { Text("Manage templates") }
                 }
             }
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionTitle("Your assistant")
-                    Text(
-                        "Give these instructions to any assistant (Claude, ChatGPT, Gemini…) so it writes trip files this app can load, and revises them without losing your changes.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                     fun copyPrompt(asset: String, label: String) {
                         val text = context.assets.open(asset).bufferedReader().use { it.readText() }.substringAfter("-->").trim()
                         copyToClipboard(context, label, text)
@@ -125,10 +117,6 @@ fun SettingsScreen(navigator: Navigator) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionTitle("Demo trip")
-                    Text(
-                        "A short Buenos Aires and Patagonia trip that uses every feature: bookings in every state, two hotels in one city, work hours, done and skipped items, your own entries. To start it fresh, delete it, then load it again.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
                     OutlinedButton(onClick = {
                         scope.launch { container.openText(context.assets.open("demo.trip.json").bufferedReader().use { it.readText() }, "demo trip") }
                     }) { Text("Load the demo trip") }
@@ -137,7 +125,7 @@ fun SettingsScreen(navigator: Navigator) {
             item {
                 SectionTitle("Recently deleted")
                 Text(
-                    if (deleted.isEmpty()) "Nothing here." else "Deleted trips stay here for ${TripStore.DELETE_AFTER_MS / 86_400_000} days.",
+                    if (deleted.isEmpty()) "Nothing here" else "Kept for ${TripStore.DELETE_AFTER_MS / 86_400_000} days",
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -155,7 +143,13 @@ fun SettingsScreen(navigator: Navigator) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(top = 12.dp)) {
                     SectionTitle("Privacy")
+                    var privacy by remember { mutableStateOf(false) }
                     Text(
+                        "Everything stays on this phone. ${if (privacy) "Less" else "More…"}",
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { privacy = !privacy }.wrapContentHeight(Alignment.CenterVertically),
+                    )
+                    if (privacy) Text(
                         "Trips and notes live only on this phone. Nothing is uploaded and no account is needed; a trip leaves the phone only when you export, share or back it up. On its own, the app goes online only to fetch map tiles for the area on screen (OpenFreeMap) and a trip's overview image, if the trip names one. When you paste a short Google Maps link to set a location, it follows that link to find the coordinates. No trip details are sent.",
                         style = MaterialTheme.typography.bodyMedium,
                     )

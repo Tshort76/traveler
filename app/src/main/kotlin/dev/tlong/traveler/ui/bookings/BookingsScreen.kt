@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ArrowDropDown
 import dev.tlong.traveler.domain.shortLabel
+import dev.tlong.traveler.ui.common.marked
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.departDate
 import androidx.compose.material.icons.filled.Close
@@ -313,14 +314,18 @@ private fun priorityGroups(items: List<Bookable>): Map<String, List<Bookable>> {
     ).filterValues { it.isNotEmpty() }
 }
 
-private val priorityColors = mapOf(1 to Color(0xFFD32F2F), 2 to Color(0xFFF57C00), 3 to Color(0xFF9CCC65))
-
-/** A P1 (red), P2 (orange) or P3 (lime) tag. */
+/** A P1 (error red), P2 (amber) or P3 (quiet) tag, in scheme colours so dark mode follows. */
 @Composable
 fun PriorityTag(priority: Int) {
-    val bg = priorityColors[priority] ?: return
+    val c = MaterialTheme.colorScheme
+    val (bg, fg) = when (priority) {
+        1 -> c.error to c.onError
+        2 -> c.tertiary to c.onTertiary
+        3 -> c.secondaryContainer to c.onSecondaryContainer
+        else -> return
+    }
     Text(
-        "P$priority", style = MaterialTheme.typography.labelMedium, color = if (priority == 3) Color(0xFF1B2A0B) else Color.White,
+        "P$priority", style = MaterialTheme.typography.labelMedium, color = fg,
         modifier = Modifier.background(bg, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 1.dp)
             .semantics { contentDescription = "Priority $priority" },
     )
@@ -345,12 +350,9 @@ private fun BookableRow(
             Text(b.glyph(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.width(36.dp))
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (b.booked) Text("✓", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { contentDescription = "Booked" })
-                    else b.priority?.let { PriorityTag(it) }
+                    if (!b.booked) b.priority?.let { PriorityTag(it) }
                     if (b.unplanned) NotPlannedTag()
-                    // Booked and unplanned rows recede so what is still open stands out.
-                    Text(b.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                        color = if (b.booked || b.unplanned) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else Color.Unspecified)
+                    Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 detailLine(trip, b).takeIf { it.isNotEmpty() }?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)

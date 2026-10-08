@@ -1,5 +1,7 @@
 package dev.tlong.traveler.ui.overview
 
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
 import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.ui.common.byRecommendation
@@ -206,7 +208,12 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                 actions = {
                     SaveIndicator(saveState, session::retrySave)
                     Box {
-                        IconButton(onClick = { exportMenu = true }) { Icon(Icons.Default.Share, "Export trip") }
+                        // A dot when there are changes the last export does not have.
+                        IconButton(onClick = { exportMenu = true }) {
+                            BadgedBox(badge = { if (unexported && changes > 0) Badge() }) {
+                                Icon(Icons.Default.Share, if (unexported && changes > 0) "Export trip, changes not exported" else "Export trip")
+                            }
+                        }
                         DropdownMenu(exportMenu, onDismissRequest = { exportMenu = false }) {
                             DropdownMenuItem(text = { Text("Share trip file") }, onClick = {
                                 exportMenu = false
@@ -225,14 +232,6 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                     Box {
                         IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, "More") }
                         DropdownMenu(menu, onDismissRequest = { menu = false }) {
-                            DropdownMenuItem(enabled = false, onClick = {}, text = {
-                                Column {
-                                    Text("Revision ${base.revision}" + if (changes > 0) " + $changes change${if (changes == 1) "" else "s"} of yours" else ", unchanged")
-                                    if (unexported && changes > 0) Text("Not exported since your last change", style = MaterialTheme.typography.bodySmall)
-                                }
-                            })
-                            HorizontalDivider()
-                            DropdownMenuItem(text = { Text("Export…") }, onClick = { menu = false; exportMenu = true })
                             DropdownMenuItem(text = { Text("Import a revision…") }, onClick = { menu = false; openRevision.launch(TRIP_MIME_TYPES) })
                             DropdownMenuItem(text = { Text("History and undo import") }, onClick = { menu = false; navigator.history(trip.id) })
                             DropdownMenuItem(text = { Text("Trip links (${trip.links.size})…") }, onClick = { menu = false; showLinks = true })
@@ -252,7 +251,8 @@ private fun Overview(session: TripSession, navigator: Navigator) {
         ) {
             item("dates") {
                 Text(
-                    "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays",
+                    "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays · rev ${base.revision}" +
+                        if (changes > 0) " + $changes edit${if (changes == 1) "" else "s"}" else "",
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -285,7 +285,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                 numbers[stay.id]?.let { n ->
                     item("stay-${stay.id}") {
                         StayCard(
-                            n, stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { it.marked(trip.isBooked(it)) },
+                            n, stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { marked(it.name, null, it.booking != null, trip.isBooked(it)) },
                             tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
@@ -413,7 +413,8 @@ private fun MapCard(
                 )
             }
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
+                // The numbered map and stay cards already show the route; spell it out only without a map.
+                if (points.isEmpty()) Text(
                     trip.destinations.mapIndexed { i, s -> "${i + 1} ${s.name}" }.joinToString("  →  "),
                     style = MaterialTheme.typography.bodyMedium,
                 )

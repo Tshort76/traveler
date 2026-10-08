@@ -51,12 +51,6 @@ fun HistoryScreen(tripId: String, navigator: Navigator) {
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            item {
-                Text(
-                    "A copy of the trip is kept before each revision import, restore or backup restore. Restoring one keeps a copy of the current version here too, so nothing is lost. Up to 20 are kept.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
             if (snapshots.isEmpty()) item { Text("No earlier versions yet.", style = MaterialTheme.typography.bodyMedium) }
             items(snapshots, key = { it.id }) { s ->
                 Card(Modifier.fillMaxWidth()) {

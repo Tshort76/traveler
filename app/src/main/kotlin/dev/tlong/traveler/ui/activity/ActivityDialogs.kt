@@ -154,9 +154,9 @@ fun PlaceSheet(
                 }
             }
             OutlinedTextField(
-                timeText, { timeText = it }, label = { Text("Exact time (optional, e.g. 1430)") }, singleLine = true,
+                timeText, { timeText = it }, label = { Text("Time") }, placeholder = { Text("1430") }, singleLine = true,
                 isError = timeInvalid, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                supportingText = { Text(if (timeInvalid) "Use a 24-hour time like 1430" else time?.let { "Fixed at $it" } ?: "Leave empty for any time in the slot") }, modifier = Modifier.fillMaxWidth(),
+                supportingText = if (timeInvalid) { { Text("Use a 24-hour time like 1430") } } else null, modifier = Modifier.fillMaxWidth(),
             )
             issues.forEach { IssueLine(it) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

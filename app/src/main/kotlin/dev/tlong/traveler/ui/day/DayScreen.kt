@@ -68,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.domain.isBooked
+import dev.tlong.traveler.ui.common.DragHandle
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.bookablesOn
@@ -467,13 +468,12 @@ private fun ItemRow(
     ) {
         Row(Modifier.padding(start = 2.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(handle.size(44.dp).semantics { contentDescription = "Hold and drag to reorder $name" }, contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Menu, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(DragHandle, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Column(Modifier.weight(1f).clickable(onClickLabel = "Open details", onClick = onOpen).padding(vertical = 6.dp).alpha(if (status == ItemStatus.SKIPPED) 0.6f else 1f)) {
+            Column(Modifier.weight(1f).clickable(onClickLabel = "Open details", onClick = onOpen).padding(vertical = 6.dp)) {
                 Text(
                     listOfNotNull(item.time, a?.tag, a?.marked(booked) ?: name).joinToString("  "),
                     style = MaterialTheme.typography.titleSmall,
-                    textDecoration = if (status == ItemStatus.DONE) TextDecoration.LineThrough else null,
                 )
                 a?.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 val facts = a?.factsLine().orEmpty()

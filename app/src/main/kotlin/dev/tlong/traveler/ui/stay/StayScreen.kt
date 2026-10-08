@@ -1,5 +1,9 @@
 package dev.tlong.traveler.ui.stay
 
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Badge
+import dev.tlong.traveler.ui.common.FilterList
+import dev.tlong.traveler.ui.common.weekdaysLabel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -207,16 +211,15 @@ private fun DayCard(trip: Trip, stay: Stay, date: LocalDate, isToday: Boolean, o
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(date.label() + if (isToday) " · Today" else "", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                if (kind != DayKind.PLAN) Pill(kind.label)
-                if (work != null) Pill("💻 ${work.label}")
-                trip.bookablesOn(date.toString()).tallyLabel()?.let { Pill(it) }
+                // One pill: work hours say "work day" on their own.
+                if (work != null) Pill("💻 ${work.label}") else if (kind != DayKind.PLAN) Pill(kind.label)
             }
             day?.title?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
             booked.forEach { c -> Text("🔒 ${listOfNotNull(c.start, c.end).joinToString("–")} ${c.title}".trim(), style = MaterialTheme.typography.bodySmall) }
             day?.plan?.forEach { item ->
                 val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
                 val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
-                TextButton(onClick = { onActivity(a.id) }, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp), modifier = Modifier.height(32.dp)) {
+                TextButton(onClick = { onActivity(a.id) }, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)) {
                     Text(
                         "$status${item.time ?: Slot.of(item.slot).label}  " + "${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}",
                         style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -259,23 +262,29 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
         else if (pool.isNotEmpty()) item("map") {
             Text(
-                "No map: none of these places has coordinates. Ask the assistant to add lat/lng to every activity's place.",
+                "No map: these places have no coordinates.",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         item("show") {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                Show.entries.forEachIndexed { i, s ->
-                    SegmentedButton(show == s, onClick = { show = s }, shape = SegmentedButtonDefaults.itemShape(i, Show.entries.size)) { Text(s.label) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
+                    Show.entries.forEachIndexed { i, s ->
+                        SegmentedButton(show == s, onClick = { show = s }, shape = SegmentedButtonDefaults.itemShape(i, Show.entries.size)) { Text(s.label) }
+                    }
+                }
+                IconButton(onClick = { showFilters = !showFilters }, modifier = Modifier.semantics {
+                    contentDescription = (if (showFilters) "Hide filters" else "Filters") + if (activeFilters > 0) ", $activeFilters on" else ""
+                }) {
+                    BadgedBox(badge = { if (activeFilters > 0) Badge { Text("$activeFilters") } }) {
+                        Icon(FilterList, null, tint = if (showFilters || activeFilters > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
-        item("filters") {
+        if (showFilters) item("filters") {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                TextButton(onClick = { showFilters = !showFilters }) {
-                    Text(if (showFilters) "Hide filters" else "Filter by time, effort, weather, type" + if (activeFilters > 0) " ($activeFilters on)" else "")
-                }
-                if (showFilters) {
+                run {
                     FilterGroup("Time available", listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening"), fits) { fits = it }
                     FilterGroup("Effort", listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding"), efforts) { efforts = it }
                     if (allConditions.isNotEmpty()) FilterGroup("Good for", allConditions.map { it to conditionLabel(it) }, conditions) { conditions = it }
@@ -284,7 +293,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
                 }
             }
         }
-        if (list.isEmpty()) item("empty") { Text("Nothing matches. Clear a filter, or add your own entry.", style = MaterialTheme.typography.bodyMedium) }
+        if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }
         items(list, key = { it.id }) { a ->
             PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = { overlays.place = PlaceRequest(a.id, null, null, null) })
         }
@@ -367,7 +376,7 @@ private fun InfoTab(session: TripSession, trip: Trip, stay: Stay, pool: List<Act
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 SectionTitle(if (standouts.isNotEmpty()) "✨ Standouts" else "Prioritize")
                 standouts.forEach { a ->
-                    Text("• ${a.marked(trip.isBooked(a))}", style = MaterialTheme.typography.bodyLarge,
+                    Text("• ${marked(a.name, null, a.booking != null, trip.isBooked(a))}", style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${a.name}") { overlays.detail = a.id }.padding(vertical = 4.dp))
                 }
                 if (standouts.isEmpty()) stay.priorities.forEach { Text("• $it", style = MaterialTheme.typography.bodyLarge) }
@@ -380,10 +389,10 @@ private fun InfoTab(session: TripSession, trip: Trip, stay: Stay, pool: List<Act
             item("work") {
                 val sample = trip.datesOf(stay).firstNotNullOfOrNull { workHoursOn(stay, it) }
                 LabeledText("Work rhythm", buildString {
-                    append(w.days.joinToString(" ")).append(", ")
-                    append(sample?.label ?: "${w.start}–${w.end}").append(" local time")
-                    sample?.sourceLabel?.let { append(" (").append(it).append(")") }
-                    w.note?.let { append(". ").append(it) }
+                    append(weekdaysLabel(w.days)).append(" · ")
+                    append(sample?.label ?: "${w.start}–${w.end}")
+                    sample?.sourceLabel?.let { append("\n").append(it) }
+                    w.note?.let { append("\n").append(it) }
                 })
             }
         }
@@ -391,8 +400,7 @@ private fun InfoTab(session: TripSession, trip: Trip, stay: Stay, pool: List<Act
             val z = stay.zone
             LabeledText(
                 "Time zone",
-                "${shortZone(z, stay.arriveDate)}. " + if (z.observesDst(year)) "This zone changes its clocks during the year; times shown are local on each date."
-                else "This zone keeps the same time all year.",
+                shortZone(z, stay.arriveDate) + if (z.observesDst(year)) " · changes clocks during the year" else "",
             )
         }
         stay.transport?.let { item("transport") { LabeledText("Getting around", it) } }

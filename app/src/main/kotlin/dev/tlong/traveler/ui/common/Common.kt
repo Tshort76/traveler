@@ -30,6 +30,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.materialIcon
+import androidx.compose.material.icons.materialPath
+import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -102,24 +108,40 @@ fun rememberOnline(): State<Boolean> {
 @Composable
 fun SaveIndicator(state: SaveState, onRetry: () -> Unit) {
     when (state) {
-        SaveState.Saved -> Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp).semantics { contentDescription = "All changes saved" },
-        ) {
-            Icon(Icons.Default.Check, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.width(2.dp))
-            Text("Saved", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // Saved is the normal state, so it shows nothing; only saving and failure are signals.
+        SaveState.Saved -> Unit
+        // A save normally lands in milliseconds; only a slow one is worth showing.
+        SaveState.Saving -> {
+            var slow by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) { delay(600); slow = true }
+            if (slow) Text(
+                "Saving…", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
         }
-        SaveState.Saving -> Text(
-            "Saving…", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 8.dp),
-        )
         is SaveState.Failed -> TextButton(onClick = onRetry) {
             Icon(Icons.Default.Warning, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.error)
             Spacer(Modifier.width(4.dp))
             Text("Not saved — retry", color = MaterialTheme.colorScheme.error)
             Icon(Icons.Default.Refresh, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.error)
         }
+    }
+}
+
+/** The Material "drag handle" (two bars), which the core icon set lacks. */
+val DragHandle: ImageVector = materialIcon(name = "Filled.DragHandle") {
+    materialPath {
+        moveTo(20f, 9f); horizontalLineTo(4f); verticalLineToRelative(2f); horizontalLineToRelative(16f); close()
+        moveTo(4f, 15f); horizontalLineToRelative(16f); verticalLineToRelative(-2f); horizontalLineTo(4f); close()
+    }
+}
+
+/** The Material "filter list" icon (three shortening bars), which the core icon set lacks. */
+val FilterList: ImageVector = materialIcon(name = "Filled.FilterList") {
+    materialPath {
+        moveTo(10f, 18f); horizontalLineToRelative(4f); verticalLineToRelative(-2f); horizontalLineToRelative(-4f); close()
+        moveTo(3f, 6f); verticalLineToRelative(2f); horizontalLineToRelative(18f); verticalLineTo(6f); close()
+        moveTo(6f, 13f); horizontalLineToRelative(12f); verticalLineToRelative(-2f); horizontalLineTo(6f); close()
     }
 }
 
