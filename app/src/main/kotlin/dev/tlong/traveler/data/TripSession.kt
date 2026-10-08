@@ -1,5 +1,6 @@
 package dev.tlong.traveler.data
 
+import dev.tlong.traveler.domain.Checklist
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.model.Trip
@@ -40,6 +41,12 @@ class TripSession(
     private val _notes = MutableStateFlow(initial.row.notes)
     val notes: StateFlow<String?> = _notes.asStateFlow()
 
+    /** The trip's to-dos and packing list, stored beside the trip file like [notes]. */
+    private val _checklist = MutableStateFlow(TripStore.checklistOf(initial.row))
+    val checklist: StateFlow<Checklist> = _checklist.asStateFlow()
+
+    private val checklistWrites = Channel<Checklist>(Channel.CONFLATED)
+
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Saved)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
 
@@ -58,6 +65,24 @@ class TripSession(
                 }
             }
         }
+        scope.launch {
+            for (c in checklistWrites) {
+                try {
+                    store.setChecklist(_trip.value.id, c)
+                    if (_checklist.value == c) _saveState.value = SaveState.Saved
+                } catch (e: Exception) {
+                    _saveState.value = SaveState.Failed(e.message ?: "could not write to storage")
+                }
+            }
+        }
+    }
+
+    /** Shows and saves a checklist change at once; ticking items in quick succession writes only the latest. */
+    fun setChecklist(list: Checklist) {
+        if (list == _checklist.value) return
+        _checklist.value = list
+        _saveState.value = SaveState.Saving
+        checklistWrites.trySend(list)
     }
 
     /** Applies [f]; returns false (and records nothing) when it changed nothing. */
@@ -78,7 +103,10 @@ class TripSession(
         return label
     }
 
-    fun retrySave() = set(_trip.value)
+    fun retrySave() {
+        set(_trip.value)
+        checklistWrites.trySend(_checklist.value)
+    }
 
     /** Saves the notes at once; they have no undo, since the editor's Cancel covers a change of mind. */
     fun setNotes(text: String) {
@@ -108,6 +136,7 @@ class TripSession(
         _base.value = stored.base
         _trip.value = stored.local
         _exportedHash.value = stored.row.lastExportedHash
+        _checklist.value = TripStore.checklistOf(stored.row)
         _saveState.value = SaveState.Saved
     }
 

@@ -122,8 +122,8 @@ fun ImportScreen(navigator: Navigator) {
                 is PendingImport.Revision -> RevisionReview(p, onCancel = close) { decisions ->
                     scope.launch { navigator.overview(container.acceptRevision(p, decisions), replaceStack = true) }
                 }
-                is PendingImport.Backup -> BackupReview(p, onCancel = close) { chosen ->
-                    scope.launch { container.restoreBackup(chosen); navigator.trips() }
+                is PendingImport.Backup -> BackupReview(p, onCancel = close) { chosen, templates ->
+                    scope.launch { container.restoreBackup(chosen, templates); navigator.trips() }
                 }
             }
         }
@@ -341,7 +341,7 @@ private fun Choice(label: String, value: String, selected: Boolean, onSelect: ()
 }
 
 @Composable
-private fun CheckRow(title: String, detail: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
+fun CheckRow(title: String, detail: String?, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
         Modifier.fillMaxWidth().toggleable(checked, role = Role.Checkbox, onValueChange = onChange).padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -355,11 +355,19 @@ private fun CheckRow(title: String, detail: String?, checked: Boolean, onChange:
 }
 
 @Composable
-private fun BackupReview(p: PendingImport.Backup, onCancel: () -> Unit, onRestore: (List<dev.tlong.traveler.data.BackupTrip>) -> Unit) {
+private fun BackupReview(
+    p: PendingImport.Backup,
+    onCancel: () -> Unit,
+    onRestore: (List<dev.tlong.traveler.data.BackupTrip>, List<dev.tlong.traveler.domain.ChecklistTemplate>) -> Unit,
+) {
     var chosen by remember { mutableStateOf(p.file.trips.filter { it.base.id !in p.existing }.map { it.base.id }.toSet()) }
+    var templates by remember { mutableStateOf(p.file.templates.isNotEmpty()) }
     WithActions(
         actions = {
-            Button(onClick = { onRestore(p.file.trips.filter { it.base.id in chosen }) }, enabled = chosen.isNotEmpty()) { Text("Restore ${chosen.size}") }
+            Button(
+                onClick = { onRestore(p.file.trips.filter { it.base.id in chosen }, if (templates) p.file.templates else emptyList()) },
+                enabled = chosen.isNotEmpty() || templates,
+            ) { Text("Restore ${chosen.size + if (templates) 1 else 0}") }
             OutlinedButton(onClick = onCancel) { Text("Cancel") }
         },
     ) {
@@ -375,6 +383,13 @@ private fun BackupReview(p: PendingImport.Backup, onCancel: () -> Unit, onRestor
             (if (exists) "Replaces the copy on this phone · " else "New on this phone · ") + dateRangeLabel(t.local.start, t.local.end),
             checked = t.base.id in chosen,
         ) { chosen = if (it) chosen + t.base.id else chosen - t.base.id }
+    }
+    if (p.file.templates.isNotEmpty()) {
+        CheckRow(
+            "Checklist templates (${p.file.templates.size})",
+            "Replaces the same templates on this phone; others stay",
+            checked = templates,
+        ) { templates = it }
     }
     }
 }

@@ -2,6 +2,10 @@ package dev.tlong.traveler.data
 
 import androidx.test.core.app.ApplicationProvider
 import dev.tlong.traveler.Fixtures
+import dev.tlong.traveler.domain.CheckItem
+import dev.tlong.traveler.domain.Checklist
+import dev.tlong.traveler.domain.ChecklistTemplate
+import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
@@ -30,7 +34,19 @@ class TripStoreTest {
     private val store = TripStore(db.trips()) { now }
     private val router = ImportRouter(store)
 
+    private val checklist = Checklist(listOf(CheckItem("e", CheckItem.Kind.TODO, "Get an eSIM", "Weeks before", done = true), CheckItem("p", CheckItem.Kind.PACK, "Plug adapter")))
+
     @After fun close() = db.close()
+
+    @Test
+    fun `starter templates are added only when there are none`() = runBlocking {
+        val templates = TemplateStore(db.templates())
+        assertTrue(templates.seedIfEmpty(Checklists.starters))
+        assertEquals(listOf("Every trip", "International"), templates.all().map { it.name })
+        templates.delete("starter-every-trip")
+        assertFalse(templates.seedIfEmpty(Checklists.starters))
+        assertEquals(listOf("International"), templates.all().map { it.name })
+    }
 
     @Test
     fun `opening the same file twice makes no duplicate`() = runBlocking {
@@ -93,14 +109,17 @@ class TripStoreTest {
     }
 
     @Test
-    fun `my notes stay out of the trip file and survive a revision`() = runBlocking {
+    fun `my notes and checklist stay out of the trip file and survive a revision`() = runBlocking {
         store.importNew(Fixtures.iguazu)
         store.setNotes("argentina-2026-11", "- Bring the adapter")
+        store.setChecklist("argentina-2026-11", checklist)
         val pending = ImportRouter(store).route(Fixtures.text("iguazu-short.r2.trip.json"), "r2") as PendingImport.Revision
         store.applyRevision(pending.plan.incoming, Merge.apply(pending.plan))
         val stored = store.load("argentina-2026-11")!!
         assertEquals("- Bring the adapter", stored.row.notes)
-        assertFalse("Bring the adapter" in TripJson.encode(Export.tripFile(stored.base, stored.local)))
+        assertEquals(checklist, TripStore.checklistOf(stored.row))
+        val exported = TripJson.encode(Export.tripFile(stored.base, stored.local))
+        assertFalse("Bring the adapter" in exported || "Get an eSIM" in exported)
     }
 
     @Test
@@ -109,7 +128,9 @@ class TripStoreTest {
         val (withCustom, id) = Edits.addCustom(store.load("argentina-2026-11")!!.local, "iguazu", "Laundry")
         store.saveLocal(withCustom)
         store.setNotes("argentina-2026-11", "- Bring the adapter")
-        val backup = store.backupText("2026-10-03T00:00:00Z")
+        store.setChecklist("argentina-2026-11", checklist)
+        val template = ChecklistTemplate("t1", "International", checklist.items)
+        val backup = store.backupText("2026-10-03T00:00:00Z", listOf(template))
 
         val other = TravelerDatabase.inMemory(ApplicationProvider.getApplicationContext())
         val fresh = TripStore(other.trips())
@@ -119,6 +140,8 @@ class TripStoreTest {
         assertNotNull(restored.local.activities.firstOrNull { it.id == id })
         assertEquals(Fixtures.iguazu.normalized(), restored.base)
         assertEquals("- Bring the adapter", restored.row.notes)
+        assertEquals(checklist, TripStore.checklistOf(restored.row))
+        assertEquals(listOf(template), pending.file.templates)
         other.close()
     }
 

@@ -10,5 +10,6 @@ class App : Application() {
         super.onCreate()
         container = AppContainer(this)
         container.purgeExpiredLater()
+        container.seedTemplatesLater()
     }
 }

@@ -60,7 +60,7 @@ fun SettingsScreen(navigator: Navigator) {
     var purging by remember { mutableStateOf<TripSummary?>(null) }
     val backupName = "traveler-backup-${LocalDate.now()}.json"
 
-    suspend fun backupText() = container.store.backupText(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString())
+    suspend fun backupText() = container.backupText(Instant.now().truncatedTo(ChronoUnit.SECONDS).toString())
 
     val saveBackup = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) scope.launch {
@@ -89,6 +89,16 @@ fun SettingsScreen(navigator: Navigator) {
                         OutlinedButton(onClick = { scope.launch { shareTextFile(context, backupName, backupText(), "Send backup") } }) { Text("Share") }
                     }
                     OutlinedButton(onClick = { openBackup.launch(TRIP_MIME_TYPES) }) { Text("Restore from a backup…") }
+                }
+            }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SectionTitle("Checklist templates")
+                    Text(
+                        "Reusable to-dos and packing items to start a trip's checklist from.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    OutlinedButton(onClick = navigator::templates) { Text("Manage templates") }
                 }
             }
             item {

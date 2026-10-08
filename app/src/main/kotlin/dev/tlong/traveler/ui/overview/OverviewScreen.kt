@@ -69,7 +69,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.TripSession
+import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Edits
+import dev.tlong.traveler.ui.checklist.ChecklistCard
 import dev.tlong.traveler.domain.bookables
 import dev.tlong.traveler.domain.totals
 import dev.tlong.traveler.ui.bookings.glyph
@@ -174,6 +176,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var renaming by remember { mutableStateOf(false) }
     var editingNotes by remember { mutableStateOf(false) }
     val notes by session.notes.collectAsStateWithLifecycle()
+    val checklist by session.checklist.collectAsStateWithLifecycle()
     var editingLink by remember { mutableStateOf<LinkTarget?>(null) }
     var showLinks by remember { mutableStateOf(false) }
     var offlineMaps by remember { mutableStateOf(false) }
@@ -258,6 +261,9 @@ private fun Overview(session: TripSession, navigator: Navigator) {
             val bookAhead = trip.bookAhead()
             if (bookAhead.isNotEmpty()) item("book-ahead") {
                 BookAhead(bookAhead, expanded = showBookAhead, onToggle = { showBookAhead = !showBookAhead }) { navigator.bookings(trip.id) }
+            }
+            item("checklist") {
+                ChecklistCard(checklist, onToggle = { session.setChecklist(Checklists.toggle(checklist, it)) }) { tab, pick -> navigator.checklist(trip.id, tab, pick) }
             }
             item("your-notes") { TripNotesCard(notes) { editingNotes = true } }
             item("map") { MapCard(trip, points, segments, online, onExpand = { fullMap = true }) }

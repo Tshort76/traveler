@@ -11,6 +11,8 @@ A trip is not normalized into tables. Each `TripRow` (Room) holds two JSON docum
 
 A `SnapshotRow` copy of both is taken before anything replaces them (a revision import, a snapshot restore, a backup restore). The newest 20 are kept per trip. A deleted trip is soft-deleted and purged after 30 days.
 
+Some of the traveler's things live beside the trip file, never in it, so no export carries them and no revision changes them: `TripRow.notes` (free text) and `TripRow.checklist` (a `Checklist` document of to-dos and packing items, `domain/Checklist.kt`). Checklist templates are their own `TemplateRow` documents; applying one copies its items into the trip, skipping any already there. Backups carry all three.
+
 Everything the app adds to the file format is a field the format already allows: `origin: "user"` on the traveler's own activities, `userNote`, and `userEdited` (the list of fields the traveler changed). That is what lets an exported file go back to an assistant and come back merged.
 
 ## Layers

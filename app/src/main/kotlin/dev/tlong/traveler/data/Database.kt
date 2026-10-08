@@ -44,6 +44,17 @@ data class TripRow(
     val lastExportedHash: String? = null,
     /** The traveler's own notes on the trip. Kept here, beside the trip file rather than in it, so no revision or assistant ever sees or changes them. */
     val notes: String? = null,
+    /** The trip's to-dos and packing list as a [dev.tlong.traveler.domain.Checklist] document; beside the trip file, like [notes]. */
+    val checklist: String? = null,
+)
+
+/** A reusable checklist: a [dev.tlong.traveler.domain.ChecklistTemplate] document, copied into a trip when applied. */
+@Entity(tableName = "templates")
+data class TemplateRow(
+    @PrimaryKey val id: String,
+    val name: String,
+    val json: String,
+    val updatedAt: Long,
 )
 
 data class TripSummaryRow(
@@ -90,6 +101,9 @@ interface TripDao {
     @Query("UPDATE trips SET notes = :notes WHERE id = :id")
     suspend fun setNotes(id: String, notes: String?)
 
+    @Query("UPDATE trips SET checklist = :json WHERE id = :id")
+    suspend fun setChecklist(id: String, json: String?)
+
     @Query("UPDATE trips SET archived = :archived, updatedAt = :at WHERE id = :id")
     suspend fun setArchived(id: String, archived: Boolean, at: Long)
 
@@ -127,9 +141,28 @@ interface TripDao {
     }
 }
 
-@Database(entities = [TripRow::class, SnapshotRow::class], version = 2, exportSchema = true, autoMigrations = [AutoMigration(from = 1, to = 2)])
+@Dao
+interface TemplateDao {
+    @Query("SELECT * FROM templates ORDER BY name COLLATE NOCASE")
+    fun observe(): Flow<List<TemplateRow>>
+
+    @Query("SELECT * FROM templates ORDER BY name COLLATE NOCASE")
+    suspend fun all(): List<TemplateRow>
+
+    @Upsert
+    suspend fun upsert(row: TemplateRow)
+
+    @Query("DELETE FROM templates WHERE id = :id")
+    suspend fun delete(id: String)
+}
+
+@Database(
+    entities = [TripRow::class, SnapshotRow::class, TemplateRow::class], version = 3, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+)
 abstract class TravelerDatabase : RoomDatabase() {
     abstract fun trips(): TripDao
+    abstract fun templates(): TemplateDao
 
     companion object {
         fun open(context: Context): TravelerDatabase =

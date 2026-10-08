@@ -8,7 +8,10 @@ import dev.tlong.traveler.data.ImportRouter
 import dev.tlong.traveler.data.PendingImport
 import dev.tlong.traveler.data.TravelerDatabase
 import dev.tlong.traveler.data.TripSession
+import dev.tlong.traveler.data.TemplateStore
 import dev.tlong.traveler.data.TripStore
+import dev.tlong.traveler.domain.ChecklistTemplate
+import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.ui.map.OfflineMaps
@@ -29,6 +32,7 @@ import kotlinx.coroutines.withContext
 class AppContainer(private val context: Context, db: TravelerDatabase = TravelerDatabase.open(context)) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val store = TripStore(db.trips())
+    val templates = TemplateStore(db.templates())
     private val router = ImportRouter(store)
 
     private val sessions = mutableMapOf<String, TripSession>()
@@ -85,8 +89,11 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
         _pending.value = null
     }
 
-    suspend fun restoreBackup(trips: List<BackupTrip>) {
+    suspend fun backupText(createdAt: String) = store.backupText(createdAt, templates.all())
+
+    suspend fun restoreBackup(trips: List<BackupTrip>, restoredTemplates: List<ChecklistTemplate> = emptyList()) {
         store.restore(trips)
+        restoredTemplates.forEach { templates.save(it) }
         trips.forEach { refreshSession(it.base.id) }
         _pending.value = null
     }
@@ -97,6 +104,14 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
     }
 
     /** Empties the recently-deleted list past its keep time, and the saved maps of trips now gone. */
+    /** Offers the starter templates once, on the first launch that has checklists; deleting them all keeps them gone. */
+    fun seedTemplatesLater() = scope.launch {
+        val prefs = context.getSharedPreferences("traveler", Context.MODE_PRIVATE)
+        if (prefs.getBoolean(SEEDED_TEMPLATES, false)) return@launch
+        templates.seedIfEmpty(Checklists.starters)
+        prefs.edit().putBoolean(SEEDED_TEMPLATES, true).apply()
+    }
+
     fun purgeExpiredLater() = scope.launch {
         store.purgeExpired()
         val ids = store.summaries.first().map { it.id }.toSet()
@@ -109,4 +124,8 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
             if (c.moveToFirst()) c.getString(0) else null
         }
     }.getOrNull()
+
+    private companion object {
+        const val SEEDED_TEMPLATES = "seededChecklistTemplates"
+    }
 }
