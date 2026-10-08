@@ -1215,9 +1215,8 @@
       "plan": []
     }
   ],
-  "userNote": "Packing and errands for the trip.\n- Plug adapter (type I)\n- Download offline maps before the flight\n- Cash for the San Telmo market",
   "validated": {
     "by": "validate_trip.py",
-    "hash": "8f5161e74c80ed1e"
+    "hash": "f2196b21f2b89baf"
   }
 }

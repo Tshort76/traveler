@@ -26,7 +26,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import dev.tlong.traveler.domain.NoteText
 
-/** The traveler's own notes on the trip: shown with bullets, tapped to edit. Never touched by a revision. */
+/** The traveler's own notes on the trip: shown with bullets, tapped to edit. Stored outside the trip file. */
 @Composable
 fun TripNotesCard(note: String?, onEdit: () -> Unit) {
     Card(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
@@ -36,7 +36,7 @@ fun TripNotesCard(note: String?, onEdit: () -> Unit) {
                 Text(if (note == null) "Add" else "Edit", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             }
             if (note == null) {
-                Text("Anything to remember for this trip. Revisions from the assistant never change it.",
+                Text("Anything to remember for this trip. Notes stay on this phone: they are not in exported trip files, and revisions never change them.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 NoteBody(note)

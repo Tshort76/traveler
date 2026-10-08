@@ -31,7 +31,7 @@ data class BackupFile(
 )
 
 @Serializable
-data class BackupTrip(val base: Trip, val local: Trip, val archived: Boolean = false, val updatedAt: Long = 0)
+data class BackupTrip(val base: Trip, val local: Trip, val archived: Boolean = false, val updatedAt: Long = 0, val notes: String? = null)
 
 const val BACKUP_FORMAT = "traveler-backup"
 
@@ -102,6 +102,8 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
         dao.pruneSnapshots(row.id, KEEP_SNAPSHOTS)
     }
 
+    suspend fun setNotes(id: String, notes: String?) = dao.setNotes(id, notes)
+
     suspend fun setArchived(id: String, archived: Boolean) = dao.setArchived(id, archived, clock())
 
     suspend fun moveToDeleted(id: String) = dao.setDeleted(id, clock())
@@ -117,7 +119,7 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
 
     suspend fun backupText(createdAt: String): String {
         val trips = dao.allLive().map {
-            BackupTrip(TripJson.decode(it.baseJson), TripJson.decode(it.localJson), it.archived, it.updatedAt)
+            BackupTrip(TripJson.decode(it.baseJson), TripJson.decode(it.localJson), it.archived, it.updatedAt, it.notes)
         }
         return TripJson.writer.encodeToString(BackupFile.serializer(), BackupFile(createdAt = createdAt, trips = trips)) + "\n"
     }
@@ -136,7 +138,7 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
                     id = base.id, title = t.local.title, startDate = t.local.startDate, endDate = t.local.endDate,
                     baseRevision = base.revision, baseHash = Export.hash(base), baseJson = TripJson.encodeCompact(base),
                     localJson = TripJson.encodeCompact(t.local.normalized()), createdAt = existing?.createdAt ?: now,
-                    updatedAt = now, archived = t.archived,
+                    updatedAt = now, archived = t.archived, notes = t.notes ?: existing?.notes,
                 ),
             )
         }

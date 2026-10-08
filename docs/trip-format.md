@@ -47,7 +47,6 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 | `commitments` | | Commitment[] | |
 | `days` | | Day[] | Any dates left out get an empty day. |
 | `notes`, `warnings` | | string[] | Trip-wide logistics. Shown once, not per day. |
-| `userNote` | | string | **App-written.** The traveler's own notes on the trip; a line starting `- ` is a bullet. Keep it exactly as given. |
 | `exportedFrom` | | object | Written by the app on export: `{app, exportedAt, basedOnRevision, localChanges}`. |
 | `validated` | | object | Written by `validate_trip.py --stamp` when the file passes: `{by, hash}`, a fingerprint of everything else in the file (whitespace and key order ignored, numbers as written). The import preview shows whether it matches. The app drops it on export. |
 

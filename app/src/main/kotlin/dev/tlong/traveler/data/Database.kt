@@ -1,6 +1,7 @@
 package dev.tlong.traveler.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -41,6 +42,8 @@ data class TripRow(
     val lastExportedAt: Long? = null,
     /** Hash of LOCAL at the last export, so the app can say whether there are unexported changes. */
     val lastExportedHash: String? = null,
+    /** The traveler's own notes on the trip. Kept here, beside the trip file rather than in it, so no revision or assistant ever sees or changes them. */
+    val notes: String? = null,
 )
 
 data class TripSummaryRow(
@@ -84,6 +87,9 @@ interface TripDao {
     @Query("UPDATE trips SET localJson = :json, title = :title, startDate = :start, endDate = :end, updatedAt = :at WHERE id = :id")
     suspend fun updateLocal(id: String, json: String, title: String, start: String, end: String, at: Long)
 
+    @Query("UPDATE trips SET notes = :notes WHERE id = :id")
+    suspend fun setNotes(id: String, notes: String?)
+
     @Query("UPDATE trips SET archived = :archived, updatedAt = :at WHERE id = :id")
     suspend fun setArchived(id: String, archived: Boolean, at: Long)
 
@@ -121,7 +127,7 @@ interface TripDao {
     }
 }
 
-@Database(entities = [TripRow::class, SnapshotRow::class], version = 1, exportSchema = true)
+@Database(entities = [TripRow::class, SnapshotRow::class], version = 2, exportSchema = true, autoMigrations = [AutoMigration(from = 1, to = 2)])
 abstract class TravelerDatabase : RoomDatabase() {
     abstract fun trips(): TripDao
 

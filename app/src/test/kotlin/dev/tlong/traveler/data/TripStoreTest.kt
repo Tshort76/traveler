@@ -6,6 +6,7 @@ import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.domain.normalized
+import dev.tlong.traveler.model.TripJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -92,10 +93,22 @@ class TripStoreTest {
     }
 
     @Test
+    fun `my notes stay out of the trip file and survive a revision`() = runBlocking {
+        store.importNew(Fixtures.iguazu)
+        store.setNotes("argentina-2026-11", "- Bring the adapter")
+        val pending = ImportRouter(store).route(Fixtures.text("iguazu-short.r2.trip.json"), "r2") as PendingImport.Revision
+        store.applyRevision(pending.plan.incoming, Merge.apply(pending.plan))
+        val stored = store.load("argentina-2026-11")!!
+        assertEquals("- Bring the adapter", stored.row.notes)
+        assertFalse("Bring the adapter" in TripJson.encode(Export.tripFile(stored.base, stored.local)))
+    }
+
+    @Test
     fun `a backup restores trips with their edits and merge base`() = runBlocking {
         store.importNew(Fixtures.iguazu)
         val (withCustom, id) = Edits.addCustom(store.load("argentina-2026-11")!!.local, "iguazu", "Laundry")
         store.saveLocal(withCustom)
+        store.setNotes("argentina-2026-11", "- Bring the adapter")
         val backup = store.backupText("2026-10-03T00:00:00Z")
 
         val other = TravelerDatabase.inMemory(ApplicationProvider.getApplicationContext())
@@ -105,6 +118,7 @@ class TripStoreTest {
         val restored = fresh.load("argentina-2026-11")!!
         assertNotNull(restored.local.activities.firstOrNull { it.id == id })
         assertEquals(Fixtures.iguazu.normalized(), restored.base)
+        assertEquals("- Bring the adapter", restored.row.notes)
         other.close()
     }
 

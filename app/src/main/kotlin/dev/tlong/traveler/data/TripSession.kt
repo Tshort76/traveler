@@ -36,6 +36,10 @@ class TripSession(
     private val _exportedHash = MutableStateFlow(initial.row.lastExportedHash)
     val exportedHash: StateFlow<String?> = _exportedHash.asStateFlow()
 
+    /** The traveler's notes, stored beside the trip file rather than in it; see [TripRow.notes]. */
+    private val _notes = MutableStateFlow(initial.row.notes)
+    val notes: StateFlow<String?> = _notes.asStateFlow()
+
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Saved)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
 
@@ -75,6 +79,22 @@ class TripSession(
     }
 
     fun retrySave() = set(_trip.value)
+
+    /** Saves the notes at once; they have no undo, since the editor's Cancel covers a change of mind. */
+    fun setNotes(text: String) {
+        val notes = text.trimEnd().ifBlank { null }
+        if (notes == _notes.value) return
+        _notes.value = notes
+        _saveState.value = SaveState.Saving
+        scope.launch {
+            try {
+                store.setNotes(_trip.value.id, notes)
+                _saveState.value = SaveState.Saved
+            } catch (e: Exception) {
+                _saveState.value = SaveState.Failed(e.message ?: "could not write to storage")
+            }
+        }
+    }
 
     private fun set(t: Trip) {
         _trip.value = t
