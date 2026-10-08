@@ -4,7 +4,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import dev.tlong.traveler.domain.bookAhead
@@ -47,7 +46,7 @@ fun TripShortcuts(
 
 /**
  * A glyph, and its count when there is something to count. [urgent] open priority-1 bookings turn
- * the chip red with a warning sign: the trip page's only signal that something must be booked now.
+ * the chip red: the trip page's only signal that something must be booked now.
  */
 @Composable
 private fun Shortcut(glyph: String, label: String, tally: Pair<Int, Int>?, onClick: () -> Unit, urgent: Int = 0) {
@@ -55,7 +54,6 @@ private fun Shortcut(glyph: String, label: String, tally: Pair<Int, Int>?, onCli
     val counted = tally?.takeIf { it.second > 0 }
     val text = buildAnnotatedString {
         append(glyph)
-        if (urgent > 0) withStyle(SpanStyle(color = colors.error)) { append(" ⚠") }
         counted?.let { (done, total) ->
             withStyle(SpanStyle(color = if (urgent > 0) colors.onErrorContainer else colors.onSurfaceVariant)) {
                 append(if (done == total) " ✓" else " $done/$total")
@@ -66,7 +64,7 @@ private fun Shortcut(glyph: String, label: String, tally: Pair<Int, Int>?, onCli
         onClick = onClick,
         label = { Text(text, style = MaterialTheme.typography.labelMedium, maxLines = 1) },
         colors = if (urgent > 0) AssistChipDefaults.assistChipColors(containerColor = colors.errorContainer) else AssistChipDefaults.assistChipColors(),
-        border = if (urgent > 0) BorderStroke(1.dp, colors.error) else AssistChipDefaults.assistChipBorder(enabled = true),
+        border = if (urgent > 0) null else AssistChipDefaults.assistChipBorder(enabled = true),
         modifier = Modifier.semantics {
             contentDescription = label + (counted?.let { (d, t) -> ", $d of $t done" } ?: "") +
                 if (urgent > 0) ", $urgent to book now" else ""
