@@ -254,10 +254,10 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                // One button, three states: all, then only the unplanned, then only the planned.
+                // One button, three states: all, then only the planned, then only the unplanned.
                 FilterChip(
                     planned != null,
-                    onClick = { planned = when (planned) { null -> false; false -> true; true -> null }; haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
+                    onClick = { planned = when (planned) { null -> true; true -> false; false -> null }; haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
                     label = { PlanBox(planned) },
                     modifier = Modifier.semantics { contentDescription = when (planned) { null -> "Showing planned and unplanned"; false -> "Showing unplanned only"; true -> "Showing planned only" } },
                 )
