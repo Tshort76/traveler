@@ -196,11 +196,12 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     var rows by remember { mutableStateOf(rowsOf(day)) }
     LaunchedEffect(day?.plan) { rows = rowsOf(day) }
     val listState = rememberLazyListState()
-    val headerCount = 4 // items before the slot rows: header card, fixed, note, warnings
+    // Match by key, not list index: work hours, transfers, bookings and the note sit above the
+    // slot rows and come and go, so no fixed offset maps a list index to a row.
     val reorder = rememberReorderableLazyListState(listState) { from, to ->
-        val f = from.index - headerCount
-        val t = to.index - headerCount
-        if (f in rows.indices && t in rows.indices && t > 0) {
+        val f = rows.indexOfFirst { it.key == from.key }
+        val t = rows.indexOfFirst { it.key == to.key }
+        if (f >= 0 && t > 0) {
             rows = rows.toMutableList().apply { add(t, removeAt(f)) }
             haptics.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
         }
