@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.stay
 
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -289,7 +290,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
 private val FITS = listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening")
 private val EFFORTS = listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding")
 
-/** The planned filter's box: a dim outline for all, a firm empty box for unplanned only, a ticked box for planned only. */
+/** The planned filter's box: a dim outline for all, a box with a red cross for unplanned only, a ticked box for planned only. */
 @Composable
 private fun PlanBox(planned: Boolean?) {
     val c = MaterialTheme.colorScheme
@@ -300,7 +301,16 @@ private fun PlanBox(planned: Boolean?) {
         val at = Offset(inset, inset)
         when (planned) {
             null -> drawRoundRect(c.outlineVariant, at, box, r, style = Stroke(2.dp.toPx()))
-            false -> drawRoundRect(c.primary, at, box, r, style = Stroke(2.4.dp.toPx()))
+            false -> {
+                drawRoundRect(c.primary, at, box, r, style = Stroke(2.dp.toPx()))
+                // A light red cross: not on the plan.
+                // Softened in light mode; dark mode's error red is already light.
+                val x = if (c.surface.luminance() > 0.5f) c.error.copy(alpha = 0.7f) else c.error
+                val a0 = size.width * 0.34f
+                val a1 = size.width * 0.66f
+                drawLine(x, Offset(a0, a0), Offset(a1, a1), 2.2.dp.toPx(), StrokeCap.Round)
+                drawLine(x, Offset(a1, a0), Offset(a0, a1), 2.2.dp.toPx(), StrokeCap.Round)
+            }
             true -> {
                 drawRoundRect(c.primary, at, box, r)
                 val tick = Path().apply {
