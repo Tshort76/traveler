@@ -1,5 +1,10 @@
 package dev.tlong.traveler.ui.stay
 
+import dev.tlong.traveler.ui.common.FilterList
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Badge
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import dev.tlong.traveler.domain.WorkPlan
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.HorizontalDivider
@@ -38,10 +43,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.InputChip
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -225,24 +226,34 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
             (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
     }.sortedWith(byRecommendation)
-    val active = (if (standouts) 1 else 0) + (if (planned != null) 1 else 0) + fits.size + efforts.size + conditions.size + tags.size
+    val more = fits.size + efforts.size + conditions.size + tags.size
+    var advanced by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp)) {
         if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
         item("filters") {
-            // One scrolling row of toggles, like Bookings: glyphs where there is one, a word where there is not.
-            Row(Modifier.padding(vertical = 8.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (active > 0) InputChip(true, onClick = {
-                    standouts = false; planned = null; fits = emptySet(); efforts = emptySet(); conditions = emptySet(); tags = emptySet()
-                }, label = { Text("$active") }, trailingIcon = { Icon(Icons.Default.Close, null, Modifier.size(18.dp)) },
-                    modifier = Modifier.semantics { contentDescription = "Clear $active filters" })
+            // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
+            Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                Toggle("☐", "Not planned", planned == false) { planned = if (planned == false) null else false }
-                Toggle("🗓️", "Planned", planned == true) { planned = if (planned == true) null else true }
-                fitOptions.forEach { (k, l) -> Toggle(l, l, k in fits) { fits = fits.toggle(k) } }
-                effortOptions.forEach { (k, l) -> Toggle(l, l, k in efforts) { efforts = efforts.toggle(k) } }
-                conditionOptions.forEach { c -> Toggle(conditionLabel(c), conditionLabel(c), c in conditions) { conditions = conditions.toggle(c) } }
-                tagOptions.forEach { t -> Toggle(t, t, t in tags) { tags = tags.toggle(t) } }
+                Toggle("Unplanned", "Unplanned", planned == false) { planned = if (planned == false) null else false }
+                Toggle("Planned", "Planned", planned == true) { planned = if (planned == true) null else true }
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
+                    contentDescription = (if (advanced) "Hide filters" else "More filters") + if (more > 0) ", $more on" else ""
+                }) {
+                    BadgedBox(badge = { if (more > 0) Badge { Text("$more") } }) {
+                        Icon(FilterList, null, tint = if (advanced || more > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+        if (advanced) item("advanced") {
+            Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (fitOptions.isNotEmpty()) FilterGroup("Time available", fitOptions, fits) { fits = it }
+                if (effortOptions.isNotEmpty()) FilterGroup("Effort", effortOptions, efforts) { efforts = it }
+                if (conditionOptions.isNotEmpty()) FilterGroup("Good for", conditionOptions.map { it to conditionLabel(it) }, conditions) { conditions = it }
+                if (tagOptions.isNotEmpty()) FilterGroup("Type", tagOptions.map { it to it }, tags) { tags = it }
+                if (more > 0) TextButton(onClick = { fits = emptySet(); efforts = emptySet(); conditions = emptySet(); tags = emptySet() }) { Text("Clear filters") }
             }
         }
         if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }
@@ -255,7 +266,16 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
 private val FITS = listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening")
 private val EFFORTS = listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding")
 
-private fun Set<String>.toggle(k: String) = if (k in this) this - k else this + k
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FilterGroup(title: String, options: List<Pair<String, String>>, selected: Set<String>, onChange: (Set<String>) -> Unit) {
+    Text(title, style = MaterialTheme.typography.labelMedium)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        options.forEach { (key, label) ->
+            FilterChip(key in selected, onClick = { onChange(if (key in selected) selected - key else selected + key) }, label = { Text(label) })
+        }
+    }
+}
 
 @Composable
 private fun Toggle(label: String, description: String, on: Boolean, onClick: () -> Unit) {

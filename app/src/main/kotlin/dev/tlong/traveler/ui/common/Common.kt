@@ -131,6 +131,15 @@ val DragHandle: ImageVector = materialIcon(name = "Filled.DragHandle") {
     }
 }
 
+/** The Material "filter list" icon (three shortening bars), which the core icon set lacks. */
+val FilterList: ImageVector = materialIcon(name = "Filled.FilterList") {
+    materialPath {
+        moveTo(10f, 18f); horizontalLineToRelative(4f); verticalLineToRelative(-2f); horizontalLineToRelative(-4f); close()
+        moveTo(3f, 6f); verticalLineToRelative(2f); horizontalLineToRelative(18f); verticalLineTo(6f); close()
+        moveTo(6f, 13f); horizontalLineToRelative(12f); verticalLineToRelative(-2f); horizontalLineTo(6f); close()
+    }
+}
+
 /** Shows [message] with an Undo action. */
 suspend fun SnackbarHostState.offerUndo(session: TripSession, message: String) {
     currentSnackbarData?.dismiss()
