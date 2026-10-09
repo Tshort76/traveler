@@ -1,5 +1,10 @@
 package dev.tlong.traveler.ui.stay
 
+import dev.tlong.traveler.ui.common.BoxEmpty
+import dev.tlong.traveler.ui.common.BoxTicked
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import dev.tlong.traveler.ui.common.FilterList
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
@@ -228,6 +233,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     }.sortedWith(byRecommendation)
     val more = fits.size + efforts.size + conditions.size + tags.size
     var advanced by rememberSaveable { mutableStateOf(false) }
+    val haptics = LocalHapticFeedback.current
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp)) {
         if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
@@ -235,8 +241,13 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                Toggle("Unplanned", "Unplanned", planned == false) { planned = if (planned == false) null else false }
-                Toggle("Planned", "Planned", planned == true) { planned = if (planned == true) null else true }
+                // One button, three states: all, then only the unplanned, then only the planned.
+                FilterChip(
+                    planned != null,
+                    onClick = { planned = when (planned) { null -> false; false -> true; true -> null }; haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
+                    label = { Icon(when (planned) { null -> Icons.Default.DateRange; false -> BoxEmpty; true -> BoxTicked }, null, Modifier.size(20.dp)) },
+                    modifier = Modifier.semantics { contentDescription = when (planned) { null -> "Showing planned and unplanned"; false -> "Showing unplanned only"; true -> "Showing planned only" } },
+                )
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
                     contentDescription = (if (advanced) "Hide filters" else "More filters") + if (more > 0) ", $more on" else ""

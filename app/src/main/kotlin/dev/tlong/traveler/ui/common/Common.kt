@@ -1,5 +1,7 @@
 package dev.tlong.traveler.ui.common
 
+import androidx.compose.ui.graphics.vector.addPathNodes
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import android.content.ActivityNotFoundException
@@ -139,6 +141,13 @@ val FilterList: ImageVector = materialIcon(name = "Filled.FilterList") {
         moveTo(6f, 13f); horizontalLineToRelative(12f); verticalLineToRelative(-2f); horizontalLineTo(6f); close()
     }
 }
+
+private fun pathIcon(name: String, path: String) = ImageVector.Builder(name, 24.dp, 24.dp, 24f, 24f)
+    .addPath(addPathNodes(path), fill = SolidColor(Color.Black)).build()
+
+/** Material's checkbox icons, which the core icon set lacks: an empty box and a ticked one. */
+val BoxEmpty: ImageVector = pathIcon("CheckBoxOutlineBlank", "M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z")
+val BoxTicked: ImageVector = pathIcon("CheckBox", "M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z")
 
 /** Shows [message] with an Undo action. */
 suspend fun SnackbarHostState.offerUndo(session: TripSession, message: String) {
