@@ -285,32 +285,44 @@ fun Activity.factsLine(): String =
     listOfNotNull(fitLabel(fit), effortLabel(effort), durationLabel(duration)?.substringBefore(" incl.")?.substringBefore(", plus"))
         .joinToString(" · ")
 
-/** One chip, three states: everything, then only what is planned, then only what is not. */
+/**
+ * One chip, three states, drawn as a box: everything (a faded tick), then only the ones that are
+ * [yes] (a ticked box), then only the ones that are not (a light red cross). [describe] says the
+ * state to TalkBack.
+ */
 @Composable
-fun PlannedFilter(planned: Boolean?, onChange: (Boolean?) -> Unit) {
+fun TriStateFilter(yes: Boolean?, describe: (Boolean?) -> String, onChange: (Boolean?) -> Unit) {
     val haptics = LocalHapticFeedback.current
     FilterChip(
-        planned != null,
-        onClick = { onChange(when (planned) { null -> true; true -> false; false -> null }); haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
-        label = { PlanBox(planned) },
-        modifier = Modifier.semantics { contentDescription = when (planned) { null -> "Showing planned and unplanned"; false -> "Showing unplanned only"; true -> "Showing planned only" } },
+        yes != null,
+        onClick = { onChange(when (yes) { null -> true; true -> false; false -> null }); haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
+        label = { TriStateBox(yes) },
+        modifier = Modifier.semantics { contentDescription = describe(yes) },
     )
 }
 
-/** [PlannedFilter]'s box: a dim outline for all, a box with a red cross for unplanned only, a ticked box for planned only. */
 @Composable
-private fun PlanBox(planned: Boolean?) {
+private fun TriStateBox(yes: Boolean?) {
     val c = MaterialTheme.colorScheme
     Canvas(Modifier.size(20.dp)) {
         val inset = 2.5.dp.toPx()
         val r = CornerRadius(2.5.dp.toPx())
         val box = Size(size.width - 2 * inset, size.height - 2 * inset)
         val at = Offset(inset, inset)
-        when (planned) {
-            null -> drawRoundRect(c.outlineVariant, at, box, r, style = Stroke(2.dp.toPx()))
+        val tick = Path().apply {
+            moveTo(size.width * 0.28f, size.height * 0.52f)
+            lineTo(size.width * 0.43f, size.height * 0.67f)
+            lineTo(size.width * 0.73f, size.height * 0.36f)
+        }
+        val tickStroke = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round)
+        when (yes) {
+            null -> {
+                drawRoundRect(c.outline.copy(alpha = 0.45f), at, box, r, style = Stroke(2.dp.toPx()))
+                drawPath(tick, c.outline.copy(alpha = 0.45f), style = tickStroke)
+            }
             false -> {
                 drawRoundRect(c.primary, at, box, r, style = Stroke(2.dp.toPx()))
-                // A light red cross: not on the plan.
+                // A light red cross: only the ones that are not.
                 // Softened in light mode; dark mode's error red is already light.
                 val x = if (c.surface.luminance() > 0.5f) c.error.copy(alpha = 0.7f) else c.error
                 val a0 = size.width * 0.34f
@@ -320,12 +332,7 @@ private fun PlanBox(planned: Boolean?) {
             }
             true -> {
                 drawRoundRect(c.primary, at, box, r)
-                val tick = Path().apply {
-                    moveTo(size.width * 0.28f, size.height * 0.52f)
-                    lineTo(size.width * 0.43f, size.height * 0.67f)
-                    lineTo(size.width * 0.73f, size.height * 0.36f)
-                }
-                drawPath(tick, c.onPrimary, style = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                drawPath(tick, c.onPrimary, style = tickStroke)
             }
         }
     }

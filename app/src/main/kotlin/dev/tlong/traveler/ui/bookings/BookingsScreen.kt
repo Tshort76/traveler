@@ -31,7 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ArrowDropDown
 import dev.tlong.traveler.domain.shortLabel
-import dev.tlong.traveler.ui.common.PlannedFilter
+import dev.tlong.traveler.ui.common.TriStateFilter
 import dev.tlong.traveler.ui.common.marked
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.departDate
@@ -140,15 +140,14 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
-    val (unplanned, items) = remember(all) { all.partition { it.unplanned } }
-    var planned by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var openOnly by rememberSaveable { mutableStateOf(false) }
+    val items = remember(all) { all.filterNot { it.unplanned } }
+    var booked by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
     var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
-    val groups = remember(all, order, planned, openOnly, group, onlyStay) {
+    val groups = remember(all, order, booked, group, onlyStay) {
         val shown = all
-            .filter { (planned == null || it.unplanned != planned) && (!openOnly || !it.booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
+            .filter { (booked == null || it.booked == booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
             Order.STAY -> shown.groupBy { it.stayId }.toList()
                 .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
@@ -213,9 +212,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                             FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.glyph()) },
                                 modifier = Modifier.semantics { contentDescription = g.label })
                         }
-                        FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("☐") },
-                            modifier = Modifier.semantics { contentDescription = "Not booked" })
-                        if (unplanned.isNotEmpty()) PlannedFilter(planned) { planned = it }
+                        TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing not booked only" } }) { booked = it }
                     }
                 }
             }
@@ -233,7 +230,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             if (all.isEmpty()) item("empty") {
                 Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
             } else if (groups.isEmpty()) item("empty") {
-                Text(if (openOnly) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
+                Text(if (booked == false) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }

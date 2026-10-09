@@ -1,6 +1,6 @@
 package dev.tlong.traveler.ui.stay
 
-import dev.tlong.traveler.ui.common.PlannedFilter
+import dev.tlong.traveler.ui.common.TriStateFilter
 import dev.tlong.traveler.ui.common.EarlierRow
 import dev.tlong.traveler.ui.common.FilterList
 import androidx.compose.material3.BadgedBox
@@ -243,7 +243,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                PlannedFilter(planned) { planned = it }
+                TriStateFilter(planned, { when (it) { null -> "Showing planned and unplanned"; true -> "Showing planned only"; false -> "Showing unplanned only" } }) { planned = it }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
                     contentDescription = (if (advanced) "Hide filters" else "More filters") + if (more > 0) ", $more on" else ""
