@@ -241,10 +241,6 @@ object Edits {
     private fun updateLodging(trip: Trip, stayId: String, f: (Lodging) -> Lodging): Trip = trip.copy(stays = trip.stays.map {
         if (it.id == stayId) it.copy(lodging = f(it.lodging ?: Lodging()), userEdited = (it.userEdited + "lodging").distinct()) else it
     })
-
-    fun setStayMapUrl(trip: Trip, stayId: String, url: String?): Trip = trip.copy(stays = trip.stays.map {
-        if (it.id == stayId) it.copy(mapUrl = url?.ifBlank { null }, userEdited = (it.userEdited + "mapUrl").distinct()) else it
-    })
 }
 
 /** Where an activity is placed, for "already scheduled" badges. */

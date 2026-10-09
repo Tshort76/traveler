@@ -184,7 +184,6 @@ fun ConflictDialog(title: String, issues: List<PlacementIssue>, onCancel: () -> 
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 issues.forEach { IssueLine(it) }
-                Text("Booked commitments stay where they are.", style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = { TextButton(onClick = onConfirm) { Text("Keep the move") } },

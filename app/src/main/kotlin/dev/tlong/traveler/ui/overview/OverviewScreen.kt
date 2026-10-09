@@ -335,7 +335,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
         title = { Text("Trip links") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (trip.links.isEmpty()) Text("A planning sheet, a Google map or the planning chat. A tour or restaurant link belongs on its activity.", style = MaterialTheme.typography.bodyMedium)
+                if (trip.links.isEmpty()) Text("No links yet", style = MaterialTheme.typography.bodyMedium)
                 trip.links.forEach { l ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LinkChip(l, Modifier.weight(1f, fill = false)) { if (!openUrl(context, l.url)) scope.launch { snackbar.showSnackbar("Cannot open ${l.url}") } }
@@ -380,7 +380,6 @@ private fun LinkDialog(current: Link?, onDismiss: () -> Unit, onSave: (Link?) ->
                 OutlinedTextField(url, { url = it }, singleLine = true, label = { Text("Link") }, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(label, { label = it }, singleLine = true, label = { Text("Name (optional)") },
                     placeholder = { Text("Planning sheet") }, modifier = Modifier.fillMaxWidth())
-                Text("Exports keep the link, so your assistant sees it too.", style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {

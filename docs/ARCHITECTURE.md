@@ -22,7 +22,7 @@ Everything the app adds to the file format is a field the format already allows:
 | `model/` | The format: `Trip` and friends (kotlinx-serialization), `TripJson` (lenient reader, writer, unknown-field detection), `TripReader` (plain-language errors and warnings, mirroring `tools/validate_trip.py`). |
 | `domain/` | Pure functions, no Android: `TripCalendar` (dates, stays, slots, work hours across time zones), `Edits` (every edit, recording provenance), `Conflicts` (can this go here?), `DayLayout` (where blocks sit on the day calendar), `Merge` (three-way merge), `Export`. |
 | `data/` | Room, `TripStore` (rows, snapshots, backup), `TripSession` (the open trip: undo stack of 50, serialized conflated saves, a `SaveState` the UI shows), `ImportRouter` (decides new, already imported, revision, backup, or invalid). |
-| `ui/` | Compose screens: trips list, import preview, overview with map, stay (itinerary, activities, info), day planner, history, settings. |
+| `ui/` | Compose screens: trips list, import preview, overview with map, stay (itinerary, activities), day planner, history, settings. |
 
 ## Merge
 

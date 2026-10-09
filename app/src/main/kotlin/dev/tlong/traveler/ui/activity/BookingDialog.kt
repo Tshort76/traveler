@@ -115,7 +115,6 @@ fun BookingDialog(
                         }
                     }
                 }
-                if (linked != null) Text("It will be scheduled at the booked time on this day.", style = MaterialTheme.typography.bodySmall)
                 OutlinedTextField(ref, { ref = it }, label = { Text("Confirmation number (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 PriceField(price)
                 OutlinedTextField(url, { url = it }, label = { Text("Link (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())

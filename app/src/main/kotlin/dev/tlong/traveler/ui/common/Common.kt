@@ -1,5 +1,7 @@
 package dev.tlong.traveler.ui.common
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -9,13 +11,11 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
@@ -29,9 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,11 +38,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -62,7 +58,6 @@ import dev.tlong.traveler.data.SaveState
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Duration
-import dev.tlong.traveler.model.Vocab
 
 val LocalContainer = staticCompositionLocalOf<AppContainer> { error("no container") }
 
@@ -133,15 +128,6 @@ val DragHandle: ImageVector = materialIcon(name = "Filled.DragHandle") {
     materialPath {
         moveTo(20f, 9f); horizontalLineTo(4f); verticalLineToRelative(2f); horizontalLineToRelative(16f); close()
         moveTo(4f, 15f); horizontalLineToRelative(16f); verticalLineToRelative(-2f); horizontalLineTo(4f); close()
-    }
-}
-
-/** The Material "filter list" icon (three shortening bars), which the core icon set lacks. */
-val FilterList: ImageVector = materialIcon(name = "Filled.FilterList") {
-    materialPath {
-        moveTo(10f, 18f); horizontalLineToRelative(4f); verticalLineToRelative(-2f); horizontalLineToRelative(-4f); close()
-        moveTo(3f, 6f); verticalLineToRelative(2f); horizontalLineToRelative(18f); verticalLineTo(6f); close()
-        moveTo(6f, 13f); horizontalLineToRelative(12f); verticalLineToRelative(-2f); horizontalLineTo(6f); close()
     }
 }
 
@@ -230,15 +216,6 @@ fun effortLabel(effort: String?) = when (effort) {
 }
 
 fun conditionLabel(c: String) = c.replace('-', ' ').replaceFirstChar { it.uppercase() }
-
-/** "Mon–Fri", "Sat, Sun", "Mon, Wed, Fri": runs of three or more days collapse to a range. */
-fun weekdaysLabel(days: List<String>): String {
-    val idx = days.mapNotNull { Vocab.weekdays.indexOf(it).takeIf { i -> i >= 0 } }.distinct().sorted()
-    fun name(i: Int) = Vocab.weekdays[i].replaceFirstChar { it.uppercase() }
-    val runs = mutableListOf<MutableList<Int>>()
-    idx.forEach { i -> if (runs.lastOrNull()?.last() == i - 1) runs.last() += i else runs += mutableListOf(i) }
-    return runs.joinToString(", ") { r -> if (r.size >= 3) "${name(r.first())}–${name(r.last())}" else r.joinToString(", ") { name(it) } }
-}
 
 fun modeEmoji(mode: String?) = when (mode) {
     "flight" -> "✈️"

@@ -286,7 +286,6 @@ fun PasteDialog(list: Checklist, kind: Kind, onDismiss: () -> Unit, onAdd: (List
         title = { Text("Paste ${kind.label().lowercase()} items") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("One item per line. A line starting with # starts a section.", style = MaterialTheme.typography.bodySmall)
                 OutlinedTextField(
                     text, { text = it },
                     placeholder = { Text("# Day before\nCharge devices\n- [ ] Print tickets") },

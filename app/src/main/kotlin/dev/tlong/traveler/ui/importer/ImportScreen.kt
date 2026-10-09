@@ -295,7 +295,6 @@ private fun RevisionReview(p: PendingImport.Revision, onCancel: () -> Unit, onAp
 
     if (plan.removals.isNotEmpty()) {
         SectionTitle("Not in the new file (${plan.removals.size})")
-        Text("Ticked items are removed; unticked ones stay in your plan.", style = MaterialTheme.typography.bodySmall)
         plan.removals.forEach { r ->
             CheckRow("Remove ${r.label}", r.reason, checked = r.key in remove) { remove = if (it) remove + r.key else remove - r.key }
         }
@@ -311,7 +310,6 @@ private fun RevisionReview(p: PendingImport.Revision, onCancel: () -> Unit, onAp
     if (headsUp.isNotEmpty()) {
         SectionTitle("Heads-up after this update")
         headsUp.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-        Text("Nothing booked is moved automatically; adjust these in the day plan.", style = MaterialTheme.typography.bodySmall)
     }
 
     AssistantCheck(p.check)

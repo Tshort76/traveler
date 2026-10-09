@@ -153,13 +153,6 @@ fun shortZone(zone: ZoneId, date: LocalDate): String {
     return "$city time ($offset)"
 }
 
-/** True when the zone changes its clocks during the year — "keeps standard time" otherwise. */
-fun ZoneId.observesDst(year: Int): Boolean {
-    val jan = ZonedDateTime.of(LocalDate.of(year, 1, 15), LocalTime.NOON, this).offset
-    val jul = ZonedDateTime.of(LocalDate.of(year, 7, 15), LocalTime.NOON, this).offset
-    return jan != jul
-}
-
 private val dayFmt = DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault())
 private val longDayFmt = DateTimeFormatter.ofPattern("EEEE d MMMM", Locale.getDefault())
 private val shortFmt = DateTimeFormatter.ofPattern("d MMM", Locale.getDefault())

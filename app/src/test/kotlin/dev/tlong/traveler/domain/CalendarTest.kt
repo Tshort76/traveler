@@ -75,10 +75,4 @@ class CalendarTest {
         assertEquals(LocalTime.of(8, 0), workHoursOn(s, LocalDate.parse("2026-11-09"))?.start) // Monday
         assertNull(workHoursOn(s, LocalDate.parse("2026-11-11"))) // Wednesday
     }
-
-    @Test
-    fun `fixed-offset and seasonal zones are told apart`() {
-        assertEquals(false, ZoneId.of("America/Argentina/Buenos_Aires").observesDst(2026))
-        assertEquals(true, ZoneId.of("America/Denver").observesDst(2026))
-    }
 }
