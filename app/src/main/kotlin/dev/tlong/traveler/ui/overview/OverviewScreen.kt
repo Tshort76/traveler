@@ -408,8 +408,8 @@ private fun MapCard(
                 )
             }
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                // The numbered map and stay cards already show the route; spell it out only without a map.
-                if (points.isEmpty()) Text(
+                // The map leaves out any name it cannot place clear of the others, so the route is always spelled out.
+                Text(
                     trip.destinations.mapIndexed { i, s -> "${i + 1} ${s.name}" }.joinToString("  →  "),
                     style = MaterialTheme.typography.bodyMedium,
                 )
