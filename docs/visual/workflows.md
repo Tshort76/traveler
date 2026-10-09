@@ -73,7 +73,7 @@ sequenceDiagram
 
 ## Plan a day
 
-**In plain language:** you drag a suggestion to another part of the day. The app checks for clashes, moves it, and saves at once.
+**In plain language:** you hold a block on the day calendar and drag it to a new time. The app checks for clashes, sets the time, and saves at once.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontSize": "14px", "lineColor": "#0B3C5D", "primaryColor": "#1F6F8B", "primaryTextColor": "#FFFFFF", "primaryBorderColor": "#0B3C5D", "clusterBkg": "transparent", "clusterBorder": "#7A8B99", "edgeLabelBackground": "transparent", "actorBkg": "#E06D14", "actorTextColor": "#1A1A1A", "actorBorder": "#A64F0E", "signalColor": "#0B3C5D", "signalTextColor": "#0B3C5D", "labelBoxBkgColor": "#1F6F8B", "labelTextColor": "#FFFFFF"}, "flowchart": {"curve": "basis", "padding": 12}} }%%
@@ -84,19 +84,19 @@ sequenceDiagram
   participant TS as TripSession.kt
   participant E as Edits.kt
   participant S as TripStore.kt
-  You->>D: drag to a slot
-  D->>CF: checkPlacement(trip, activity, date, slot)
+  You->>D: drag to a time
+  D->>CF: checkPlacement(trip, activity, date, slot, time)
   CF-->>D: blocking issues
   D->>TS: edit("Move …")
-  TS->>E: setPlan(trip, date, plan)
+  TS->>E: setTime(trip, ref, time)
   E-->>TS: new trip, plan marked edited
   TS-->>D: trip, Saving
   TS->>S: saveLocal(trip)
   TS-->>D: Saved
 ```
 
-- **A clash asks before it moves.** The day screen checks at `ui/day/DayScreen.kt:213`; a booking, a transfer from 90 minutes before departure, work hours, a closed day or opening hours block the drop unless you choose to place it anyway.
-- **The edit is recorded as yours.** `Edits.setPlan` (`domain/Edits.kt:69`) marks the day's `plan` in `userEdited`, which is what a later merge reads.
+- **A clash asks before it moves.** The day screen checks at `ui/day/DayScreen.kt:252`; a booking, a transfer from 90 minutes before departure, your work blocks, a closed day or opening hours block the drop unless you choose to place it anyway.
+- **The edit is recorded as yours.** `Edits.setTime` (`domain/Edits.kt:76`) marks the day's `plan` in `userEdited`, which is what a later merge reads.
 - **The screen updates before the write.** `TripSession.set` shows the new plan immediately and queues the write; the Saved mark follows the write.
 
 ## Export for a revision

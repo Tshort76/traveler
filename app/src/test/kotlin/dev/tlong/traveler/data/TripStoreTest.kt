@@ -5,6 +5,8 @@ import dev.tlong.traveler.Fixtures
 import dev.tlong.traveler.domain.CheckItem
 import dev.tlong.traveler.domain.Checklist
 import dev.tlong.traveler.domain.ChecklistTemplate
+import dev.tlong.traveler.domain.WorkBlock
+import dev.tlong.traveler.domain.WorkPlan
 import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.Export
@@ -129,6 +131,8 @@ class TripStoreTest {
         store.saveLocal(withCustom)
         store.setNotes("argentina-2026-11", "- Bring the adapter")
         store.setChecklist("argentina-2026-11", checklist)
+        val work = WorkPlan(mapOf("2026-11-10" to listOf(WorkBlock("15:00", "17:00"))))
+        store.setWork("argentina-2026-11", work)
         val template = ChecklistTemplate("t1", "International", checklist.items)
         val backup = store.backupText("2026-10-03T00:00:00Z", listOf(template))
 
@@ -141,6 +145,7 @@ class TripStoreTest {
         assertEquals(Fixtures.iguazu.normalized(), restored.base)
         assertEquals("- Bring the adapter", restored.row.notes)
         assertEquals(checklist, TripStore.checklistOf(restored.row))
+        assertEquals(work, TripStore.workOf(restored.row))
         assertEquals(listOf(template), pending.file.templates)
         other.close()
     }

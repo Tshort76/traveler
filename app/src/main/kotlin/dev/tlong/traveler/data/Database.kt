@@ -46,6 +46,8 @@ data class TripRow(
     val notes: String? = null,
     /** The trip's to-dos and packing list as a [dev.tlong.traveler.domain.Checklist] document; beside the trip file, like [notes]. */
     val checklist: String? = null,
+    /** The traveler's moved or cancelled work blocks as a [dev.tlong.traveler.domain.WorkPlan] document; beside the trip file, like [notes]. */
+    val work: String? = null,
 )
 
 /** A reusable checklist: a [dev.tlong.traveler.domain.ChecklistTemplate] document, copied into a trip when applied. */
@@ -104,6 +106,9 @@ interface TripDao {
     @Query("UPDATE trips SET checklist = :json WHERE id = :id")
     suspend fun setChecklist(id: String, json: String?)
 
+    @Query("UPDATE trips SET work = :json WHERE id = :id")
+    suspend fun setWork(id: String, json: String?)
+
     @Query("UPDATE trips SET archived = :archived, updatedAt = :at WHERE id = :id")
     suspend fun setArchived(id: String, archived: Boolean, at: Long)
 
@@ -157,8 +162,8 @@ interface TemplateDao {
 }
 
 @Database(
-    entities = [TripRow::class, SnapshotRow::class, TemplateRow::class], version = 3, exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    entities = [TripRow::class, SnapshotRow::class, TemplateRow::class], version = 4, exportSchema = true,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 abstract class TravelerDatabase : RoomDatabase() {
     abstract fun trips(): TripDao

@@ -5,6 +5,19 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
+import dev.tlong.traveler.domain.DayLayout
+import dev.tlong.traveler.domain.Span
+import dev.tlong.traveler.domain.WorkBlock
+import dev.tlong.traveler.domain.WorkPlan
+import dev.tlong.traveler.domain.hhmm
+import dev.tlong.traveler.domain.slotForTime
+import dev.tlong.traveler.model.Stay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,8 +36,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,7 +67,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -67,12 +77,10 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.domain.isBooked
-import dev.tlong.traveler.ui.common.DragHandle
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.bookablesOn
@@ -81,7 +89,6 @@ import dev.tlong.traveler.domain.PlacementIssue
 import dev.tlong.traveler.domain.activity
 import dev.tlong.traveler.domain.checkPlacement
 import dev.tlong.traveler.domain.day
-import dev.tlong.traveler.domain.dayWarnings
 import dev.tlong.traveler.domain.longLabel
 import dev.tlong.traveler.domain.placementsOf
 import dev.tlong.traveler.domain.scheduledIds
@@ -126,41 +133,68 @@ import dev.tlong.traveler.ui.overview.BackButton
 import dev.tlong.traveler.ui.overview.LoadingScaffold
 import java.time.ZoneId
 import kotlinx.coroutines.launch
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyListState
-
-/** One row of the day list: a slot header, or a plan item with its index in the stored plan. */
-private sealed interface Row {
-    val key: String
-
-    data class Header(val slot: Slot) : Row { override val key = "h-${slot.key}" }
-
-    data class Item(val index: Int, val item: PlanItem) : Row { override val key = "i-$index-${item.activityId}" }
-}
-
-private fun rowsOf(day: Day?): List<Row> {
-    val plan = day?.plan.orEmpty().withIndex()
-    return Slot.entries.flatMap { s ->
-        listOf(Row.Header(s)) + plan.filter { Slot.of(it.value.slot) == s }.map { Row.Item(it.index, it.value) }
-    }
-}
-
-/** Reads the plan back out of the rows after a drag: each item takes the slot of the header above it. */
-private fun planOf(rows: List<Row>): List<PlanItem> {
-    var slot = Slot.MORNING
-    return rows.mapNotNull { r ->
-        when (r) {
-            is Row.Header -> { slot = r.slot; null }
-            is Row.Item -> {
-                val changed = Slot.of(r.item.slot) != slot
-                val keepTime = r.item.time?.toTime()?.let { it in slot.window() } == true
-                if (changed) r.item.copy(slot = slot.key, time = r.item.time.takeIf { keepTime }) else r.item
-            }
-        }
-    }
-}
 
 private data class PendingDrop(val plan: List<PlanItem>, val activity: Activity, val issues: List<PlacementIssue>)
+
+/** Where the activity picker adds: a part of the day, and a time when empty time was tapped. */
+private data class AddAt(val slot: Slot, val time: String?)
+
+private sealed interface Selected {
+    data class Item(val index: Int) : Selected
+    data class Work(val index: Int) : Selected
+}
+
+private fun minutesOf(t: String?) = t?.toTime()?.let { it.hour * 60 + it.minute }
+
+private fun durationLabel(m: Int) = if (m < 60) "$m min" else "${m / 60} h" + (if (m % 60 > 0) " ${m % 60}" else "")
+
+/** Everything on the day as calendar blocks, and the hours to draw: 08:00–22:00 at least, wider when something falls outside. */
+private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List<CalEntry>, Span> {
+    val timed = mutableListOf<CalEntry>()
+    blocks.forEachIndexed { i, b ->
+        val s = minutesOf(b.start) ?: return@forEachIndexed
+        timed += CalEntry("w-$i", Span(s, (minutesOf(b.end) ?: END).takeIf { it > s } ?: END), EntryKind.WORK, "💻 Work", b.label, movable = true, tag = i)
+    }
+    trip.transfers.filter { it.date == day.date }.forEach { t ->
+        val s = minutesOf(t.depart) ?: return@forEach
+        val e = minutesOf(t.arrive)?.takeIf { it > s } ?: minOf(s + 60, END)
+        timed += CalEntry("t-${t.id}", Span(s, e), EntryKind.TRANSFER, "${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)}",
+            listOfNotNull(listOfNotNull(t.depart, t.arrive).joinToString("–"), t.details).joinToString(" · "))
+    }
+    val looseBookings = mutableListOf<Commitment>()
+    trip.commitments.filter { it.date == day.date }.forEach { c ->
+        val s = minutesOf(c.start) ?: return@forEach run { looseBookings += c }
+        val e = minutesOf(c.end)?.takeIf { it > s } ?: minOf(s + 60, END)
+        timed += CalEntry("c-${c.id}", Span(s, e), EntryKind.BOOKING, (if (c.isBooked) "🔒 " else "") + c.title, listOfNotNull(c.start, c.end).joinToString("–"), tag = c)
+    }
+    val loose = mutableListOf<Pair<CalEntry, Slot>>()
+    day.plan.forEachIndexed { i, item ->
+        val a = trip.activity(item.activityId)
+        val minutes = (a?.duration?.minutes ?: 60).coerceAtLeast(30)
+        val status = ItemStatus.of(item.status)
+        val pill = when (status) { ItemStatus.DONE -> "✓ Done"; ItemStatus.SKIPPED -> "Skipped"; else -> null }
+        val title = listOfNotNull(a?.tag, a?.marked(trip.isBooked(a)) ?: "(removed activity)").joinToString(" ")
+        val s = minutesOf(item.time)
+        if (s != null) timed += CalEntry("i-$i-${item.activityId}", Span(s, minOf(s + minutes, END)), EntryKind.ACTIVITY, title, "${item.time} · ${durationLabel(minutes)}", pill = pill, movable = true, tag = i)
+        else loose += CalEntry("i-$i-${item.activityId}", Span(0, minutes), EntryKind.ACTIVITY, title, "anytime · ${durationLabel(minutes)}", loose = true, pill = pill, movable = true, tag = i) to Slot.of(item.slot)
+    }
+    looseBookings.forEach { c -> loose += CalEntry("c-${c.id}", Span(0, 60), EntryKind.BOOKING, (if (c.isBooked) "🔒 " else "") + c.title, "no time set", loose = true, tag = c) to Slot.ALLDAY }
+
+    val range = Span(
+        minOf(8 * 60, timed.minOfOrNull { it.span.start / 60 * 60 } ?: 8 * 60),
+        maxOf(22 * 60, timed.maxOfOrNull { (it.span.end + 59) / 60 * 60 } ?: 0).coerceAtMost(END),
+    )
+    fun window(s: Slot) = when (s) {
+        Slot.MORNING -> Span(range.start, 12 * 60)
+        Slot.AFTERNOON -> Span(12 * 60, 17 * 60)
+        Slot.EVENING -> Span(17 * 60, range.end)
+        Slot.ALLDAY -> range
+    }
+    val placed = DayLayout.placeLoose(timed.map { it.span }, loose.map { (e, s) -> window(s) to e.span.minutes.coerceAtMost(window(s).minutes) })
+    return timed + loose.mapIndexed { i, (e, _) -> e.copy(span = placed[i]) } to range
+}
+
+private const val END = 24 * 60 - 1
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,58 +207,52 @@ fun DayScreen(tripId: String, date: String, navigator: Navigator) {
 @Composable
 private fun DayContent(session: TripSession, date: String, navigator: Navigator) {
     val trip by session.trip.collectAsStateWithLifecycle()
+    val work by session.work.collectAsStateWithLifecycle()
     val saveState by session.saveState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-    val haptics = LocalHapticFeedback.current
     val overlays = rememberOverlays()
     val local = date.toDate()
     val dayIndex = trip.days.indexOfFirst { it.date == date }
     val day = trip.day(date)
     val stay = day?.let { trip.stayOf(it) }
     var editingNote by remember(date) { mutableStateOf(false) }
-    var picker by remember { mutableStateOf<Slot?>(null) }
+    var picker by remember { mutableStateOf<AddAt?>(null) }
     var timeFor by remember { mutableStateOf<Edits.ItemRef?>(null) }
+    var workTimeFor by remember { mutableStateOf<Int?>(null) }
     var pendingDrop by remember { mutableStateOf<PendingDrop?>(null) }
     var booking by remember { mutableStateOf<BookingTarget?>(null) }
-    var dragging by remember { mutableStateOf<String?>(null) }
+    var selected by remember { mutableStateOf<Selected?>(null) }
+    val scroll = rememberScrollState()
+    var viewport by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
 
     fun undoable(message: String) = scope.launch { snackbar.offerUndo(session, message) }
 
-    // One state object for the screen's life: the drag handle keeps the callbacks it was created
-    // with, so a state re-created per plan would leave a later drag editing a stale copy.
-    var rows by remember { mutableStateOf(rowsOf(day)) }
-    LaunchedEffect(day?.plan) { rows = rowsOf(day) }
-    val listState = rememberLazyListState()
-    // Match by key, not list index: work hours, transfers, bookings and the note sit above the
-    // slot rows and come and go, so no fixed offset maps a list index to a row.
-    val reorder = rememberReorderableLazyListState(listState) { from, to ->
-        val f = rows.indexOfFirst { it.key == from.key }
-        val t = rows.indexOfFirst { it.key == to.key }
-        if (f >= 0 && t > 0) {
-            rows = rows.toMutableList().apply { add(t, removeAt(f)) }
-            haptics.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+    val hours = remember(stay, local) { if (stay != null && local != null) workHoursOn(stay, local) else null }
+    val blocks = work.blocksOn(date, hours)
+
+    /** Work blocks have their own undo: they live beside the trip file, outside the trip's undo stack. */
+    fun setBlocks(next: List<WorkBlock>, message: String) {
+        val before = session.work.value
+        session.setWork(before.with(date, next, hours))
+        scope.launch {
+            snackbar.currentSnackbarData?.dismiss()
+            val r = snackbar.showSnackbar(message, actionLabel = "Undo", withDismissAction = true, duration = SnackbarDuration.Long)
+            if (r == SnackbarResult.ActionPerformed) session.setWork(before)
         }
     }
 
-    fun commitDrag() {
-        val trip = session.trip.value
-        val newPlan = planOf(rows)
-        val current = trip.day(date)?.plan.orEmpty()
-        if (newPlan == current) return
-        // The dragged item is the one whose slot changed, if any; check it before committing.
-        val moved = newPlan.firstOrNull { n -> current.none { it.activityId == n.activityId && it.slot == n.slot } }
-        val activity = moved?.let { trip.activity(it.activityId) }
-        val issues = if (moved != null && activity != null && local != null) {
-            checkPlacement(trip, activity, local, Slot.of(moved.slot), moved.time?.toTime()).filter { it.blocking }
+    /** Gives a planned item a time, or none; a clash with a booking or work asks first. */
+    fun setTime(ref: Edits.ItemRef, time: String?) {
+        val t = session.trip.value
+        val next = Edits.setTime(t, ref, time)
+        val item = next.day(date)?.plan?.getOrNull(ref.index) ?: return
+        val a = t.activity(item.activityId)
+        val issues = if (a != null && local != null && time != null) {
+            checkPlacement(t, a, local, Slot.of(item.slot), time.toTime(), ref, blocks).filter { it.blocking }
         } else emptyList()
-        if (issues.isNotEmpty() && activity != null) {
-            pendingDrop = PendingDrop(newPlan, activity, issues)
-        } else {
-            if (session.edit("Reorder ${dayName(date)}") { Edits.setPlan(it, date, newPlan) }) {
-                undoable(if (moved != null && activity != null) "Moved “${activity.name}” to ${Slot.of(moved.slot).label.lowercase()}" else "Reordered")
-            }
-        }
+        if (a != null && issues.isNotEmpty()) pendingDrop = PendingDrop(next.day(date)!!.plan, a, issues)
+        else if (session.edit("Set time") { Edits.setTime(it, ref, time) }) undoable(if (time == null) "“${a?.name}” is anytime" else "“${a?.name}” at $time")
     }
 
     Scaffold(
@@ -254,118 +282,131 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             Text("This date is not part of the trip.", Modifier.padding(padding).padding(16.dp))
             return@Scaffold
         }
-        val work = stay?.let { workHoursOn(it, local) }
-        val fixed = trip.commitments.filter { it.date == date }.sortedBy { it.start ?: "" }
-        val transfers = trip.transfers.filter { it.date == date }
         val bookings = remember(trip, date) { trip.bookablesOn(date) }
-        val warnings = remember(trip, date) { dayWarnings(trip, local) }
+        val (entries, range) = remember(trip, day, blocks) { calendarOf(trip, day, blocks) }
+        val now = stay?.zone?.let { z -> java.time.ZonedDateTime.now(z).takeIf { it.toLocalDate() == local }?.let { it.hour * 60 + it.minute } }
 
-        LazyColumn(
-            Modifier.fillMaxSize().padding(padding),
-            state = listState,
-            contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+        Column(
+            Modifier.fillMaxSize().padding(padding)
+                .onGloballyPositioned { c -> c.boundsInWindow().let { viewport = it.top..it.bottom } }
+                .verticalScroll(scroll)
+                .padding(bottom = 48.dp),
         ) {
-            item("head") {
-                var addMenu by remember { mutableStateOf(false) }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    KindChip(DayKind.of(day.kind)) { k -> session.edit("Change day type") { Edits.setDayKind(it, date, k.key) } }
-                    // Only when the stay's zone differs from the phone's: the offset alone.
-                    stay?.zone?.takeIf { it != ZoneId.systemDefault() }?.let {
-                        Text("UTC" + it.rules.getOffset(local.atTime(12, 0).atZone(it).toInstant()).id.replace("Z", ""),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.semantics { contentDescription = "Times are ${shortZone(it, local)}" })
-                    }
-                    Spacer(Modifier.weight(1f))
-                    Box {
-                        IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add a booking or note") }
-                        DropdownMenu(addMenu, onDismissRequest = { addMenu = false }) {
-                            DropdownMenuItem(text = { Text("Booking…") }, onClick = { addMenu = false; booking = BookingTarget(null) })
-                            if (day.note == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
-                            if (bookings.isNotEmpty()) DropdownMenuItem(text = { Text("This day's bookings") }, onClick = { addMenu = false; navigator.bookings(trip.id, date) })
-                        }
+            var addMenu by remember { mutableStateOf(false) }
+            Row(Modifier.padding(start = 16.dp, end = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                KindChip(DayKind.of(day.kind)) { k -> session.edit("Change day type") { Edits.setDayKind(it, date, k.key) } }
+                // Only when the stay's zone differs from the phone's: the offset alone.
+                stay?.zone?.takeIf { it != ZoneId.systemDefault() }?.let {
+                    Text("UTC" + it.rules.getOffset(local.atTime(12, 0).atZone(it).toInstant()).id.replace("Z", ""),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.semantics { contentDescription = "Times are ${shortZone(it, local)}" })
+                }
+                Spacer(Modifier.weight(1f))
+                Box {
+                    IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add to this day") }
+                    DropdownMenu(addMenu, onDismissRequest = { addMenu = false }) {
+                        DropdownMenuItem(text = { Text("Activity…") }, onClick = { addMenu = false; picker = AddAt(Slot.ALLDAY, null) })
+                        DropdownMenuItem(text = { Text("Booking…") }, onClick = { addMenu = false; booking = BookingTarget(null) })
+                        DropdownMenuItem(text = { Text("Work block") }, onClick = {
+                            addMenu = false
+                            val start = blocks.maxOfOrNull { minutesOf(it.end) ?: 0 } ?: (9 * 60)
+                            val b = WorkBlock(hhmm(start), hhmm(minOf(start + 120, END)))
+                            setBlocks(blocks + b, "Added work ${b.label}")
+                        })
+                        if (day.note == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
+                        if (bookings.isNotEmpty()) DropdownMenuItem(text = { Text("This day's bookings") }, onClick = { addMenu = false; navigator.bookings(trip.id, date) })
                     }
                 }
             }
-            // The day's fixed points are its first rows, not a card: work, transfers, then bookings.
-            work?.let { w ->
-                item("work") {
-                    Column(Modifier.padding(vertical = 2.dp)) {
-                        Text("💻 Work ${w.label}", style = MaterialTheme.typography.bodyMedium)
-                        w.sourceLabel?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 26.dp)) }
-                    }
-                }
-            }
-            items(transfers, key = { "t-" + it.id }) { t ->
-                Text("${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} ${listOfNotNull(t.depart, t.arrive).joinToString("–")} ${t.details ?: ""}".trim(),
-                    style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp))
-            }
-            items(fixed, key = { "c-" + it.id }) { c ->
-                Text(
-                    (if (c.isBooked) "🔒 " else "• ") + listOfNotNull(c.start, c.end).joinToString("–").let { if (it.isEmpty()) "" else "$it " } + c.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = "Edit booking") { booking = BookingTarget(c) }
-                        .wrapContentHeight(Alignment.CenterVertically)
-                        .semantics { contentDescription = (if (c.isBooked) "Booked: " else "") + "${c.title} ${c.start ?: ""} to ${c.end ?: ""}" },
-                )
-            }
-            if (day.note != null || editingNote) item("note") {
+            if (day.note != null || editingNote) Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
                 NoteCard(day.note, editing = editingNote, onEdit = { editingNote = true }, onCancel = { editingNote = false }) { text ->
                     editingNote = false
                     if (session.edit("Edit day note") { Edits.setDayNote(it, date, text) }) undoable("Saved your note for ${dayName(date)}")
                 }
             }
-            item("warnings") {
-                if (warnings.isNotEmpty()) Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-                    Column(Modifier.padding(12.dp)) { warnings.forEach { Text("⚠ $it", style = MaterialTheme.typography.bodyMedium) } }
-                }
-            }
-            items(rows, key = { it.key }) { row ->
-                ReorderableItem(reorder, key = row.key) { isDragging ->
-                    when (row) {
-                        is Row.Header -> {
-                            val empty = rows.dropWhile { it != row }.drop(1).firstOrNull() !is Row.Item
-                            // An empty "All day" shows only while dragging, so there is somewhere to drop.
-                            if (row.slot == Slot.ALLDAY && empty && dragging == null) Spacer(Modifier.height(1.dp))
-                            else SlotHeader(row.slot) { picker = row.slot }
+            Spacer(Modifier.height(12.dp))
+            Box(Modifier.padding(end = 12.dp)) {
+                DayCalendar(
+                    entries, range, scroll, { viewport }, now,
+                    onTap = { e ->
+                        when (e.kind) {
+                            EntryKind.ACTIVITY -> selected = Selected.Item(e.tag as Int)
+                            EntryKind.WORK -> selected = Selected.Work(e.tag as Int)
+                            EntryKind.BOOKING -> booking = BookingTarget(e.tag as Commitment)
+                            EntryKind.TRANSFER -> {}
                         }
-                        is Row.Item -> {
-                            val a = trip.activity(row.item.activityId)
-                            val ref = Edits.ItemRef(date, row.index)
-                            val itemRows = rows.filterIsInstance<Row.Item>()
-                            val pos = itemRows.indexOf(row)
-                            ItemRow(
-                                a, a != null && trip.isBooked(a), row.item, isDragging || dragging == row.key,
-                                handle = Modifier.longPressDraggableHandle(
-                                    onDragStarted = { dragging = row.key; haptics.performHapticFeedback(HapticFeedbackType.LongPress) },
-                                    onDragStopped = { dragging = null; commitDrag() },
-                                ),
-                                onOpen = { a?.let { overlays.detail = it.id } },
-                                onMove = { overlays.place = PlaceRequest(row.item.activityId, ref, date, Slot.of(row.item.slot)) },
-                                onStatus = { s -> if (session.edit("Mark ${s.label}") { Edits.setStatus(it, ref, s) }) undoable("Marked “${a?.name}” ${s.label.lowercase()}") },
-                                onTime = { timeFor = ref },
-                                onPool = { if (session.edit("Unschedule") { Edits.remove(it, ref) }) undoable("“${a?.name}” is back in the activities list") },
-                                onUp = if (pos > 0) ({ moveBy(session, date, rows, row, -1) }) else null,
-                                onDown = if (pos < itemRows.lastIndex) ({ moveBy(session, date, rows, row, +1) }) else null,
-                            )
+                    },
+                    onMoved = { e, start ->
+                        when (e.kind) {
+                            EntryKind.ACTIVITY -> setTime(Edits.ItemRef(date, e.tag as Int), hhmm(start))
+                            EntryKind.WORK -> {
+                                val i = e.tag as Int
+                                val b = WorkBlock(hhmm(start), hhmm(minOf(start + e.span.minutes, END)))
+                                setBlocks(blocks.toMutableList().apply { set(i, b) }, "Work moved to ${b.label}")
+                            }
+                            else -> {}
                         }
-                    }
-                }
+                    },
+                    onEmpty = { m -> picker = AddAt(slotForTime(java.time.LocalTime.of(m / 60 % 24, m % 60)), hhmm(m)) },
+                )
             }
         }
     }
 
-    picker?.let { slot ->
-        PoolPicker(trip, stay?.id, date, slot, onDismiss = { picker = null }, onNew = {
+    when (val s = selected) {
+        is Selected.Item -> {
+            val item = day?.plan?.getOrNull(s.index)
+            if (item == null) selected = null else {
+                val a = trip.activity(item.activityId)
+                val ref = Edits.ItemRef(date, s.index)
+                val status = ItemStatus.of(item.status)
+                fun act(f: () -> Unit) { selected = null; f() }
+                ActionSheet(
+                    listOfNotNull(a?.tag, a?.marked(trip.isBooked(a)) ?: "(removed activity)").joinToString(" "),
+                    item.time ?: "Anytime this ${Slot.of(item.slot).label.lowercase()}",
+                    onDismiss = { selected = null },
+                    buildList {
+                        a?.let { add("Details" to { act { overlays.detail = it.id } }) }
+                        add((if (item.time == null) "Set a time…" else "Change time…") to { act { timeFor = ref } })
+                        if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
+                        if (status != ItemStatus.DONE) add("Mark done" to { act { if (session.edit("Mark done") { Edits.setStatus(it, ref, ItemStatus.DONE) }) undoable("Marked “${a?.name}” done") } })
+                        if (status != ItemStatus.SKIPPED) add("Mark skipped" to { act { if (session.edit("Mark skipped") { Edits.setStatus(it, ref, ItemStatus.SKIPPED) }) undoable("Marked “${a?.name}” skipped") } })
+                        if (status != ItemStatus.PROPOSED) add("Back to planned" to { act { session.edit("Mark planned") { Edits.setStatus(it, ref, ItemStatus.PROPOSED) } } })
+                        add("Move to another day…" to { act { overlays.place = PlaceRequest(item.activityId, ref, date, Slot.of(item.slot)) } })
+                        add("Unschedule" to { act { if (session.edit("Unschedule") { Edits.remove(it, ref) }) undoable("“${a?.name}” is back in the activities list") } })
+                    },
+                )
+            }
+        }
+        is Selected.Work -> {
+            val b = blocks.getOrNull(s.index)
+            if (b == null) selected = null else {
+                fun act(f: () -> Unit) { selected = null; f() }
+                ActionSheet(
+                    "💻 Work ${b.label}", stay?.let { st -> local?.let { homeLabel(st, it, b) } },
+                    onDismiss = { selected = null },
+                    buildList {
+                        add("Change time…" to { act { workTimeFor = s.index } })
+                        add("Cancel this block" to { act { setBlocks(blocks - b, "Cancelled work ${b.label}") } })
+                        if (work.isEdited(date)) add("Reset today's work" to { act { setBlocks(WorkPlan.defaultBlocks(hours), "Work reset") } })
+                    },
+                )
+            }
+        }
+        null -> {}
+    }
+
+    picker?.let { at ->
+        PoolPicker(trip, stay?.id, date, at, onDismiss = { picker = null }, onNew = {
             picker = null
-            overlays.newEntry = NewEntryRequest(stay?.id ?: trip.stays.first().id, date, slot)
+            overlays.newEntry = NewEntryRequest(stay?.id ?: trip.stays.first().id, date, at.slot)
         }) { a ->
             picker = null
-            val issues = local?.let { checkPlacement(trip, a, it, slot, null) }.orEmpty().filter { it.blocking }
+            val issues = local?.let { checkPlacement(trip, a, it, at.slot, at.time?.toTime(), work = blocks) }.orEmpty().filter { it.blocking }
             if (issues.isNotEmpty()) {
-                overlays.place = PlaceRequest(a.id, null, date, slot)
-            } else if (session.edit("Add ${a.name}") { Edits.place(it, a.id, date, slot) }) {
-                undoable("Added “${a.name}” to the ${slot.label.lowercase()}")
+                overlays.place = PlaceRequest(a.id, null, date, at.slot)
+            } else if (session.edit("Add ${a.name}") { Edits.place(it, a.id, date, at.slot, at.time) }) {
+                undoable("Added “${a.name}”" + (at.time?.let { " at $it" } ?: ""))
             }
         }
     }
@@ -373,7 +414,18 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     timeFor?.let { ref ->
         TimeDialog(day?.plan?.getOrNull(ref.index)?.time, onDismiss = { timeFor = null }) { t ->
             timeFor = null
-            if (session.edit("Set time") { Edits.setTime(it, ref, t) }) undoable(if (t == null) "Time cleared" else "Set to $t")
+            setTime(ref, t)
+        }
+    }
+
+    workTimeFor?.let { i ->
+        val b = blocks.getOrNull(i)
+        if (b == null) workTimeFor = null else TimeDialog(b.start, clearable = false, onDismiss = { workTimeFor = null }) { t ->
+            workTimeFor = null
+            val s = minutesOf(t) ?: return@TimeDialog
+            val length = (minutesOf(b.end) ?: END) - (minutesOf(b.start) ?: 0)
+            val moved = WorkBlock(hhmm(s), hhmm(minOf(s + length, END)))
+            setBlocks(blocks.toMutableList().apply { set(i, moved) }, "Work moved to ${moved.label}")
         }
     }
 
@@ -395,7 +447,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     pendingDrop?.let { drop ->
         ConflictDialog(
             "Move “${drop.activity.name}” here?", drop.issues,
-            onCancel = { pendingDrop = null; rows = rowsOf(day) },
+            onCancel = { pendingDrop = null },
         ) {
             pendingDrop = null
             if (session.edit("Move ${drop.activity.name}") { Edits.setPlan(it, date, drop.plan) }) undoable("Moved “${drop.activity.name}”")
@@ -407,12 +459,29 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
 
 private data class BookingTarget(val existing: Commitment?)
 
-/** "Move up/down" for screen readers and anyone who would rather not drag: steps past slot headers too. */
-private fun moveBy(session: TripSession, date: String, rows: List<Row>, row: Row.Item, delta: Int) {
-    val i = rows.indexOf(row)
-    val j = (i + delta).coerceIn(1, rows.lastIndex)
-    val next = rows.toMutableList().apply { add(j, removeAt(i)) }
-    session.edit("Reorder") { Edits.setPlan(it, date, planOf(next)) }
+/** A work block in the worker's home zone, when the rhythm is kept in one that differs from the stay's. */
+private fun homeLabel(stay: Stay, date: java.time.LocalDate, b: WorkBlock): String? {
+    val home = stay.workRhythm?.timezone?.let { runCatching { ZoneId.of(it) }.getOrNull() } ?: return null
+    val here = stay.zone
+    if (home == here) return null
+    fun conv(t: java.time.LocalTime) = java.time.ZonedDateTime.of(date, t, here).withZoneSameInstant(home).toLocalTime().hhmm()
+    return "${conv(b.startTime)}–${conv(b.endTime)} ${shortZone(home, date)}"
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ActionSheet(title: String, subtitle: String?, onDismiss: () -> Unit, actions: List<Pair<String, () -> Unit>>) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(Modifier.padding(bottom = 24.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp))
+            subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 24.dp)) }
+            Spacer(Modifier.height(8.dp))
+            actions.forEach { (label, onClick) ->
+                Text(label, style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onClick).padding(horizontal = 24.dp).wrapContentHeight(Alignment.CenterVertically))
+            }
+        }
+    }
 }
 
 @Composable
@@ -448,76 +517,9 @@ private fun NoteCard(note: String?, editing: Boolean, onEdit: () -> Unit, onCanc
     }
 }
 
-@Composable
-private fun SlotHeader(slot: Slot, onAdd: () -> Unit) {
-    Column {
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-            SectionTitle(slot.label, Modifier.weight(1f))
-            TextButton(onClick = onAdd, modifier = Modifier.semantics { contentDescription = "Add to ${slot.label.lowercase()}" }) {
-                Icon(Icons.Default.Add, null, Modifier.size(18.dp)); Text("Add")
-            }
-        }
-        HorizontalDivider()
-    }
-}
-
-@Composable
-private fun ItemRow(
-    a: Activity?, booked: Boolean, item: PlanItem, lifted: Boolean, handle: Modifier,
-    onOpen: () -> Unit, onMove: () -> Unit, onStatus: (ItemStatus) -> Unit, onTime: () -> Unit, onPool: () -> Unit,
-    onUp: (() -> Unit)?, onDown: (() -> Unit)?,
-) {
-    var menu by remember { mutableStateOf(false) }
-    val status = ItemStatus.of(item.status)
-    val name = a?.name ?: "(removed activity)"
-    val actions = buildList {
-        add(CustomAccessibilityAction("Move to another day or time") { onMove(); true })
-        onUp?.let { add(CustomAccessibilityAction("Move up") { it(); true }) }
-        onDown?.let { add(CustomAccessibilityAction("Move down") { it(); true }) }
-        add(CustomAccessibilityAction("Unschedule") { onPool(); true })
-    }
-    Surface(
-        tonalElevation = if (lifted) 8.dp else 1.dp, shadowElevation = if (lifted) 6.dp else 0.dp,
-        shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().semantics { customActions = actions },
-    ) {
-        Row(Modifier.padding(start = 2.dp, top = 4.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(handle.size(44.dp).semantics { contentDescription = "Hold and drag to reorder $name" }, contentAlignment = Alignment.Center) {
-                Icon(DragHandle, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Column(Modifier.weight(1f).clickable(onClickLabel = "Open details", onClick = onOpen).padding(vertical = 6.dp)) {
-                Text(
-                    listOfNotNull(item.time, a?.tag, a?.marked(booked) ?: name).joinToString("  "),
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                a?.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                val facts = a?.factsLine().orEmpty()
-                if (status != ItemStatus.PROPOSED || facts.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (status == ItemStatus.DONE) Pill("✓ Done")
-                    if (status == ItemStatus.SKIPPED) Pill("Skipped")
-                    if (a?.isCustom == true) Pill("Yours")
-                    Text(facts, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                }
-            }
-            Box {
-                IconButton(onClick = { menu = true }, modifier = Modifier.semantics { contentDescription = "Actions for $name" }) { Icon(Icons.Default.MoreVert, null) }
-                DropdownMenu(menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Move to…") }, onClick = { menu = false; onMove() })
-                    if (status != ItemStatus.DONE) DropdownMenuItem(text = { Text("Mark done") }, onClick = { menu = false; onStatus(ItemStatus.DONE) })
-                    if (status != ItemStatus.SKIPPED) DropdownMenuItem(text = { Text("Mark skipped") }, onClick = { menu = false; onStatus(ItemStatus.SKIPPED) })
-                    if (status != ItemStatus.PROPOSED) DropdownMenuItem(text = { Text("Back to planned") }, onClick = { menu = false; onStatus(ItemStatus.PROPOSED) })
-                    DropdownMenuItem(text = { Text(if (item.time == null) "Set a time…" else "Change time…") }, onClick = { menu = false; onTime() })
-                    onUp?.let { DropdownMenuItem(text = { Text("Move up") }, onClick = { menu = false; it() }) }
-                    onDown?.let { DropdownMenuItem(text = { Text("Move down") }, onClick = { menu = false; it() }) }
-                    DropdownMenuItem(text = { Text("Unschedule") }, onClick = { menu = false; onPool() })
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-private fun PoolPicker(trip: Trip, stayId: String?, date: String, slot: Slot, onDismiss: () -> Unit, onNew: () -> Unit, onPick: (Activity) -> Unit) {
+private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, onDismiss: () -> Unit, onNew: () -> Unit, onPick: (Activity) -> Unit) {
     var allStays by remember { mutableStateOf(false) }
     var fit by remember { mutableStateOf<String?>(null) }
     val scheduled = remember(trip) { trip.scheduledIds() }
@@ -527,7 +529,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, slot: Slot, on
         .sortedWith(compareBy<Activity> { it.id in scheduled }.then(byRecommendation))
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Add to ${dayName(date)}, ${slot.label.lowercase()}", style = MaterialTheme.typography.titleLarge)
+            Text("Add to ${dayName(date)}" + (at.time?.let { ", $it" } ?: if (at.slot == Slot.ALLDAY) "" else ", ${at.slot.label.lowercase()}"), style = MaterialTheme.typography.titleLarge)
             OutlinedButton(onClick = onNew, modifier = Modifier.fillMaxWidth()) { Text("New entry of your own") }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf("short" to "Short", "half-day" to "Half day", "evening" to "Evening", "rainy-day" to "Rainy day").forEach { (k, l) ->
@@ -553,7 +555,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, slot: Slot, on
 }
 
 @Composable
-private fun TimeDialog(current: String?, onDismiss: () -> Unit, onSet: (String?) -> Unit) {
+private fun TimeDialog(current: String?, clearable: Boolean = true, onDismiss: () -> Unit, onSet: (String?) -> Unit) {
     var text by remember { mutableStateOf(current.orEmpty()) }
     val t = normalizeTime(text)
     AlertDialog(
@@ -565,7 +567,7 @@ private fun TimeDialog(current: String?, onDismiss: () -> Unit, onSet: (String?)
         confirmButton = { TextButton(onClick = { onSet(t) }, enabled = t != null) { Text("Set") } },
         dismissButton = {
             Row {
-                if (current != null) TextButton(onClick = { onSet(null) }) { Text("No fixed time") }
+                if (current != null && clearable) TextButton(onClick = { onSet(null) }) { Text("Anytime") }
                 TextButton(onClick = onDismiss) { Text("Cancel") }
             }
         },

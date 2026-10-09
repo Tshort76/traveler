@@ -3,6 +3,7 @@ package dev.tlong.traveler.data
 import dev.tlong.traveler.domain.Checklist
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
+import dev.tlong.traveler.domain.WorkPlan
 import dev.tlong.traveler.model.Trip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -45,6 +46,10 @@ class TripSession(
     private val _checklist = MutableStateFlow(TripStore.checklistOf(initial.row))
     val checklist: StateFlow<Checklist> = _checklist.asStateFlow()
 
+    /** The traveler's actual work blocks, stored beside the trip file like [notes]. */
+    private val _work = MutableStateFlow(TripStore.workOf(initial.row))
+    val work: StateFlow<WorkPlan> = _work.asStateFlow()
+
     private val checklistWrites = Channel<Checklist>(Channel.CONFLATED)
 
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Saved)
@@ -85,6 +90,21 @@ class TripSession(
         checklistWrites.trySend(list)
     }
 
+    /** Shows and saves a work-schedule change at once. */
+    fun setWork(plan: WorkPlan) {
+        if (plan == _work.value) return
+        _work.value = plan
+        _saveState.value = SaveState.Saving
+        scope.launch {
+            try {
+                store.setWork(_trip.value.id, plan)
+                if (_work.value == plan) _saveState.value = SaveState.Saved
+            } catch (e: Exception) {
+                _saveState.value = SaveState.Failed(e.message ?: "could not write to storage")
+            }
+        }
+    }
+
     /** Applies [f]; returns false (and records nothing) when it changed nothing. */
     fun edit(label: String, f: (Trip) -> Trip): Boolean {
         val before = _trip.value
@@ -106,6 +126,7 @@ class TripSession(
     fun retrySave() {
         set(_trip.value)
         checklistWrites.trySend(_checklist.value)
+        scope.launch { runCatching { store.setWork(_trip.value.id, _work.value) } }
     }
 
     /** Saves the notes at once; they have no undo, since the editor's Cancel covers a change of mind. */
@@ -137,6 +158,7 @@ class TripSession(
         _trip.value = stored.local
         _exportedHash.value = stored.row.lastExportedHash
         _checklist.value = TripStore.checklistOf(stored.row)
+        _work.value = TripStore.workOf(stored.row)
         _saveState.value = SaveState.Saved
     }
 

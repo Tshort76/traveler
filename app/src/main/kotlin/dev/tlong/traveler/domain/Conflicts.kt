@@ -25,6 +25,7 @@ private const val DEFAULT_MINUTES = 60L
 
 fun checkPlacement(
     trip: Trip, activity: Activity, date: LocalDate, slot: Slot, time: LocalTime?, ignoreRef: Edits.ItemRef? = null,
+    work: List<WorkBlock>? = null,
 ): List<PlacementIssue> {
     val issues = mutableListOf<PlacementIssue>()
     val day = trip.day(date.toString())
@@ -42,8 +43,8 @@ fun checkPlacement(
         val e = t.arrive?.toTime()?.takeIf { it > s } ?: s.plusMinutes(DEFAULT_MINUTES)
         busy += Busy(s.minusMinutes(90), e, "${t.mode ?: "transfer"} at ${s.hhmm()}")
     }
-    val work = stay?.let { workHoursOn(it, date) }
-    if (work != null) busy += Busy(work.start, work.end, "work ${work.label}")
+    // The traveler's actual blocks when the caller has them; the stay's rhythm otherwise.
+    (work ?: WorkPlan.defaultBlocks(stay?.let { workHoursOn(it, date) })).forEach { busy += Busy(it.startTime, it.endTime, "work ${it.label}") }
 
     if (time != null) {
         val end = time.plusMinutes(minutes).let { if (it < time) LocalTime.MAX else it }

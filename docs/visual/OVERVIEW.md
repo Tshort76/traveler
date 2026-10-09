@@ -130,7 +130,7 @@ make check       # validator tests, example checks, app tests
 make install     # put the app on a plugged-in phone or the emulator
 ```
 
-**Planning a day.** Open a stay or a day and drag suggestions between morning, afternoon and evening, or pick another day. The app warns when something clashes with a booking, a flight, your work hours or opening hours. Everything saves as you go, and undo reaches back fifty steps.
+**Planning a day.** Open a day to see it as a calendar. Drag a block to give it a time, leave a suggestion loose in its morning, afternoon or evening, or move it to another day; work hours are 2-hour blocks you can move or cancel. The app warns when something clashes with a booking, a flight, your work hours or opening hours. Everything saves as you go, and undo reaches back fifty steps.
 
 **Getting a revision.** Export the trip from the overview's share button, give it to the assistant with what you want changed, and open its reply. The app merges it with your edits: your notes, moves and done marks stay, and where you and the assistant changed the same thing, you choose. The version before is kept in History.
 

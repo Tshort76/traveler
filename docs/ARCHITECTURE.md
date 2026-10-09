@@ -11,7 +11,7 @@ A trip is not normalized into tables. Each `TripRow` (Room) holds two JSON docum
 
 A `SnapshotRow` copy of both is taken before anything replaces them (a revision import, a snapshot restore, a backup restore). The newest 20 are kept per trip. A deleted trip is soft-deleted and purged after 30 days.
 
-Some of the traveler's things live beside the trip file, never in it, so no export carries them and no revision changes them: `TripRow.notes` (free text) and `TripRow.checklist` (a `Checklist` document of to-dos and packing items, `domain/Checklist.kt`). Checklist templates are their own `TemplateRow` documents; applying one copies its items into the trip, skipping any already there. Backups carry all three.
+Some of the traveler's things live beside the trip file, never in it, so no export carries them and no revision changes them: `TripRow.notes` (free text), `TripRow.checklist` (a `Checklist` document of to-dos and packing items, `domain/Checklist.kt`) and `TripRow.work` (a `WorkPlan`, `domain/WorkBlocks.kt`: the days whose work blocks were moved or cancelled; any other work day follows the stay's `workRhythm` cut into 2-hour blocks). Checklist templates are their own `TemplateRow` documents; applying one copies its items into the trip, skipping any already there. Backups carry all of them.
 
 Everything the app adds to the file format is a field the format already allows: `origin: "user"` on the traveler's own activities, `userNote`, and `userEdited` (the list of fields the traveler changed). That is what lets an exported file go back to an assistant and come back merged.
 
@@ -20,7 +20,7 @@ Everything the app adds to the file format is a field the format already allows:
 | Package | Role |
 | --- | --- |
 | `model/` | The format: `Trip` and friends (kotlinx-serialization), `TripJson` (lenient reader, writer, unknown-field detection), `TripReader` (plain-language errors and warnings, mirroring `tools/validate_trip.py`). |
-| `domain/` | Pure functions, no Android: `TripCalendar` (dates, stays, slots, work hours across time zones), `Edits` (every edit, recording provenance), `Conflicts` (can this go here?), `Merge` (three-way merge), `Export`. |
+| `domain/` | Pure functions, no Android: `TripCalendar` (dates, stays, slots, work hours across time zones), `Edits` (every edit, recording provenance), `Conflicts` (can this go here?), `DayLayout` (where blocks sit on the day calendar), `Merge` (three-way merge), `Export`. |
 | `data/` | Room, `TripStore` (rows, snapshots, backup), `TripSession` (the open trip: undo stack of 50, serialized conflated saves, a `SaveState` the UI shows), `ImportRouter` (decides new, already imported, revision, backup, or invalid). |
 | `ui/` | Compose screens: trips list, import preview, overview with map, stay (itinerary, activities, info), day planner, history, settings. |
 

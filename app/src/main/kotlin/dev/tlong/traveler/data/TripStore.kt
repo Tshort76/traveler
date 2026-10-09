@@ -2,6 +2,7 @@ package dev.tlong.traveler.data
 
 import dev.tlong.traveler.domain.Checklist
 import dev.tlong.traveler.domain.ChecklistTemplate
+import dev.tlong.traveler.domain.WorkPlan
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.normalized
 import dev.tlong.traveler.model.Trip
@@ -36,6 +37,7 @@ data class BackupFile(
 @Serializable
 data class BackupTrip(val base: Trip, val local: Trip, val archived: Boolean = false, val updatedAt: Long = 0, val notes: String? = null,
     val checklist: Checklist? = null,
+    val work: WorkPlan? = null,
 )
 
 const val BACKUP_FORMAT = "traveler-backup"
@@ -112,6 +114,9 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
     suspend fun setChecklist(id: String, list: Checklist) =
         dao.setChecklist(id, if (list.items.isEmpty()) null else TripJson.compact.encodeToString(Checklist.serializer(), list))
 
+    suspend fun setWork(id: String, plan: WorkPlan) =
+        dao.setWork(id, if (plan.days.isEmpty()) null else TripJson.compact.encodeToString(WorkPlan.serializer(), plan))
+
     suspend fun setArchived(id: String, archived: Boolean) = dao.setArchived(id, archived, clock())
 
     suspend fun moveToDeleted(id: String) = dao.setDeleted(id, clock())
@@ -127,7 +132,8 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
 
     suspend fun backupText(createdAt: String, templates: List<ChecklistTemplate> = emptyList()): String {
         val trips = dao.allLive().map {
-            BackupTrip(TripJson.decode(it.baseJson), TripJson.decode(it.localJson), it.archived, it.updatedAt, it.notes, checklistOf(it).takeIf { c -> c.items.isNotEmpty() })
+            BackupTrip(TripJson.decode(it.baseJson), TripJson.decode(it.localJson), it.archived, it.updatedAt, it.notes, checklistOf(it).takeIf { c -> c.items.isNotEmpty() },
+                workOf(it).takeIf { w -> w.days.isNotEmpty() })
         }
         return TripJson.writer.encodeToString(BackupFile.serializer(), BackupFile(createdAt = createdAt, trips = trips, templates = templates)) + "\n"
     }
@@ -148,6 +154,7 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
                     localJson = TripJson.encodeCompact(t.local.normalized()), createdAt = existing?.createdAt ?: now,
                     updatedAt = now, archived = t.archived, notes = t.notes ?: existing?.notes,
                     checklist = t.checklist?.let { c -> TripJson.compact.encodeToString(Checklist.serializer(), c) } ?: existing?.checklist,
+                    work = t.work?.let { w -> TripJson.compact.encodeToString(WorkPlan.serializer(), w) } ?: existing?.work,
                 ),
             )
         }
@@ -157,6 +164,10 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
         /** The trip's checklist; an unreadable one reads as empty rather than blocking the trip. */
         fun checklistOf(row: TripRow): Checklist =
             row.checklist?.let { runCatching { TripJson.reader.decodeFromString(Checklist.serializer(), it) }.getOrNull() } ?: Checklist()
+
+        /** The trip's work schedule; an unreadable one reads as "follow the rhythm". */
+        fun workOf(row: TripRow): WorkPlan =
+            row.work?.let { runCatching { TripJson.reader.decodeFromString(WorkPlan.serializer(), it) }.getOrNull() } ?: WorkPlan()
 
         const val KEEP_SNAPSHOTS = 20
         const val DELETE_AFTER_MS = 30L * 24 * 60 * 60 * 1000
