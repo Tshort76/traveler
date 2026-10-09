@@ -3,6 +3,8 @@
 
     <!-- Only for the optional overview image and nothing else; the app works fully without it. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <!-- To say "you are offline" next to map links instead of letting them fail silently. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 

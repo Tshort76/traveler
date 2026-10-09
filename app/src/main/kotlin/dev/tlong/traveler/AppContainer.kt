@@ -1,5 +1,6 @@
 package dev.tlong.traveler
 
+import dev.tlong.traveler.data.DeviceCalendar
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -33,6 +34,7 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     val store = TripStore(db.trips())
     val templates = TemplateStore(db.templates())
+    val calendar = DeviceCalendar(context)
     private val router = ImportRouter(store)
 
     private val sessions = mutableMapOf<String, TripSession>()

@@ -150,7 +150,7 @@ fun SettingsScreen(navigator: Navigator) {
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { privacy = !privacy }.wrapContentHeight(Alignment.CenterVertically),
                     )
                     if (privacy) Text(
-                        "Trips and notes live only on this phone. Nothing is uploaded and no account is needed; a trip leaves the phone only when you export, share or back it up. On its own, the app goes online only to fetch map tiles for the area on screen (OpenFreeMap) and a trip's overview image, if the trip names one. When you paste a short Google Maps link to set a location, it follows that link to find the coordinates. No trip details are sent.",
+                        "Trips and notes live only on this phone. Nothing is uploaded and no account is needed; a trip leaves the phone only when you export, share or back it up, or when you add a day to a calendar, whose account then syncs those events. On its own, the app goes online only to fetch map tiles for the area on screen (OpenFreeMap) and a trip's overview image, if the trip names one. When you paste a short Google Maps link to set a location, it follows that link to find the coordinates. No trip details are sent.",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }

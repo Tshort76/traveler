@@ -1,5 +1,13 @@
 package dev.tlong.traveler.ui.day
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
+import dev.tlong.traveler.domain.dayEvents
+import dev.tlong.traveler.ui.common.LocalContainer
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Spacer
@@ -213,6 +221,13 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     var selected by remember { mutableStateOf<Selected?>(null) }
     val scroll = rememberScrollState()
     var viewport by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
+    var exporting by remember { mutableStateOf(false) }
+    val container = LocalContainer.current
+    val context = LocalContext.current
+    val askCalendar = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        if (granted.values.all { it }) exporting = true
+        else scope.launch { snackbar.showSnackbar("Calendar access is off") }
+    }
 
     fun undoable(message: String) = scope.launch { snackbar.offerUndo(session, message) }
 
@@ -295,6 +310,12 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                     DropdownMenu(addMenu, onDismissRequest = { addMenu = false }) {
                         DropdownMenuItem(text = { Text("Activity…") }, onClick = { addMenu = false; picker = AddAt(Slot.ALLDAY, null) })
                         DropdownMenuItem(text = { Text("Booking…") }, onClick = { addMenu = false; booking = BookingTarget(null) })
+                        DropdownMenuItem(text = { Text("Add to calendar…") }, onClick = {
+                            addMenu = false
+                            val perms = arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+                            if (perms.all { ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED }) exporting = true
+                            else askCalendar.launch(perms)
+                        })
                         DropdownMenuItem(text = { Text("Work block") }, onClick = {
                             addMenu = false
                             val start = blocks.maxOfOrNull { minutesOf(it.end) ?: 0 } ?: (9 * 60)
@@ -382,6 +403,21 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             }
         }
         null -> {}
+    }
+
+    if (exporting && local != null) {
+        val events = remember(trip, blocks) { dayEvents(trip, date, blocks) }
+        CalendarSheet(
+            local.label(), events, container.calendar.exported(trip.id, date).size, container.calendar,
+            onDismiss = { exporting = false },
+        ) { cal, picked ->
+            exporting = false
+            container.calendar.chosen = cal.id
+            scope.launch {
+                val n = runCatching { container.calendar.replace(cal.id, trip.id, local, stay?.zone ?: ZoneId.systemDefault(), picked) }
+                snackbar.showSnackbar(n.fold({ "Added $it to ${cal.name}" }, { "Could not write to the calendar" }))
+            }
+        }
     }
 
     picker?.let { at ->
