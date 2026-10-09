@@ -1,5 +1,7 @@
 package dev.tlong.traveler.ui.overview
 
+import dev.tlong.traveler.ui.common.EarlierRow
+import dev.tlong.traveler.domain.departDate
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
@@ -184,6 +186,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var offlineMaps by remember { mutableStateOf(false) }
     var fullMap by remember { mutableStateOf(false) }
     var showNotes by rememberSaveable { mutableStateOf(false) }
+    var showPastStays by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
@@ -281,7 +284,13 @@ private fun Overview(session: TripSession, navigator: Navigator) {
             // Every stay, so the flights out and back still show, but no card for the home airport.
             val numbers = trip.destinations.withIndex().associate { (i, s) -> s.id to i + 1 }
             val tallies = trip.bookables().tallyByStay()
+            // During the trip, finished stays and the travel between them fold into one row.
+            val active = trip.phase(today) == TripPhase.ACTIVE
+            val finished = if (active) trip.stays.count { it.id in numbers && it.departDate < today } else 0
+            if (finished > 0) item("past-stays") { EarlierRow(finished, "stay", showPastStays) { showPastStays = !showPastStays } }
+            val folded = active && !showPastStays
             trip.stays.forEachIndexed { i, stay ->
+                if (folded && stay.departDate < today) return@forEachIndexed
                 numbers[stay.id]?.let { n ->
                     item("stay-${stay.id}") {
                         StayCard(

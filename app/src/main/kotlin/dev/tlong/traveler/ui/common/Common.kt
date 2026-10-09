@@ -1,5 +1,10 @@
 package dev.tlong.traveler.ui.common
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.addPathNodes
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.runtime.getValue
@@ -148,6 +153,16 @@ private fun pathIcon(name: String, path: String) = ImageVector.Builder(name, 24.
 /** Material's checkbox icons, which the core icon set lacks: an empty box and a ticked one. */
 val BoxEmpty: ImageVector = pathIcon("CheckBoxOutlineBlank", "M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z")
 val BoxTicked: ImageVector = pathIcon("CheckBox", "M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z")
+
+/** "▸ 12 earlier days": the folded past of a list during a trip; tap to show or hide it. */
+@Composable
+fun EarlierRow(count: Int, noun: String, open: Boolean, onToggle: () -> Unit) {
+    Text(
+        (if (open) "▾ " else "▸ ") + "$count earlier $noun" + if (count == 1) "" else "s",
+        style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onToggle).wrapContentHeight(Alignment.CenterVertically),
+    )
+}
 
 /** Shows [message] with an Undo action. */
 suspend fun SnackbarHostState.offerUndo(session: TripSession, message: String) {

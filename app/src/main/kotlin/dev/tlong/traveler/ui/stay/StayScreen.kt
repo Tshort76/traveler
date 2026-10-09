@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.stay
 
+import dev.tlong.traveler.ui.common.EarlierRow
 import dev.tlong.traveler.ui.common.BoxEmpty
 import dev.tlong.traveler.ui.common.BoxTicked
 import androidx.compose.material.icons.filled.DateRange
@@ -161,13 +162,19 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
 private fun ItineraryTab(trip: Trip, stay: Stay, work: WorkPlan, onDay: (String) -> Unit, onActivity: (String) -> Unit) {
     val dates = remember(trip, stay.id) { trip.datesOf(stay) }
     val today = LocalDate.now()
+    // While the stay is under way its past days fold into one row, so the list opens at today.
+    val past = if (today in dates) dates.filter { it < today } else emptyList()
+    var showPast by rememberSaveable(stay.id) { mutableStateOf(false) }
     val groups = weeks(dates)
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (past.isNotEmpty()) item("past") { EarlierRow(past.size, "day", showPast) { showPast = !showPast } }
         groups.forEachIndexed { w, week ->
+            val shown = if (showPast) week else week.filter { it !in past }
+            if (shown.isEmpty()) return@forEachIndexed
             if (groups.size > 1) item("w$w") {
                 SectionTitle("Week ${w + 1} · ${week.first().shortLabel()} – ${week.last().shortLabel()}", Modifier.padding(top = 8.dp))
             }
-            items(week, key = { it.toString() }) { d -> DayCard(trip, stay, work, d, d == today, onClick = { onDay(d.toString()) }, onActivity = onActivity) }
+            items(shown, key = { it.toString() }) { d -> DayCard(trip, stay, work, d, d == today, onClick = { onDay(d.toString()) }, onActivity = onActivity) }
         }
     }
 }
