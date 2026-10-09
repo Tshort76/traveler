@@ -37,8 +37,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -185,7 +183,6 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var showLinks by remember { mutableStateOf(false) }
     var offlineMaps by remember { mutableStateOf(false) }
     var fullMap by remember { mutableStateOf(false) }
-    var showNotes by rememberSaveable { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
@@ -310,16 +307,6 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                             )
                         }
                     }
-                }
-            }
-            val notes = trip.warnings + trip.notes
-            if (notes.isNotEmpty()) item("notes") {
-                Column {
-                    TextButton(onClick = { showNotes = !showNotes }, contentPadding = PaddingValues(0.dp)) {
-                        Text("Notes from the plan (${notes.size})", style = MaterialTheme.typography.titleSmall)
-                        Icon(if (showNotes) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown, null)
-                    }
-                    if (showNotes) notes.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
                 }
             }
         }

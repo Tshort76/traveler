@@ -1,6 +1,12 @@
 package dev.tlong.traveler.ui.overview
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,21 +84,38 @@ private fun Notes(session: TripSession, navigator: Navigator) {
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()) {
-            TextField(
-                value,
-                onValueChange = { new ->
-                    val (text, cursor) = NoteText.afterTyping(value.text, new.text, new.selection.end)
-                    value = if (text == new.text) new else TextFieldValue(text, TextRange(cursor))
-                },
-                placeholder = { Text("Notes for this trip") },
-                visualTransformation = BulletDots,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
-                ),
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-            )
+            // The plan's own notes sit read-only under the traveler's, read from the current revision,
+            // so a re-import replaces them and never touches what was typed above the line.
+            val plan = trip.warnings + trip.notes
+            BoxWithConstraints(Modifier.weight(1f)) {
+                val page = maxHeight
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    TextField(
+                        value,
+                        onValueChange = { new ->
+                            val (text, cursor) = NoteText.afterTyping(value.text, new.text, new.selection.end)
+                            value = if (text == new.text) new else TextFieldValue(text, TextRange(cursor))
+                        },
+                        placeholder = { Text("Notes for this trip") },
+                        visualTransformation = BulletDots,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = if (plan.isEmpty()) page else 160.dp),
+                    )
+                    if (plan.isNotEmpty()) {
+                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                        SelectionContainer {
+                            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text("From the plan", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                plan.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                            }
+                        }
+                    }
+                }
+            }
             HorizontalDivider()
             TextButton(
                 onClick = {
