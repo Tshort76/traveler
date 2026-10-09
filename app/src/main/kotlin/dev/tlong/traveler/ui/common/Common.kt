@@ -1,5 +1,18 @@
 package dev.tlong.traveler.ui.common
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.material3.FilterChip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.heightIn
@@ -271,3 +284,49 @@ fun modeLabel(mode: String?) = mode?.replaceFirstChar { it.uppercase() } ?: "Tra
 fun Activity.factsLine(): String =
     listOfNotNull(fitLabel(fit), effortLabel(effort), durationLabel(duration)?.substringBefore(" incl.")?.substringBefore(", plus"))
         .joinToString(" · ")
+
+/** One chip, three states: everything, then only what is planned, then only what is not. */
+@Composable
+fun PlannedFilter(planned: Boolean?, onChange: (Boolean?) -> Unit) {
+    val haptics = LocalHapticFeedback.current
+    FilterChip(
+        planned != null,
+        onClick = { onChange(when (planned) { null -> true; true -> false; false -> null }); haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
+        label = { PlanBox(planned) },
+        modifier = Modifier.semantics { contentDescription = when (planned) { null -> "Showing planned and unplanned"; false -> "Showing unplanned only"; true -> "Showing planned only" } },
+    )
+}
+
+/** [PlannedFilter]'s box: a dim outline for all, a box with a red cross for unplanned only, a ticked box for planned only. */
+@Composable
+private fun PlanBox(planned: Boolean?) {
+    val c = MaterialTheme.colorScheme
+    Canvas(Modifier.size(20.dp)) {
+        val inset = 2.5.dp.toPx()
+        val r = CornerRadius(2.5.dp.toPx())
+        val box = Size(size.width - 2 * inset, size.height - 2 * inset)
+        val at = Offset(inset, inset)
+        when (planned) {
+            null -> drawRoundRect(c.outlineVariant, at, box, r, style = Stroke(2.dp.toPx()))
+            false -> {
+                drawRoundRect(c.primary, at, box, r, style = Stroke(2.dp.toPx()))
+                // A light red cross: not on the plan.
+                // Softened in light mode; dark mode's error red is already light.
+                val x = if (c.surface.luminance() > 0.5f) c.error.copy(alpha = 0.7f) else c.error
+                val a0 = size.width * 0.34f
+                val a1 = size.width * 0.66f
+                drawLine(x, Offset(a0, a0), Offset(a1, a1), 2.2.dp.toPx(), StrokeCap.Round)
+                drawLine(x, Offset(a1, a0), Offset(a0, a1), 2.2.dp.toPx(), StrokeCap.Round)
+            }
+            true -> {
+                drawRoundRect(c.primary, at, box, r)
+                val tick = Path().apply {
+                    moveTo(size.width * 0.28f, size.height * 0.52f)
+                    lineTo(size.width * 0.43f, size.height * 0.67f)
+                    lineTo(size.width * 0.73f, size.height * 0.36f)
+                }
+                drawPath(tick, c.onPrimary, style = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
+        }
+    }
+}

@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ArrowDropDown
 import dev.tlong.traveler.domain.shortLabel
+import dev.tlong.traveler.ui.common.PlannedFilter
 import dev.tlong.traveler.ui.common.marked
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.departDate
@@ -140,14 +141,14 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
     val (unplanned, items) = remember(all) { all.partition { it.unplanned } }
-    var plannedOnly by rememberSaveable { mutableStateOf(false) }
+    var planned by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var openOnly by rememberSaveable { mutableStateOf(false) }
     var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
     var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
-    val groups = remember(all, order, plannedOnly, openOnly, group, onlyStay) {
-        val shown = (if (plannedOnly) items else all)
-            .filter { (!openOnly || !it.booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
+    val groups = remember(all, order, planned, openOnly, group, onlyStay) {
+        val shown = all
+            .filter { (planned == null || it.unplanned != planned) && (!openOnly || !it.booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
             Order.STAY -> shown.groupBy { it.stayId }.toList()
                 .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
@@ -214,8 +215,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                         }
                         FilterChip(openOnly, onClick = { openOnly = !openOnly }, label = { Text("☐") },
                             modifier = Modifier.semantics { contentDescription = "Not booked" })
-                        if (unplanned.isNotEmpty()) FilterChip(plannedOnly, onClick = { plannedOnly = !plannedOnly }, label = { Text("🗓️") },
-                            modifier = Modifier.semantics { contentDescription = "Planned only" })
+                        if (unplanned.isNotEmpty()) PlannedFilter(planned) { planned = it }
                     }
                 }
             }

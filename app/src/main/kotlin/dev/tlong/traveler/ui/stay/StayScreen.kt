@@ -1,17 +1,7 @@
 package dev.tlong.traveler.ui.stay
 
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
+import dev.tlong.traveler.ui.common.PlannedFilter
 import dev.tlong.traveler.ui.common.EarlierRow
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import dev.tlong.traveler.ui.common.FilterList
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
@@ -246,7 +236,6 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     }.sortedWith(byRecommendation)
     val more = fits.size + efforts.size + conditions.size + tags.size
     var advanced by rememberSaveable { mutableStateOf(false) }
-    val haptics = LocalHapticFeedback.current
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp)) {
         if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
@@ -254,13 +243,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                // One button, three states: all, then only the planned, then only the unplanned.
-                FilterChip(
-                    planned != null,
-                    onClick = { planned = when (planned) { null -> true; true -> false; false -> null }; haptics.performHapticFeedback(HapticFeedbackType.SegmentTick) },
-                    label = { PlanBox(planned) },
-                    modifier = Modifier.semantics { contentDescription = when (planned) { null -> "Showing planned and unplanned"; false -> "Showing unplanned only"; true -> "Showing planned only" } },
-                )
+                PlannedFilter(planned) { planned = it }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
                     contentDescription = (if (advanced) "Hide filters" else "More filters") + if (more > 0) ", $more on" else ""
@@ -289,40 +272,6 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
 
 private val FITS = listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening")
 private val EFFORTS = listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding")
-
-/** The planned filter's box: a dim outline for all, a box with a red cross for unplanned only, a ticked box for planned only. */
-@Composable
-private fun PlanBox(planned: Boolean?) {
-    val c = MaterialTheme.colorScheme
-    Canvas(Modifier.size(20.dp)) {
-        val inset = 2.5.dp.toPx()
-        val r = CornerRadius(2.5.dp.toPx())
-        val box = Size(size.width - 2 * inset, size.height - 2 * inset)
-        val at = Offset(inset, inset)
-        when (planned) {
-            null -> drawRoundRect(c.outlineVariant, at, box, r, style = Stroke(2.dp.toPx()))
-            false -> {
-                drawRoundRect(c.primary, at, box, r, style = Stroke(2.dp.toPx()))
-                // A light red cross: not on the plan.
-                // Softened in light mode; dark mode's error red is already light.
-                val x = if (c.surface.luminance() > 0.5f) c.error.copy(alpha = 0.7f) else c.error
-                val a0 = size.width * 0.34f
-                val a1 = size.width * 0.66f
-                drawLine(x, Offset(a0, a0), Offset(a1, a1), 2.2.dp.toPx(), StrokeCap.Round)
-                drawLine(x, Offset(a1, a0), Offset(a0, a1), 2.2.dp.toPx(), StrokeCap.Round)
-            }
-            true -> {
-                drawRoundRect(c.primary, at, box, r)
-                val tick = Path().apply {
-                    moveTo(size.width * 0.28f, size.height * 0.52f)
-                    lineTo(size.width * 0.43f, size.height * 0.67f)
-                    lineTo(size.width * 0.73f, size.height * 0.36f)
-                }
-                drawPath(tick, c.onPrimary, style = Stroke(2.2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
