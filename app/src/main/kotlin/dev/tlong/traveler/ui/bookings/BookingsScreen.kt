@@ -140,13 +140,14 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
+    // Only what is on the plan: a suggestion needing a booking shows here once it is on a day.
     val items = remember(all) { all.filterNot { it.unplanned } }
     var booked by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
     var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
-    val groups = remember(all, order, booked, group, onlyStay) {
-        val shown = all
+    val groups = remember(items, order, booked, group, onlyStay) {
+        val shown = items
             .filter { (booked == null || it.booked == booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
             Order.STAY -> shown.groupBy { it.stayId }.toList()
@@ -227,7 +228,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                     )
                 }
             }
-            if (all.isEmpty()) item("empty") {
+            if (items.isEmpty()) item("empty") {
                 Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
             } else if (groups.isEmpty()) item("empty") {
                 Text(if (booked == false) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
@@ -326,15 +327,6 @@ fun PriorityTag(priority: Int) {
     )
 }
 
-/** Marks an activity on no day: it is listed, but left out of the counts and totals. */
-@Composable
-private fun NotPlannedTag() {
-    Text(
-        "Not planned", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 1.dp),
-    )
-}
-
 @Composable
 private fun BookableRow(
     trip: Trip, b: Bookable, expanded: Boolean,
@@ -346,7 +338,6 @@ private fun BookableRow(
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     if (!b.booked) b.priority?.let { PriorityTag(it) }
-                    if (b.unplanned) NotPlannedTag()
                     Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 detailLine(trip, b).takeIf { it.isNotEmpty() }?.let {
