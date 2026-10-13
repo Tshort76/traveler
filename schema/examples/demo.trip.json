@@ -50,6 +50,13 @@
       "arrive": "2027-10-18",
       "depart": "2027-10-20",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": {
+        "highC": 22,
+        "lowC": 12,
+        "flags": [
+          "rainy"
+        ]
+      },
       "summary": "Parks, cafés and the best of the food scene, with mornings for work.",
       "priorities": [
         "Bosques de Palermo",
@@ -99,6 +106,13 @@
       "arrive": "2027-10-20",
       "depart": "2027-10-22",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": {
+        "highC": 22,
+        "lowC": 13,
+        "flags": [
+          "rainy"
+        ]
+      },
       "summary": "The old city: the civic centre, markets, La Boca and the riverside reserve.",
       "priorities": [
         "Plaza de Mayo",
@@ -138,6 +152,14 @@
       "arrive": "2027-10-22",
       "depart": "2027-10-25",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": {
+        "highC": 20,
+        "lowC": 8,
+        "flags": [
+          "windy",
+          "dry"
+        ]
+      },
       "summary": "Whales from the beach and by boat, sea lions on the cliffs.",
       "priorities": [
         "El Doradillo",
@@ -1217,6 +1239,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "f2196b21f2b89baf"
+    "hash": "6e1ebfc31e11e701"
   }
 }

@@ -31,6 +31,7 @@
       "arrive": "2026-11-05",
       "depart": "2026-11-07",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": { "highC": 25, "lowC": 15, "flags": ["rainy"] },
       "summary": "Two work days to get over the flight. Evenings stay close: the ecological reserve on the river and Palermo's parks.",
       "priorities": ["Costanera Sur reserve at golden hour", "A run through the Bosques de Palermo"],
       "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "priority": 2, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." },
@@ -45,6 +46,7 @@
       "arrive": "2026-11-07",
       "depart": "2026-11-13",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": { "highC": 31, "lowC": 20, "flags": ["humid", "stormy"] },
       "summary": "The falls are the point: spend all of Sunday in the Argentine park, starting at the Garganta del Diablo before the crowds. Weekday evenings belong to the town — the hummingbird garden, the Three Frontiers at sunset, the Feirinha for dinner.",
       "priorities": ["Garganta del Diablo at opening", "Upper and Lower circuits", "Brazilian side panorama if an afternoon frees up"],
       "lodging": { "status": "undecided", "price": { "amount": 420, "max": 600, "currency": "USD" }, "priority": 1, "how": "Hotels fill for the long weekend; book in town near the bus terminal.", "notes": "Stay in town, walking distance to the bus terminal for the park buses." },
@@ -60,6 +62,7 @@
       "arrive": "2026-11-13",
       "depart": "2026-11-15",
       "timezone": "America/Argentina/Buenos_Aires",
+      "climate": { "highC": 26, "lowC": 16, "flags": ["rainy"] },
       "summary": "A free weekend: Recoleta and the bookshop on Saturday, the San Telmo street fair on Sunday before the flight home.",
       "priorities": ["Feria de San Telmo (Sundays only)", "El Ateneo Grand Splendid"],
       "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "priority": 2, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." }

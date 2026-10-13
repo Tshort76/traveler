@@ -45,6 +45,7 @@ object Completeness {
             val nights = runCatching { LocalDate.parse(s.depart) > LocalDate.parse(s.arrive) }.getOrDefault(false)
             val lod = s.lodging
             if (nights && lod?.status != "booked") missing(lod?.price, lod?.priority)?.let { out += "stay ${s.id}.lodging: needs $it" }
+            if (nights && s.climate == null) out += "stay ${s.id}: needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates"
         }
         trip.transfers.forEach { t ->
             val b = t.booking

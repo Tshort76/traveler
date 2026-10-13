@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import dev.tlong.traveler.model.TripReader
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -63,7 +64,7 @@ class TripStoreTest {
         val text = Fixtures.text("minimal.trip.json")
         store.importNew((router.route(text, "a") as PendingImport.NewTrip).trip)
         val again = router.route(text, "again") as PendingImport.AlreadyImported
-        assertEquals(1, again.check.forAssistant.size)
+        assertEquals(TripReader.read(text).forAssistant, again.check.forAssistant)
     }
 
     @Test

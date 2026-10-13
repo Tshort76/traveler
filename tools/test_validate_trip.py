@@ -51,6 +51,16 @@ class CompletenessCheck(unittest.TestCase):
         self.assertIn(".price: not part of the format", errs)
         self.assertIn("prices are in USD", errs)
 
+    def test_an_overnight_stay_without_climate_fails(self):
+        del self.trip["stays"][0]["climate"]
+        self.assertIn("needs climate", " ".join(self.errors(self.trip)))
+
+    def test_a_same_day_stay_needs_no_climate(self):
+        s = self.trip["stays"][0]
+        del s["climate"]
+        s["depart"] = s["arrive"]
+        self.assertNotIn("needs climate", " ".join(self.errors(self.trip)))
+
     def test_an_activity_without_coordinates_fails(self):
         self.trip["activities"][0]["place"] = {"query": "Somewhere, Puerto Iguazú"}
         self.assertIn("have no place.lat/lng", " ".join(self.errors(self.trip)))

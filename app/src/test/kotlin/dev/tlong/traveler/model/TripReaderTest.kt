@@ -79,13 +79,16 @@ class TripReaderTest {
 
     @Test
     fun `the strict checks find what validate_trip --complete finds in the examples`() {
-        // validate_trip.py --complete passes demo and both iguazu files, fails minimal once and long-synthetic 19 times.
+        // validate_trip.py --complete passes demo and both iguazu files, fails minimal twice and long-synthetic 33 times.
         listOf("demo.trip.json", "iguazu-short.trip.json", "iguazu-short.r2.trip.json").forEach {
             assertEquals(it, emptyList<String>(), TripReader.read(Fixtures.text(it)).forAssistant)
         }
-        assertEquals(listOf("stay denver.lodging: needs price and priority"), TripReader.read(Fixtures.text("minimal.trip.json")).forAssistant)
+        assertEquals(
+            listOf("stay denver.lodging: needs price and priority", "stay denver: needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates"),
+            TripReader.read(Fixtures.text("minimal.trip.json")).forAssistant,
+        )
         val synthetic = TripReader.read(Fixtures.text("long-synthetic.trip.json")).forAssistant
-        assertEquals(synthetic.toString(), 19, synthetic.size)
+        assertEquals(synthetic.toString(), 33, synthetic.size)
         assertEquals(13, synthetic.count { it.startsWith("transfer ") && "a ticketed transfer needs a booking" in it })
         assertEquals(5, synthetic.count { it.startsWith("stay ") && it.endsWith(".lodging: needs price and priority") })
         assertTrue(synthetic.toString(), "activities: 322 have no stars (1–3): lima-a01, lima-a02, lima-a03, lima-a04, lima-a05, lima-a06 and 316 more" in synthetic)

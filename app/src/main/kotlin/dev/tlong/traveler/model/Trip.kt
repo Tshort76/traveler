@@ -87,10 +87,19 @@ data class Stay(
     val lodging: Lodging? = null,
     val transport: String? = null,
     val workRhythm: WorkRhythm? = null,
+    val climate: Climate? = null,
     val notes: List<String> = emptyList(),
     val mapUrl: String? = null,
     val links: List<Link> = emptyList(),
     val userEdited: List<String> = emptyList(),
+)
+
+/** Typical daytime high and night-time low for the place at that time of year, and its seasonal hazards. */
+@Serializable
+data class Climate(
+    val highC: Double,
+    val lowC: Double,
+    val flags: List<String> = emptyList(),
 )
 
 @Serializable

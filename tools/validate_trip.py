@@ -392,11 +392,13 @@ def check_complete(trip, rep):
                                 f"{{status, priority, price, url?, how}}: {_names(loose)}")
     for s in trip.get("stays", []):
         lod = s.get("lodging") or {}
-        if _date(s.get("arrive")) and _date(s.get("depart")) and _date(s["depart"]) > _date(s["arrive"]) \
-                and lod.get("status") != "booked":
+        overnight = _date(s.get("arrive")) and _date(s.get("depart")) and _date(s["depart"]) > _date(s["arrive"])
+        if overnight and lod.get("status") != "booked":
             missing = [k for k in ("price", "priority") if k not in lod]
             if missing:
                 rep.error(f"stay {s.get('id')}.lodging", f"needs {' and '.join(missing)}")
+        if overnight and "climate" not in s:
+            rep.error(f"stay {s.get('id')}", "needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates")
     for t in trip.get("transfers", []):
         b = t.get("booking")
         if b is None and t.get("mode") in TICKETED:

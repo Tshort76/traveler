@@ -429,6 +429,34 @@
             }
           }
         },
+        "climate": {
+          "type": "object",
+          "required": [
+            "highC",
+            "lowC"
+          ],
+          "properties": {
+            "highC": {
+              "type": "number"
+            },
+            "lowC": {
+              "type": "number"
+            },
+            "flags": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "dry",
+                  "rainy",
+                  "stormy",
+                  "windy",
+                  "humid",
+                  "snowy"
+                ]
+              }
+            }
+          }
+        },
         "notes": {
           "$ref": "#/$defs/strings"
         },

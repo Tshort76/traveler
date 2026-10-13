@@ -72,6 +72,7 @@ A stay is a period based in one location. A return to the same city is a **separ
 | `lodging` | | Lodging | |
 | `transport` | | string | Getting around locally, once. |
 | `workRhythm` | | WorkRhythm | Recurring work hours during this stay. |
+| `climate` | | Climate | The typical weather there for these dates. |
 | `notes` | | string[] | Stay-level logistics. |
 | `mapUrl` | | URL | A custom Google map for this stay. |
 | `links` | | Link[] | |
@@ -81,6 +82,8 @@ A stay is a period based in one location. A return to the same city is a **separ
 **Price** — `{ "amount": number, "max"?: number, "currency"?: "USD", "unit"?: "total" | "night" | "person", "note"? }`. `amount` alone is one figure; `amount` to `max` is a range. `unit` says what it is for: the whole item (the default), one night (lodging only; multiplied by the stay's nights), or one traveler (multiplied by the trip's `travelers`). A return ticket's later legs carry `amount` 0, so the fare counts once. `currency` is an ISO code and defaults to USD; assistants write USD, converted approximately, with the local price in `note`. Until the item is booked, a price is an estimate; once booked, it is what was paid. The app's Bookings screen totals them per currency.
 
 **Booking guidance**, on lodging, a Booking and a commitment: `url` is where to book (the official site or the operator), `priority` how soon to book it, and `how` one or two sentences on how to book it. Priority 1 means book now: it sells out early, or it is airfare likely to jump soon. 2 means book a week or more ahead: venues that usually fill a week out, and any other airfare. 3 means it can be booked last minute without penalty or risk. The app raises an unbooked 2 to 1 once its date is two weeks away or less, since "a week or more ahead" has run out by then. The Bookings screen tags them P1 (red), P2 (orange) and P3 (green) and can sort by them.
+
+**Climate** — `{ "highC": 22, "lowC": 12, "flags"?: ["rainy"] }`. The typical daytime high and night-time low in °C for the place at that time of year: climate normals, not a forecast. `flags` names the seasonal concerns worth packing for, from `dry`, `rainy`, `stormy`, `windy`, `humid` and `snowy`; leave it out when none stands out. The stay card shows the range, in °F on a phone set to the US, with a glyph per flag.
 
 **WorkRhythm** — `{ "days": ["mon","tue","wed","thu","fri"], "start": "08:00", "end": "15:00", "timezone"?: "America/Denver", "note"? }`. When `timezone` differs from the stay's, the app converts the hours to local time for each date, so a fixed-offset destination and a home zone that changes its clocks both come out right.
 

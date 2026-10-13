@@ -47,11 +47,12 @@ That file is an export from the app, and it contains the traveler's own changes.
   "stays": [...], "transfers": [...], "activities": [...], "commitments": [...], "days": [...] }
 ```
 
-- **stays**: in visit order. Each is `{id, name, region?, place: {lat, lng}, arrive, depart, timezone, summary, priorities[], lodging?, transport?, workRhythm?, notes[]?, mapUrl?}`. When the trip starts or ends with a journey from home, add the home airport as a zero-night stay (arrive = depart) first and last, with just `id`, `name`, `place`, the dates and `timezone`: no summary, priorities or activities. The app hides it. The flights out and back are transfers from and to it, never commitments.
+- **stays**: in visit order. Each is `{id, name, region?, place: {lat, lng}, arrive, depart, timezone, summary, priorities[], lodging?, transport?, workRhythm?, climate, notes[]?, mapUrl?}`. When the trip starts or ends with a journey from home, add the home airport as a zero-night stay (arrive = depart) first and last, with just `id`, `name`, `place`, the dates and `timezone`: no summary, priorities or activities. The app hides it. The flights out and back are transfers from and to it, never commitments.
   - A return to the same city is a new stay with a new id. List each activity once, under the visit it suits best; any day can plan it.
   - `timezone` is an IANA zone.
   - Always give the stay's `lat`/`lng`; the app's offline route map is drawn from them.
   - `workRhythm` is `{days: ["mon",…], start: "08:00", end: "15:00", timezone?}` and is stated once per stay, not on every day.
+  - `climate` is `{highC, lowC, flags?}`: the typical daytime high and night-time low in °C for that place at that time of year (climate normals, not a forecast), on every stay with nights. `flags` lists the seasonal concerns from dry, rainy, stormy, windy, humid and snowy: `rainy` in a rainy season, `windy` where wind is a known feature (Patagonia), `dry` in a reliably dry season. Leave it out when none stands out.
   - `lodging` is `{name?, status: booked|tentative|undecided, price?, url?, priority?, how?, …}`. Leave out `name` when no hotel is chosen. Its `price` is the nightly rate, `{amount, max?, currency: "USD", unit: "night"}`; the app multiplies it by the nights.
 - **transfers**: `{id, from: stayId, to: stayId, date, mode: flight|train|bus|boat|ferry|car|taxi|hike|other, depart?, arrive?, details?, booking?: {status: booked|tentative|needed, ref?, url?, priority?, how?, price?}}`.
   - `mode` is the main vehicle, which the app shows as an icon: `taxi` for a taxi, remis or hired driver, `hike` for a leg on foot. Use `other` only when none fits.

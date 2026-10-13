@@ -75,6 +75,9 @@ import dev.tlong.traveler.AppContainer
 import dev.tlong.traveler.data.SaveState
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.model.Activity
+import kotlin.math.roundToInt
+import java.util.Locale
+import dev.tlong.traveler.model.Climate
 import dev.tlong.traveler.model.Duration
 
 val LocalContainer = staticCompositionLocalOf<AppContainer> { error("no container") }
@@ -253,6 +256,23 @@ fun effortLabel(effort: String?) = when (effort) {
 }
 
 fun conditionLabel(c: String) = c.replace('-', ' ').replaceFirstChar { it.uppercase() }
+
+/** A stay's seasonal weather concern as a glyph; an unknown flag shows nothing. */
+fun climateGlyph(flag: String) = when (flag) {
+    "dry" -> "☀️"; "rainy" -> "🌧️"; "stormy" -> "⛈️"; "windy" -> "💨"; "humid" -> "💦"; "snowy" -> "❄️"; else -> ""
+}
+
+/** "Typical high 72°, low 54°, rainy, windy", for TalkBack beside the glyphs. */
+fun climateDescription(c: Climate) =
+    (listOf("Typical high ${degrees(c.highC)}, low ${degrees(c.lowC)}") + c.flags.filter { climateGlyph(it).isNotEmpty() }).joinToString(", ")
+
+private val fahrenheitCountries = setOf("US", "LR", "MM", "BS", "BZ", "KY", "PW")
+
+/** Whole degrees, Fahrenheit where the phone's region uses it. The file is always Celsius. */
+fun degrees(celsius: Double): String {
+    val f = Locale.getDefault().country in fahrenheitCountries
+    return "${(if (f) celsius * 9 / 5 + 32 else celsius).roundToInt()}°"
+}
 
 fun modeEmoji(mode: String?) = when (mode) {
     "flight" -> "✈️"

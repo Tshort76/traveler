@@ -99,6 +99,9 @@ import dev.tlong.traveler.ui.Navigator
 import dev.tlong.traveler.ui.activity.dayName
 import dev.tlong.traveler.ui.common.LocalContainer
 import dev.tlong.traveler.ui.common.Pill
+import dev.tlong.traveler.ui.common.climateDescription
+import dev.tlong.traveler.ui.common.climateGlyph
+import dev.tlong.traveler.ui.common.degrees
 import dev.tlong.traveler.ui.common.SaveIndicator
 import dev.tlong.traveler.ui.common.copyToClipboard
 import dev.tlong.traveler.ui.common.modeEmoji
@@ -440,11 +443,22 @@ private fun StayCard(
                     // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
                     Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
                 }
-                Text(
-                    "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()} · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
-                        (stay.region?.let { " · $it" } ?: ""),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()} · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
+                            (stay.region?.let { " · $it" } ?: ""),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+                    )
+                    // The typical weather for the dates, so the region gives way first on a narrow card.
+                    stay.climate?.let { c ->
+                        Text(
+                            c.flags.joinToString("") { climateGlyph(it) } + " ${degrees(c.highC)}/${degrees(c.lowC)}",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 8.dp).semantics { contentDescription = climateDescription(c) },
+                        )
+                    }
+                }
                 // Bullets, not prose: the must-dos, or the plan's priorities when nothing has three stars.
                 (standouts.map { "• $it" }.ifEmpty { stay.priorities.map { "• $it" } }).take(3).forEach {
                     Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
