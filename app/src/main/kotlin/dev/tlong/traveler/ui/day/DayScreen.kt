@@ -1,6 +1,12 @@
 package dev.tlong.traveler.ui.day
 
 import android.Manifest
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.Orientation
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -259,6 +265,11 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
         else if (session.edit("Set time") { Edits.setTime(it, ref, time) }) undoable(if (time == null) "“${a?.name}” is anytime" else "“${a?.name}” at $time")
     }
 
+    fun goTo(offset: Int) { trip.days.getOrNull(dayIndex + offset)?.let { navigator.day(trip.id, it.date, replace = true) } }
+    // A sideways swipe anywhere on the day moves to the next or previous one, like the arrows.
+    var swipe by remember { mutableFloatStateOf(0f) }
+    val swipeThreshold = with(LocalDensity.current) { 96.dp.toPx() }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -271,10 +282,10 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                 navigationIcon = { BackButton(navigator) },
                 actions = {
                     SaveIndicator(saveState, session::retrySave)
-                    IconButton(onClick = { trip.days.getOrNull(dayIndex - 1)?.let { navigator.day(trip.id, it.date, replace = true) } }, enabled = dayIndex > 0) {
+                    IconButton(onClick = { goTo(-1) }, enabled = dayIndex > 0) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous day")
                     }
-                    IconButton(onClick = { trip.days.getOrNull(dayIndex + 1)?.let { navigator.day(trip.id, it.date, replace = true) } }, enabled = dayIndex in 0 until trip.days.lastIndex) {
+                    IconButton(onClick = { goTo(1) }, enabled = dayIndex in 0 until trip.days.lastIndex) {
                         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next day")
                     }
                 },
@@ -293,6 +304,18 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
         Column(
             Modifier.fillMaxSize().padding(padding)
                 .onGloballyPositioned { c -> c.boundsInWindow().let { viewport = it.top..it.bottom } }
+                .draggable(
+                    rememberDraggableState { swipe += it }, Orientation.Horizontal,
+                    onDragStarted = { swipe = 0f },
+                    onDragStopped = { v ->
+                        when {
+                            swipe < -swipeThreshold || v < -1500f -> goTo(1)
+                            swipe > swipeThreshold || v > 1500f -> goTo(-1)
+                        }
+                        swipe = 0f
+                    },
+                )
+                .graphicsLayer { translationX = swipe / 3 }
                 .verticalScroll(scroll)
                 .padding(bottom = 48.dp),
         ) {
