@@ -3,6 +3,7 @@ package dev.tlong.traveler.ui.day
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalContext
@@ -495,8 +496,9 @@ private fun homeLabel(stay: Stay, date: java.time.LocalDate, b: WorkBlock): Stri
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActionSheet(title: String, subtitle: String?, onDismiss: () -> Unit, actions: List<Pair<String, () -> Unit>>) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(Modifier.padding(bottom = 24.dp)) {
+    // Fully open and scrollable so every action is reachable above the gesture bar.
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding().padding(bottom = 16.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 24.dp))
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 24.dp)) }
             Spacer(Modifier.height(8.dp))
