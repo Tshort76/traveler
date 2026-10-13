@@ -164,3 +164,14 @@ fun LocalDate.weekdayShort(): String = dayOfWeek.getDisplayName(TextStyle.SHORT,
 
 fun dateRangeLabel(a: LocalDate, b: LocalDate): String =
     if (a.year == b.year) "${a.shortLabel()} – ${b.shortLabel()} ${b.year}" else "${a.shortLabel()} ${a.year} – ${b.shortLabel()} ${b.year}"
+
+/** One date of the trip calendar: the destination slept in the night before, and the one slept in that night. */
+data class NightPair(val date: LocalDate, val before: Stay?, val after: Stay?) {
+    val transition get() = before?.id != after?.id
+}
+
+/** Every trip date with the stays slept in either side of it; a zero-night stay, like the home airport, never counts. */
+fun Trip.nightPairs(): List<NightPair> {
+    fun sleptIn(night: LocalDate) = stays.lastOrNull { night >= it.arriveDate && night < it.departDate }
+    return dates().map { NightPair(it, sleptIn(it.minusDays(1)), sleptIn(it)) }
+}

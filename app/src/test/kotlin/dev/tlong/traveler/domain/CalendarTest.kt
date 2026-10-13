@@ -75,4 +75,18 @@ class CalendarTest {
         assertEquals(LocalTime.of(8, 0), workHoursOn(s, LocalDate.parse("2026-11-09"))?.start) // Monday
         assertNull(workHoursOn(s, LocalDate.parse("2026-11-11"))) // Wednesday
     }
+
+    @Test
+    fun `a calendar date pairs the stay slept in before it with the one slept in that night`() {
+        val trip = Fixtures.iguazu
+        val pairs = trip.nightPairs().associateBy { it.date.toString() }
+        val first = pairs.getValue(trip.startDate)
+        assertNull(first.before)
+        assertEquals("bsas-1", first.after?.id)
+        val move = pairs.getValue("2026-11-07")
+        assertEquals("bsas-1" to "iguazu", move.before?.id to move.after?.id)
+        assertTrue(move.transition)
+        assertEquals(false, pairs.getValue("2026-11-06").transition)
+        assertNull(pairs.getValue(trip.endDate).after)
+    }
 }

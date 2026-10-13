@@ -3,6 +3,9 @@ package dev.tlong.traveler.ui.overview
 import dev.tlong.traveler.ui.common.EarlierRow
 import dev.tlong.traveler.domain.departDate
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
 import dev.tlong.traveler.domain.isBooked
@@ -17,11 +20,6 @@ import dev.tlong.traveler.domain.destinations
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -102,7 +100,6 @@ import dev.tlong.traveler.ui.activity.dayName
 import dev.tlong.traveler.ui.common.LocalContainer
 import dev.tlong.traveler.ui.common.Pill
 import dev.tlong.traveler.ui.common.SaveIndicator
-import dev.tlong.traveler.ui.common.SectionTitle
 import dev.tlong.traveler.ui.common.copyToClipboard
 import dev.tlong.traveler.ui.common.modeEmoji
 import dev.tlong.traveler.ui.common.modeLabel
@@ -184,6 +181,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var offlineMaps by remember { mutableStateOf(false) }
     var fullMap by remember { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
@@ -244,11 +242,17 @@ private fun Overview(session: TripSession, navigator: Navigator) {
         },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+        PrimaryTabRow(selectedTabIndex = tab) {
+            Tab(tab == 0, onClick = { tab = 0 }, text = { Text("Stays") })
+            Tab(tab == 1, onClick = { tab = 1 }, text = { Text("Trip info") })
+        }
         LazyColumn(
-            Modifier.fillMaxSize().padding(padding),
-            contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 32.dp),
+            Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 32.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+          if (tab == 1) {
             item("dates") {
                 Text(
                     "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays · rev ${base.revision}" +
@@ -264,7 +268,8 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                     onNotes = { navigator.notes(trip.id) },
                 )
             }
-            item("map") { MapCard(trip, points, segments, online, onExpand = { fullMap = true }) }
+            item("map") { MapCard(trip, points, segments, online, today, onExpand = { fullMap = true }) { navigator.day(trip.id, it.toString()) } }
+          } else {
             if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
                 val stay = trip.stayFor(today)
                 Card(onClick = { navigator.day(trip.id, today.toString()) }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
@@ -277,21 +282,20 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                     }
                 }
             }
-            item("stays-title") { SectionTitle("Stays", Modifier.padding(top = 6.dp)) }
             // Every stay, so the flights out and back still show, but no card for the home airport.
-            val numbers = trip.destinations.withIndex().associate { (i, s) -> s.id to i + 1 }
+            val shown = trip.destinations.map { it.id }.toSet()
             val tallies = trip.bookables().tallyByStay()
             // During the trip, finished stays and the travel between them fold into one row.
             val active = trip.phase(today) == TripPhase.ACTIVE
-            val finished = if (active) trip.stays.count { it.id in numbers && it.departDate < today } else 0
+            val finished = if (active) trip.stays.count { it.id in shown && it.departDate < today } else 0
             if (finished > 0) item("past-stays") { EarlierRow(finished, "stay", showPastStays) { showPastStays = !showPastStays } }
             val folded = active && !showPastStays
             trip.stays.forEachIndexed { i, stay ->
                 if (folded && stay.departDate < today) return@forEachIndexed
-                numbers[stay.id]?.let { n ->
+                if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            n, stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { marked(it.name, null, it.booking != null, trip.isBooked(it)) },
+                            stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { marked(it.name, null, it.booking != null, trip.isBooked(it)) },
                             tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
@@ -309,6 +313,8 @@ private fun Overview(session: TripSession, navigator: Navigator) {
                     }
                 }
             }
+          }
+        }
         }
     }
 
@@ -395,10 +401,11 @@ private fun LinkDialog(current: Link?, onDismiss: () -> Unit, onSave: (Link?) ->
 
 @Composable
 private fun MapCard(
-    trip: Trip, points: List<MapPoint>, segments: List<MapSegment>, online: Boolean,
-    onExpand: () -> Unit,
+    trip: Trip, points: List<MapPoint>, segments: List<MapSegment>, online: Boolean, today: LocalDate,
+    onExpand: () -> Unit, onDay: (LocalDate) -> Unit,
 ) {
     val image by rememberCachedImage(trip.tripMap?.imageUrl)
+    val tint = rememberStayTints(trip)
     Card {
         Column {
             if (points.isNotEmpty()) {
@@ -407,12 +414,10 @@ private fun MapCard(
                     Modifier.fillMaxWidth().height(230.dp).clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)).clickable(onClickLabel = "Open the map full screen", onClick = onExpand),
                 )
             }
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                // The map leaves out any name it cannot place clear of the others, so the route is always spelled out.
-                Text(
-                    trip.destinations.mapIndexed { i, s -> "${i + 1} ${s.name}" }.joinToString("  →  "),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                StayCalendar(trip, tint, today, onDay = onDay)
+                // The map leaves out any name it cannot place clear of the others, so the key spells out every stay.
+                StayKey(trip, tint)
                 image?.let { bmp ->
                     Image(bmp, "Supplied overview image of the trip", Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
                     trip.tripMap?.attribution?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
@@ -424,24 +429,14 @@ private fun MapCard(
 
 @Composable
 private fun StayCard(
-    number: Int, stay: Stay, standouts: List<String>, tally: Map<Bookable.Group, Pair<Int, Int>>,
+    stay: Stay, standouts: List<String>, tally: Map<Bookable.Group, Pair<Int, Int>>,
     onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(Modifier.padding(14.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // The map number follows the name, so it reads as part of it; a long name wraps before pushing it off.
-                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                    Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f, fill = false))
-                    Text(
-                        "$number", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 4.dp).size(20.dp).clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary).wrapContentHeight()
-                            .semantics { contentDescription = "Stay $number on the map" },
-                    )
-                    }
+                    Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                     // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
                     Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
                 }
