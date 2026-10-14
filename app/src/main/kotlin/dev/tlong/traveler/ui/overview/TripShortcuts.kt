@@ -7,7 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import dev.tlong.traveler.domain.bookAhead
+import dev.tlong.traveler.domain.dueToBook
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +37,7 @@ fun TripShortcuts(
     onNotes: () -> Unit,
 ) {
     val bookings = remember(trip) { trip.bookables().filterNot { it.unplanned } }
-    val urgent = remember(trip) { trip.bookAhead().size }
+    val urgent = remember(trip) { trip.dueToBook().size }
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Shortcut("🎫", "Bookings", bookings.count { it.booked } to bookings.size, onBookings, urgent = urgent)
         Kind.entries.forEach { k -> Shortcut(k.glyph(), k.label(), Checklists.tally(checklist, k), { onChecklist(k.ordinal) }) }
@@ -46,8 +46,7 @@ fun TripShortcuts(
 }
 
 /**
- * A glyph, and its count when there is something to count. [urgent] open priority-1 bookings turn
- * the chip red: the trip page's only signal that something must be booked now.
+ * A glyph, and its count when there is something to count. [urgent] turns the chip red.
  */
 @Composable
 private fun Shortcut(glyph: String, label: String, tally: Pair<Int, Int>?, onClick: () -> Unit, urgent: Int = 0) {
@@ -68,7 +67,7 @@ private fun Shortcut(glyph: String, label: String, tally: Pair<Int, Int>?, onCli
         border = if (urgent > 0) BorderStroke(1.dp, colors.error) else AssistChipDefaults.assistChipBorder(enabled = true),
         modifier = Modifier.semantics {
             contentDescription = label + (counted?.let { (d, t) -> ", $d of $t done" } ?: "") +
-                if (urgent > 0) ", $urgent to book now" else ""
+                if (urgent > 0) ", $urgent to book this week" else ""
         },
     )
 }

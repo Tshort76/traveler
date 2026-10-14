@@ -120,6 +120,7 @@ object TripReader {
             s.lodging?.status?.let { enum(it, Vocab.lodgingStatuses, "$where.lodging.status", errors) }
             price(s.lodging?.price, "$where.lodging.price", errors, lodging = true)
             s.lodging?.priority?.let { priority(it, "$where.lodging.priority", errors) }
+            s.lodging?.bookDaysBefore?.let { lead(it, "$where.lodging.bookDaysBefore", errors) }
             checkPlace(s.place, where, errors)
         }
         trip.transfers.forEachIndexed { i, t ->
@@ -133,6 +134,7 @@ object TripReader {
             t.booking?.status?.let { enum(it, Vocab.bookingStatuses, "$where.booking.status", errors) }
             price(t.booking?.price, "$where.booking.price", errors)
             t.booking?.priority?.let { priority(it, "$where.booking.priority", errors) }
+            t.booking?.bookDaysBefore?.let { lead(it, "$where.booking.bookDaysBefore", errors) }
         }
         trip.activities.forEachIndexed { i, a ->
             val where = "activities[$i] (${a.id})"
@@ -153,6 +155,7 @@ object TripReader {
             a.booking?.status?.let { enum(it, Vocab.bookingStatuses, "$where.booking.status", errors) }
             price(a.booking?.price, "$where.booking.price", errors)
             a.booking?.priority?.let { priority(it, "$where.booking.priority", errors) }
+            a.booking?.bookDaysBefore?.let { lead(it, "$where.booking.bookDaysBefore", errors) }
             checkPlace(a.place, where, errors)
         }
         trip.commitments.forEachIndexed { i, c ->
@@ -166,6 +169,7 @@ object TripReader {
             c.kind?.let { enum(it, Vocab.commitmentKinds, "$where.kind", errors) }
             price(c.price, "$where.price", errors)
             c.priority?.let { priority(it, "$where.priority", errors) }
+            c.bookDaysBefore?.let { lead(it, "$where.bookDaysBefore", errors) }
         }
         val seen = mutableSetOf<String>()
         trip.days.forEachIndexed { i, day ->
@@ -220,6 +224,10 @@ object TripReader {
 
     private fun priority(p: Int, where: String, errors: MutableList<String>) {
         if (p !in 1..3) errors += "$where: must be 1, 2 or 3; got $p"
+    }
+
+    private fun lead(days: Int, where: String, errors: MutableList<String>) {
+        if (days < 0) errors += "$where: a number of days, 0 or more; got $days"
     }
 
     private fun zone(tz: String, where: String, errors: MutableList<String>) {

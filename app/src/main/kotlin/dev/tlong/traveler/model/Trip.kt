@@ -111,7 +111,7 @@ data class Lodging(
     val checkOut: String? = null,
     val ref: String? = null,
     val url: String? = null,
-    val priority: Int? = null,
+    val priority: Int? = null, val bookDaysBefore: Int? = null,
     val how: String? = null,
     val notes: String? = null,
     val price: Price? = null,
@@ -177,7 +177,7 @@ private fun modeIn(text: String?): String? {
 
 @Serializable
 data class Booking(
-    val status: String? = null, val ref: String? = null, val url: String? = null, val priority: Int? = null, val how: String? = null,
+    val status: String? = null, val ref: String? = null, val url: String? = null, val priority: Int? = null, val bookDaysBefore: Int? = null, val how: String? = null,
     val price: Price? = null,
 ) {
     val isBooked get() = status == "booked"
@@ -256,7 +256,7 @@ data class Commitment(
     val place: Place? = null,
     val ref: String? = null,
     val url: String? = null,
-    val priority: Int? = null,
+    val priority: Int? = null, val bookDaysBefore: Int? = null,
     val how: String? = null,
     val price: Price? = null,
     val notes: String? = null,

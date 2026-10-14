@@ -55,6 +55,14 @@ class CompletenessCheck(unittest.TestCase):
         del self.trip["stays"][0]["climate"]
         self.assertIn("needs climate", " ".join(self.errors(self.trip)))
 
+    def test_an_old_priority_must_become_book_days_before(self):
+        b = self.trip["transfers"][0]["booking"]
+        del b["bookDaysBefore"]
+        b["priority"] = 1
+        errs = " ".join(self.errors(self.trip))
+        self.assertIn("priority is replaced by bookDaysBefore", errs)
+        self.assertIn("needs bookDaysBefore", errs)
+
     def test_a_same_day_stay_needs_no_climate(self):
         s = self.trip["stays"][0]
         del s["climate"]
@@ -65,7 +73,7 @@ class CompletenessCheck(unittest.TestCase):
         self.trip["activities"][0]["place"] = {"query": "Somewhere, Puerto Iguazú"}
         self.assertIn("have no place.lat/lng", " ".join(self.errors(self.trip)))
 
-    def test_unbooked_lodging_needs_price_and_priority(self):
+    def test_unbooked_lodging_needs_a_price(self):
         lodging = self.trip["stays"][0]["lodging"]
         lodging["status"] = "tentative"
         lodging.pop("price", None)
@@ -86,6 +94,7 @@ class Stamp(unittest.TestCase):
 
 class InvalidFilesAreRejected(unittest.TestCase):
     REASONS = {
+        "negative-book-days": "bookDaysBefore",
         "wrong-format": 'must be "traveler-trip"',
         "missing-stays": "stays",
         "bad-slot": "morning",

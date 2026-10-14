@@ -62,7 +62,7 @@
           "max": 260,
           "currency": "USD"
         },
-        "priority": 2,
+        "bookDaysBefore": 21,
         "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation."
       },
       "transport": "Subte and walking; taxis or app cars late at night.",
@@ -158,7 +158,7 @@
           "max": 260,
           "currency": "USD"
         },
-        "priority": 2,
+        "bookDaysBefore": 21,
         "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation."
       }
     }
@@ -174,7 +174,7 @@
       "booking": {
         "status": "needed",
         "url": "https://www.aerolineas.com.ar",
-        "priority": 1,
+        "bookDaysBefore": 21,
         "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.",
         "price": {
           "amount": 90,
@@ -194,7 +194,7 @@
       "booking": {
         "status": "needed",
         "url": "https://www.aerolineas.com.ar",
-        "priority": 2,
+        "bookDaysBefore": 21,
         "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.",
         "price": {
           "amount": 90,
@@ -274,7 +274,7 @@
       "booking": {
         "status": "needed",
         "url": "https://iguazuargentina.com",
-        "priority": 3,
+        "bookDaysBefore": 1,
         "how": "Buy the park ticket online the day before to skip the gate queue.",
         "price": {
           "amount": 45,
@@ -765,7 +765,7 @@
       },
       "booking": {
         "status": "needed",
-        "priority": 2,
+        "bookDaysBefore": 7,
         "how": "Reservations open two weeks ahead on their website; walk-ins wait over an hour.",
         "price": {
           "amount": 120,

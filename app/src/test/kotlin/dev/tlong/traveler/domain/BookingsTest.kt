@@ -2,6 +2,7 @@ package dev.tlong.traveler.domain
 
 import dev.tlong.traveler.Fixtures
 import dev.tlong.traveler.model.Price
+import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Transfer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -76,28 +77,38 @@ class BookingsTest {
     }
 
     @Test
-    fun `an open P2 becomes a P1 two weeks before its date`() {
-        val today = LocalDate.parse("2026-10-06")
+    fun `book-by counts back from the item's date, with an old priority standing in`() {
         listOf(
-            Triple(2, "2026-10-20", false) to 1,
-            Triple(2, "2026-10-21", false) to 2,
-            Triple(2, "2026-10-01", false) to 1,
-            Triple(2, "2026-10-08", true) to 2,
-            Triple(3, "2026-10-08", false) to 3,
-            Triple(1, "2026-12-01", false) to 1,
-            Triple(2, null, false) to 2,
-        ).forEach { (input, expected) -> assertEquals(input.toString(), expected, urgency(input.first, input.second, input.third, today)) }
-        val ahead = trip.bookAhead(LocalDate.parse("2026-10-25")).map { it.key }
-        assertTrue(ahead.toString(), "lodging:bsas-1" in ahead && "transfer:fly-iguazu-bsas" !in ahead)
+            Triple("2026-11-07", 21, null) to "2026-10-17",
+            Triple("2026-11-07", 0, 1) to "2026-11-07",
+            Triple("2026-11-07", null, 1) to LocalDate.MIN.toString(),
+            Triple("2026-11-07", null, 2) to "2026-10-24",
+            Triple("2026-11-07", null, 3) to "2026-11-06",
+            Triple("2026-11-07", null, null) to null,
+            Triple(null, 21, null) to null,
+        ).forEach { (input, expected) -> assertEquals(input.toString(), expected, bookBy(input.first, input.second, input.third)?.toString()) }
     }
 
     @Test
-    fun `book ahead lists open P1s, planned or not, but not an activity only skipped`() {
-        assertEquals(listOf("lodging:iguazu", "transfer:fly-bsas-iguazu"), trip.bookAhead(longBefore).map { it.key })
-        val p1 = trip.copy(activities = trip.activities.map { a -> if (a.id == "garganta-del-diablo") a.copy(booking = a.booking?.copy(priority = 1)) else a })
-        assertTrue("activity:garganta-del-diablo" in p1.bookAhead(longBefore).map { it.key })
-        val skipped = p1.copy(days = p1.days.map { d -> d.copy(plan = d.plan.map { if (it.activityId == "garganta-del-diablo") it.copy(status = "skipped") else it }) })
-        assertFalse("activity:garganta-del-diablo" in skipped.bookAhead(longBefore).map { it.key })
+    fun `an activity's book-by date moves with its planned day`() {
+        val at = trip.placementsOf("garganta-del-diablo").first()
+        assertEquals(at.date.toDate()!!.minusDays(1), item("activity:garganta-del-diablo").bookBy)
+        val later = at.date.toDate()!!.plusDays(2).toString()
+        val moved = Edits.move(trip, Edits.ItemRef(at.date, at.index), later, Slot.MORNING)
+        assertEquals(later.toDate()!!.minusDays(1), moved.bookables().single { it.key == "activity:garganta-del-diablo" }.bookBy)
+    }
+
+    @Test
+    fun `due to book is what falls within a week of its book-by date, but not booked or only skipped`() {
+        val week = setOf("lodging:bsas-1", "lodging:iguazu", "transfer:fly-bsas-iguazu", "lodging:bsas-2", "transfer:fly-iguazu-bsas")
+        assertEquals(week, trip.dueToBook(LocalDate.parse("2026-10-22")).map { it.key }.toSet())
+        assertEquals(week + "activity:don-julio", trip.dueToBook(LocalDate.parse("2026-10-23")).map { it.key }.toSet())
+        val booked = trip.copy(stays = trip.stays.map { if (it.id == "iguazu") it.copy(lodging = it.lodging?.copy(status = "booked")) else it })
+        assertFalse("lodging:iguazu" in booked.dueToBook(LocalDate.parse("2026-10-22")).map { it.key })
+        val dayBefore = trip.placementsOf("garganta-del-diablo").first().date.toDate()!!.minusDays(1)
+        assertTrue("activity:garganta-del-diablo" in trip.dueToBook(dayBefore).map { it.key })
+        val skipped = trip.copy(days = trip.days.map { d -> d.copy(plan = d.plan.map { if (it.activityId == "garganta-del-diablo") it.copy(status = "skipped") else it }) })
+        assertFalse("activity:garganta-del-diablo" in skipped.dueToBook(dayBefore).map { it.key })
     }
 
     @Test
@@ -153,10 +164,15 @@ class BookingsTest {
     }
 
     @Test
-    fun `the plan's priority and booking advice reach the item`() {
+    fun `the plan's lead time and booking advice reach the item`() {
         val b = item("transfer:fly-bsas-iguazu")
-        assertEquals(1 to "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", b.priority to b.how)
-        assertEquals(listOf(2, 1, 2, 3), listOf("lodging:bsas-1", "lodging:iguazu", "activity:don-julio", "activity:garganta-del-diablo").map { item(it).priority })
+        assertEquals("Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", b.how)
+        val home = trip.copy(commitments = trip.commitments.map { if (it.id == "flight-home") it.copy(bookDaysBefore = 30) else it })
+            .bookables().single { it.key == "commitment:flight-home" }
+        assertEquals(
+            listOf("2026-10-15", "2026-10-17", "2026-10-30", "2026-10-16"),
+            listOf(item("lodging:bsas-1").bookBy, b.bookBy, item("activity:don-julio").bookBy, home.bookBy).map { it.toString() },
+        )
     }
 
     @Test

@@ -34,7 +34,7 @@
       "climate": { "highC": 25, "lowC": 15, "flags": ["rainy"] },
       "summary": "Two work days to get over the flight. Evenings stay close: the ecological reserve on the river and Palermo's parks.",
       "priorities": ["Costanera Sur reserve at golden hour", "A run through the Bosques de Palermo"],
-      "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "priority": 2, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." },
+      "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "bookDaysBefore": 21, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." },
       "transport": "Subte and walking; taxis or app cars late at night.",
       "workRhythm": { "days": ["mon", "tue", "wed", "thu", "fri"], "start": "08:00", "end": "15:00" }
     },
@@ -49,7 +49,7 @@
       "climate": { "highC": 31, "lowC": 20, "flags": ["humid", "stormy"] },
       "summary": "The falls are the point: spend all of Sunday in the Argentine park, starting at the Garganta del Diablo before the crowds. Weekday evenings belong to the town — the hummingbird garden, the Three Frontiers at sunset, the Feirinha for dinner.",
       "priorities": ["Garganta del Diablo at opening", "Upper and Lower circuits", "Brazilian side panorama if an afternoon frees up"],
-      "lodging": { "status": "undecided", "price": { "amount": 420, "max": 600, "currency": "USD" }, "priority": 1, "how": "Hotels fill for the long weekend; book in town near the bus terminal.", "notes": "Stay in town, walking distance to the bus terminal for the park buses." },
+      "lodging": { "status": "undecided", "price": { "amount": 420, "max": 600, "currency": "USD" }, "bookDaysBefore": 21, "how": "Hotels fill for the long weekend; book in town near the bus terminal.", "notes": "Stay in town, walking distance to the bus terminal for the park buses." },
       "transport": "Park buses from the town terminal; remises (taxis) for the Brazilian side. Bring passport for Brazil.",
       "workRhythm": { "days": ["mon", "tue", "wed", "thu", "fri"], "start": "08:00", "end": "15:00", "note": "Hotel Wi-Fi can be weak; have a café backup." },
       "notes": ["Humid and hot by midday; sun hat and water for the park."]
@@ -65,12 +65,12 @@
       "climate": { "highC": 26, "lowC": 16, "flags": ["rainy"] },
       "summary": "A free weekend: Recoleta and the bookshop on Saturday, the San Telmo street fair on Sunday before the flight home.",
       "priorities": ["Feria de San Telmo (Sundays only)", "El Ateneo Grand Splendid"],
-      "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "priority": 2, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." }
+      "lodging": { "status": "undecided", "price": { "amount": 180, "max": 260, "currency": "USD" }, "bookDaysBefore": 21, "how": "Palermo or Recoleta apartment with a desk; filter for free cancellation." }
     }
   ],
   "transfers": [
-    { "id": "fly-bsas-iguazu", "from": "bsas-1", "to": "iguazu", "date": "2026-11-07", "mode": "flight", "details": "AEP → IGR, about 1 h 50 min", "booking": { "status": "needed", "url": "https://www.aerolineas.com.ar", "priority": 1, "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", "price": { "amount": 90, "max": 150, "currency": "USD" } } },
-    { "id": "fly-iguazu-bsas", "from": "iguazu", "to": "bsas-2", "date": "2026-11-13", "mode": "flight", "depart": "17:30", "details": "IGR → AEP after work", "booking": { "status": "needed", "url": "https://www.aerolineas.com.ar", "priority": 2, "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", "price": { "amount": 90, "max": 150, "currency": "USD" } } }
+    { "id": "fly-bsas-iguazu", "from": "bsas-1", "to": "iguazu", "date": "2026-11-07", "mode": "flight", "details": "AEP → IGR, about 1 h 50 min", "booking": { "status": "needed", "url": "https://www.aerolineas.com.ar", "bookDaysBefore": 21, "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", "price": { "amount": 90, "max": 150, "currency": "USD" } } },
+    { "id": "fly-iguazu-bsas", "from": "iguazu", "to": "bsas-2", "date": "2026-11-13", "mode": "flight", "depart": "17:30", "details": "IGR → AEP after work", "booking": { "status": "needed", "url": "https://www.aerolineas.com.ar", "bookDaysBefore": 21, "how": "Aerolíneas Argentinas or Flybondi; fares rise inside four weeks.", "price": { "amount": 90, "max": 150, "currency": "USD" } } }
   ],
   "commitments": [
     { "id": "boat-gran-aventura", "title": "Gran Aventura boat ride", "date": "2026-11-08", "start": "14:00", "end": "15:30", "kind": "booking", "booked": true, "stayId": "iguazu", "activityId": "gran-aventura", "ref": "Voucher in email", "price": { "amount": 110, "currency": "USD" }, "notes": "Meet at the Gran Aventura stand inside the park 15 minutes early." },
@@ -87,7 +87,7 @@
       "place": { "name": "Garganta del Diablo", "query": "Garganta del Diablo, Parque Nacional Iguazú", "lat": -25.6953, "lng": -54.4367 },
       "duration": { "minutes": 120, "includesTravel": true }, "fit": "half-day", "bestTime": ["morning"], "effort": "easy",
       "practical": { "booking": "Park ticket at the gate or online; the train is included.", "weather": "Wet from spray; quick-dry clothes." },
-      "booking": { "status": "needed", "url": "https://iguazuargentina.com", "priority": 3, "how": "Buy the park ticket online the day before to skip the gate queue.", "price": { "amount": 45, "currency": "USD", "note": "National park entry" } },
+      "booking": { "status": "needed", "url": "https://iguazuargentina.com", "bookDaysBefore": 1, "how": "Buy the park ticket online the day before to skip the gate queue.", "price": { "amount": 45, "currency": "USD", "note": "National park entry" } },
       "confidence": "check"
     },
     {
@@ -280,7 +280,7 @@
       "place": { "query": "Parrilla Don Julio, Buenos Aires", "lat": -34.5864, "lng": -58.4251 },
       "duration": { "minutes": 120 }, "fit": "evening", "bestTime": ["evening"], "effort": "easy",
       "practical": { "booking": "Reservation strongly recommended." },
-      "booking": { "status": "needed", "priority": 2, "how": "Reservations open two weeks ahead on their website; walk-ins wait over an hour.", "price": { "amount": 120, "max": 180, "currency": "USD", "note": "Dinner for two" } },
+      "booking": { "status": "needed", "bookDaysBefore": 7, "how": "Reservations open two weeks ahead on their website; walk-ins wait over an hour.", "price": { "amount": 120, "max": 180, "currency": "USD", "note": "Dinner for two" } },
       "confidence": "check"
     },
     {

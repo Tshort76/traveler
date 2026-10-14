@@ -12,7 +12,6 @@ import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.ui.common.byRecommendation
 import dev.tlong.traveler.ui.common.marked
 import androidx.compose.foundation.layout.width
-import dev.tlong.traveler.ui.bookings.PriorityTag
 import dev.tlong.traveler.domain.Bookable
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics

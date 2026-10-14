@@ -39,23 +39,30 @@ object Completeness {
             out += "activities: ${it.size} have no place.lat/lng, so the stay map can't show them: ${names(it)}. Give every activity's coordinates"
         }
         acts.filter { it.practical?.booking != null && it.booking == null }.map { it.id }.takeIf { it.isNotEmpty() }?.let {
-            out += "activities: booking advice only in practical.booking, with no booking object {status, priority, price, url?, how}: ${names(it)}"
+            out += "activities: booking advice only in practical.booking, with no booking object {status, bookDaysBefore, price, url?, how}: ${names(it)}"
         }
         trip.stays.forEach { s ->
             val nights = runCatching { LocalDate.parse(s.depart) > LocalDate.parse(s.arrive) }.getOrDefault(false)
             val lod = s.lodging
-            if (nights && lod?.status != "booked") missing(lod?.price, lod?.priority)?.let { out += "stay ${s.id}.lodging: needs $it" }
+            if (nights && lod?.status != "booked") missing(lod?.price, lod?.bookDaysBefore)?.let { out += "stay ${s.id}.lodging: needs $it" }
             if (nights && s.climate == null) out += "stay ${s.id}: needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates"
         }
         trip.transfers.forEach { t ->
             val b = t.booking
-            if (b == null && t.mode in ticketed) out += "transfer ${t.id}: a ticketed transfer needs a booking {status, priority, price, how}"
-            else if (b != null && b.status != "booked") missing(b.price, b.priority)?.let { out += "transfer ${t.id}.booking: needs $it" }
+            if (b == null && t.mode in ticketed) out += "transfer ${t.id}: a ticketed transfer needs a booking {status, bookDaysBefore, price, how}"
+            else if (b != null && b.status != "booked") missing(b.price, b.bookDaysBefore)?.let { out += "transfer ${t.id}.booking: needs $it" }
         }
+        val old = buildList {
+            trip.stays.forEach { s -> if (s.lodging?.priority != null) add("stay ${s.id}.lodging") }
+            trip.transfers.forEach { t -> if (t.booking?.priority != null) add("transfer ${t.id}.booking") }
+            trip.activities.forEach { a -> if (a.booking?.priority != null) add("activity ${a.id}.booking") }
+            trip.commitments.forEach { c -> if (c.priority != null) add("commitment ${c.id}") }
+        }
+        if (old.isNotEmpty()) out += "priority is replaced by bookDaysBefore (days before the date to book by): ${names(old)}"
         val bookedVia = trip.commitments.filter { it.booked == true }.mapNotNull { it.activityId }.toSet()
         acts.forEach { a ->
             val b = a.booking ?: return@forEach
-            if (b.status != "booked" && a.id !in bookedVia) missing(b.price, b.priority)?.let { out += "activity ${a.id}.booking: needs $it" }
+            if (b.status != "booked" && a.id !in bookedVia) missing(b.price, b.bookDaysBefore)?.let { out += "activity ${a.id}.booking: needs $it" }
         }
         acts.filter { it.booking?.price != null }.groupBy { it.name }.filterValues { it.size > 1 }.forEach { (name, list) ->
             out += "activities: '$name' is listed in ${list.size} stays with a price; if more than one is planned, its price counts more than once. List it once, under the visit it suits"
@@ -63,8 +70,8 @@ object Completeness {
         return out
     }
 
-    private fun missing(price: Price?, priority: Int?): String? =
-        listOfNotNull("price".takeIf { price == null }, "priority".takeIf { priority == null }).takeIf { it.isNotEmpty() }?.joinToString(" and ")
+    private fun missing(price: Price?, lead: Int?): String? =
+        listOfNotNull("price".takeIf { price == null }, "bookDaysBefore".takeIf { lead == null }).takeIf { it.isNotEmpty() }?.joinToString(" and ")
 
     private fun names(ids: List<String>, limit: Int = 6) =
         ids.take(limit).joinToString(", ") + if (ids.size > limit) " and ${ids.size - limit} more" else ""

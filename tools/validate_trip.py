@@ -348,6 +348,21 @@ def _names(items, limit=6):
     return shown + (f" and {len(items) - limit} more" if len(items) > limit else "")
 
 
+def _bookings(trip):
+    """Every booking-guidance object, with where it sits: lodging, transfer and activity bookings, and commitments."""
+    for s in trip.get("stays", []):
+        if s.get("lodging"):
+            yield f"stay {s.get('id')}.lodging", s["lodging"]
+    for t in trip.get("transfers", []):
+        if t.get("booking"):
+            yield f"transfer {t.get('id')}.booking", t["booking"]
+    for a in trip.get("activities", []):
+        if a.get("booking"):
+            yield f"activity {a.get('id')}.booking", a["booking"]
+    for c in trip.get("commitments", []):
+        yield f"commitment {c.get('id')}", c
+
+
 def check_complete(trip, rep):
     """--complete: the planning data the app's Bookings and stars need, which an assistant tends to skip."""
     # Strict: a field the format doesn't define is silently dropped by the app (a price on the activity
@@ -389,12 +404,12 @@ def check_complete(trip, rep):
     loose = [a.get("id", "?") for a in acts if (a.get("practical") or {}).get("booking") and "booking" not in a]
     if loose:
         rep.error("activities", f"booking advice only in practical.booking, with no booking object "
-                                f"{{status, priority, price, url?, how}}: {_names(loose)}")
+                                f"{{status, bookDaysBefore, price, url?, how}}: {_names(loose)}")
     for s in trip.get("stays", []):
         lod = s.get("lodging") or {}
         overnight = _date(s.get("arrive")) and _date(s.get("depart")) and _date(s["depart"]) > _date(s["arrive"])
         if overnight and lod.get("status") != "booked":
-            missing = [k for k in ("price", "priority") if k not in lod]
+            missing = [k for k in ("price", "bookDaysBefore") if k not in lod]
             if missing:
                 rep.error(f"stay {s.get('id')}.lodging", f"needs {' and '.join(missing)}")
         if overnight and "climate" not in s:
@@ -402,16 +417,19 @@ def check_complete(trip, rep):
     for t in trip.get("transfers", []):
         b = t.get("booking")
         if b is None and t.get("mode") in TICKETED:
-            rep.error(f"transfer {t.get('id')}", "a ticketed transfer needs a booking {status, priority, price, how}")
+            rep.error(f"transfer {t.get('id')}", "a ticketed transfer needs a booking {status, bookDaysBefore, price, how}")
         elif b is not None and b.get("status") != "booked":
-            missing = [k for k in ("price", "priority") if k not in b]
+            missing = [k for k in ("price", "bookDaysBefore") if k not in b]
             if missing:
                 rep.error(f"transfer {t.get('id')}.booking", f"needs {' and '.join(missing)}")
+    old = [where for where, b in _bookings(trip) if "priority" in b]
+    if old:
+        rep.error(None, f"priority is replaced by bookDaysBefore (days before the date to book by): {_names(old)}")
     booked = {c.get("activityId") for c in trip.get("commitments", []) if c.get("booked")}
     for a in acts:
         b = a.get("booking")
         if b is not None and b.get("status") != "booked" and a.get("id") not in booked:
-            missing = [k for k in ("price", "priority") if k not in b]
+            missing = [k for k in ("price", "bookDaysBefore") if k not in b]
             if missing:
                 rep.error(f"activity {a.get('id')}.booking", f"needs {' and '.join(missing)}")
 

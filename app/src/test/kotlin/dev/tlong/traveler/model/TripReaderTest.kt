@@ -38,6 +38,7 @@ class TripReaderTest {
             "price-not-object" to "stays[0] (denver).lodging.price: must be an object",
             "price-without-amount" to "lodging.price: missing required field 'amount'",
             "night-price-off-lodging" to "\"night\" is only for lodging",
+            "negative-book-days" to "bookDaysBefore: a number of days, 0 or more",
         )
         val names = File(Fixtures.schemaDir, "invalid").listFiles()!!.map { it.name.removeSuffix(".trip.json") }.toSet()
         assertEquals("a new invalid fixture needs its reason here", reasons.keys, names)
@@ -78,19 +79,27 @@ class TripReaderTest {
     }
 
     @Test
+    fun `an old priority goes back to the assistant as bookDaysBefore`() {
+        val text = Fixtures.text("iguazu-short.trip.json").replaceFirst("\"bookDaysBefore\": 21", "\"priority\": 1")
+        val notes = TripReader.read(text).forAssistant
+        assertTrue(notes.toString(), notes.any { it.startsWith("priority is replaced by bookDaysBefore") && "stay bsas-1.lodging" in it })
+        assertTrue(notes.toString(), "stay bsas-1.lodging: needs bookDaysBefore" in notes)
+    }
+
+    @Test
     fun `the strict checks find what validate_trip --complete finds in the examples`() {
         // validate_trip.py --complete passes demo and both iguazu files, fails minimal twice and long-synthetic 33 times.
         listOf("demo.trip.json", "iguazu-short.trip.json", "iguazu-short.r2.trip.json").forEach {
             assertEquals(it, emptyList<String>(), TripReader.read(Fixtures.text(it)).forAssistant)
         }
         assertEquals(
-            listOf("stay denver.lodging: needs price and priority", "stay denver: needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates"),
+            listOf("stay denver.lodging: needs price and bookDaysBefore", "stay denver: needs climate {highC, lowC, flags?}: the typical daytime high and night low there for those dates"),
             TripReader.read(Fixtures.text("minimal.trip.json")).forAssistant,
         )
         val synthetic = TripReader.read(Fixtures.text("long-synthetic.trip.json")).forAssistant
         assertEquals(synthetic.toString(), 33, synthetic.size)
         assertEquals(13, synthetic.count { it.startsWith("transfer ") && "a ticketed transfer needs a booking" in it })
-        assertEquals(5, synthetic.count { it.startsWith("stay ") && it.endsWith(".lodging: needs price and priority") })
+        assertEquals(5, synthetic.count { it.startsWith("stay ") && it.endsWith(".lodging: needs price and bookDaysBefore") })
         assertTrue(synthetic.toString(), "activities: 322 have no stars (1–3): lima-a01, lima-a02, lima-a03, lima-a04, lima-a05, lima-a06 and 316 more" in synthetic)
     }
 

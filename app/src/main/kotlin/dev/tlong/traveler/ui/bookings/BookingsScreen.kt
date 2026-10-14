@@ -1,5 +1,8 @@
 package dev.tlong.traveler.ui.bookings
 
+import dev.tlong.traveler.domain.due
+import java.time.LocalDate
+import dev.tlong.traveler.ui.common.Pill
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.addPathNodes
@@ -100,8 +103,6 @@ import dev.tlong.traveler.ui.common.rememberSession
 import dev.tlong.traveler.ui.overview.BackButton
 import dev.tlong.traveler.ui.overview.LoadingScaffold
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
@@ -146,7 +147,8 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
     var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
-    val groups = remember(items, order, booked, group, onlyStay) {
+    val today = LocalDate.now()
+    val groups = remember(items, order, booked, group, onlyStay, today) {
         val shown = items
             .filter { (booked == null || it.booked == booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
@@ -154,7 +156,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                 .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
                 .associate { (id, list) -> (trip.stay(id)?.let { "${it.name} · ${it.arriveDate.shortLabel()} – ${it.departDate.shortLabel()}" } ?: "No stay") to list }
             Order.DATE -> shown.groupBy { it.date?.let(::dayName) ?: "Not scheduled yet" }
-            Order.PRIORITY -> priorityGroups(shown)
+            Order.BOOK_BY -> bookByGroups(shown, today)
             Order.TYPE -> shown.sortedBy { it.kind }.groupBy { typeName(it) }
         }
     }
@@ -184,7 +186,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
             Modifier.fillMaxSize().padding(padding), state = listState,
             contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            item("summary") { Summary(items) }
+            item("summary") { Summary(items, today) }
             item("order") {
                 var sorting by remember { mutableStateOf(false) }
                 // One line: the sort as a menu, then the filters in a row that scrolls sideways.
@@ -221,7 +223,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                 item("h-$title") { SectionTitle(title, Modifier.padding(top = 12.dp)) }
                 items(list, key = { it.key }) { b ->
                     BookableRow(
-                        trip, b, b.key in expanded,
+                        trip, b, today, b.key in expanded,
                         onToggle = { expanded = if (b.key in expanded) expanded - b.key else expanded + b.key },
                         onDetails = { open = b },
                         onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } },
@@ -267,7 +269,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
 
 /** One dense line and a bar: how many are booked, the money, and what is urgent. */
 @Composable
-private fun Summary(items: List<Bookable>) {
+private fun Summary(items: List<Bookable>, today: LocalDate) {
     val booked = items.count { it.booked }
     val open = items.filterNot { it.booked }
     Column(Modifier.fillMaxWidth().padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -276,20 +278,13 @@ private fun Summary(items: List<Bookable>) {
                 (listOf("$booked/${items.size} booked") + items.totals().map { "${money(it.booked, it.currency)} of ${it.estimate}" }).joinToString(" · "),
                 style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f, fill = false),
             )
-            listOf(1, 2).forEach { p ->
-                open.count { it.priority == p }.takeIf { it > 0 }?.let { n ->
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$n priority $p open" }) {
-                        PriorityTag(p); Text("$n", style = MaterialTheme.typography.labelMedium)
-                    }
-                }
-            }
+            open.count { it.due(today) }.takeIf { it > 0 }?.let { n -> Tag("$n due", due = true) }
         }
         if (items.isNotEmpty()) LinearProgressIndicator(progress = { booked.toFloat() / items.size }, modifier = Modifier.fillMaxWidth())
     }
 }
 
-private enum class Order(val label: String) { DATE("By date"), STAY("By stay"), PRIORITY("By priority"), TYPE("By type") }
+private enum class Order(val label: String) { DATE("By date"), STAY("By stay"), BOOK_BY("By book-by date"), TYPE("By type") }
 
 /** The group for "By type": lodging, then each way of travelling, then each kind of activity. */
 private fun typeName(b: Bookable): String = when (b.kind) {
@@ -298,38 +293,34 @@ private fun typeName(b: Bookable): String = when (b.kind) {
     else -> b.glyph?.let { "$it ${TAGS[it] ?: "Other"}" } ?: "🎫 Other bookings"
 }
 
-/** Groups for "By priority": what to book now first, then soon, then what can wait, unrated and booked. */
-private fun priorityGroups(items: List<Bookable>): Map<String, List<Bookable>> {
-    val open = items.filterNot { it.booked }
+/** Groups for "By book-by date": what is due this week, then the rest soonest first, then undated and booked. */
+private fun bookByGroups(items: List<Bookable>, today: LocalDate): Map<String, List<Bookable>> {
+    val open = items.filterNot { it.booked }.sortedBy { it.bookBy }
     return linkedMapOf(
-        "P1 · Book now" to open.filter { it.priority == 1 },
-        "P2 · Book a week or more ahead" to open.filter { it.priority == 2 },
-        "P3 · Can be booked last minute" to open.filter { it.priority == 3 },
-        "No priority given" to open.filter { it.priority !in 1..3 },
+        "Book this week" to open.filter { it.due(today) },
+        "Later" to open.filter { it.bookBy != null && !it.due(today) },
+        "No book-by date" to open.filter { it.bookBy == null },
         "Booked" to items.filter { it.booked },
     ).filterValues { it.isNotEmpty() }
 }
 
-/** A P1 (error red), P2 (amber) or P3 (quiet) tag, in scheme colours so dark mode follows. */
+/** "by 22 Nov", or "now" once that date has passed, on an open item: error red once it is due, quiet before. */
 @Composable
-fun PriorityTag(priority: Int) {
+fun BookByTag(b: Bookable, today: LocalDate) {
+    if (b.booked) return
+    val by = b.bookBy ?: return
+    Tag(if (by < today) "now" else "by ${by.shortLabel()}", due = b.due(today))
+}
+
+@Composable
+private fun Tag(text: String, due: Boolean) {
     val c = MaterialTheme.colorScheme
-    val (bg, fg) = when (priority) {
-        1 -> c.error to c.onError
-        2 -> c.tertiary to c.onTertiary
-        3 -> c.secondaryContainer to c.onSecondaryContainer
-        else -> return
-    }
-    Text(
-        "P$priority", style = MaterialTheme.typography.labelMedium, color = fg,
-        modifier = Modifier.background(bg, RoundedCornerShape(6.dp)).padding(horizontal = 6.dp, vertical = 1.dp)
-            .semantics { contentDescription = "Priority $priority" },
-    )
+    if (due) Pill(text, container = c.error, content = c.onError) else Pill(text)
 }
 
 @Composable
 private fun BookableRow(
-    trip: Trip, b: Bookable, expanded: Boolean,
+    trip: Trip, b: Bookable, today: LocalDate, expanded: Boolean,
     onToggle: () -> Unit, onDetails: () -> Unit, onLink: (String) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().clickable(onClickLabel = if (expanded) "Hide how to book" else "Show how to book", onClick = onToggle).padding(vertical = 2.dp)) {
@@ -337,7 +328,7 @@ private fun BookableRow(
             Text(b.glyph(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.width(36.dp))
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (!b.booked) b.priority?.let { PriorityTag(it) }
+                    BookByTag(b, today)
                     Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 detailLine(trip, b).takeIf { it.isNotEmpty() }?.let {

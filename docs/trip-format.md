@@ -77,11 +77,11 @@ A stay is a period based in one location. A return to the same city is a **separ
 | `mapUrl` | | URL | A custom Google map for this stay. |
 | `links` | | Link[] | |
 
-**Lodging** — `{ "name"?, "place"?, "status": "booked" | "tentative" | "undecided", "checkIn"?, "checkOut"?, "ref"?, "url"?, "priority"?, "how"?, "notes"?, "price"? }`. Leave `name` out when no hotel is chosen yet. `price` is usually the nightly rate with `"unit": "night"`, which the app multiplies by the stay's nights; without `unit` it is the whole stay.
+**Lodging** — `{ "name"?, "place"?, "status": "booked" | "tentative" | "undecided", "checkIn"?, "checkOut"?, "ref"?, "url"?, "bookDaysBefore"?, "how"?, "notes"?, "price"? }`. Leave `name` out when no hotel is chosen yet. `price` is usually the nightly rate with `"unit": "night"`, which the app multiplies by the stay's nights; without `unit` it is the whole stay.
 
 **Price** — `{ "amount": number, "max"?: number, "currency"?: "USD", "unit"?: "total" | "night" | "person", "note"? }`. `amount` alone is one figure; `amount` to `max` is a range. `unit` says what it is for: the whole item (the default), one night (lodging only; multiplied by the stay's nights), or one traveler (multiplied by the trip's `travelers`). A return ticket's later legs carry `amount` 0, so the fare counts once. `currency` is an ISO code and defaults to USD; assistants write USD, converted approximately, with the local price in `note`. Until the item is booked, a price is an estimate; once booked, it is what was paid. The app's Bookings screen totals them per currency.
 
-**Booking guidance**, on lodging, a Booking and a commitment: `url` is where to book (the official site or the operator), `priority` how soon to book it, and `how` one or two sentences on how to book it. Priority 1 means book now: it sells out early, or it is airfare likely to jump soon. 2 means book a week or more ahead: venues that usually fill a week out, and any other airfare. 3 means it can be booked last minute without penalty or risk. The app raises an unbooked 2 to 1 once its date is two weeks away or less, since "a week or more ahead" has run out by then. The Bookings screen tags them P1 (red), P2 (orange) and P3 (green) and can sort by them.
+**Booking guidance**, on lodging, a Booking and a commitment: `url` is where to book (the official site or the operator), `bookDaysBefore` how many days before the item's date to book it by, and `how` one or two sentences on how to book it. The app counts back from the item's current date (check-in, the departure, the day an activity is planned on), so the deadline moves with a planned day. An open item is due from a week before its book-by date, and stays due once that date passes; the Bookings screen sorts by it and the trip page's Bookings chip turns red. Typical leads: 21 for a domestic or regional flight and for lodging, 60 for a long-haul flight, 7 for an interchangeable tour, 1 for a timed admission; something to book as soon as it is chosen (a particular concert, a capped tour) gets the days from now to its date. A paid entry that needs no reservation has no booking at all. Files from before `bookDaysBefore` carry `priority` 1–3, which the app still reads (1 is due now, 2 is 14 days, 3 is 1 day) and the full check asks to replace.
 
 **Climate** — `{ "highC": 22, "lowC": 12, "flags"?: ["rainy"] }`. The typical daytime high and night-time low in °C for the place at that time of year: climate normals, not a forecast. `flags` names the seasonal concerns worth packing for, from `dry`, `rainy`, `stormy`, `windy`, `humid` and `snowy`; leave it out when none stands out. The stay card shows the range, in °F on a phone set to the US, with a glyph per flag.
 
@@ -91,7 +91,7 @@ A stay is a period based in one location. A return to the same city is a **separ
 
 `{ "id", "from": stayId, "to": stayId, "date", "mode": "flight"|"train"|"bus"|"boat"|"ferry"|"car"|"taxi"|"hike"|"other", "depart"?: "HH:MM", "arrive"?: "HH:MM", "details"?, "booking"?: Booking }`
 
-**Booking** — `{ "status": "booked"|"tentative"|"needed", "ref"?, "url"?, "priority"?: 1|2|3, "how"?, "price"?: Price }`. A flight, train, bus or boat transfer is listed on the Bookings screen even without one.
+**Booking** — `{ "status": "booked"|"tentative"|"needed", "ref"?, "url"?, "bookDaysBefore"?: days, "how"?, "price"?: Price }`. A flight, train, bus or boat transfer is listed on the Bookings screen even without one.
 
 `mode` is the main vehicle; the app shows it as an icon. For `"other"`, the app shows the first vehicle the `details` name.
 
@@ -129,7 +129,7 @@ Category tags: 🏛️ architecture · 🌿 nature · ☕ coffee · 🍽️ food
 
 Something fixed on a date that the plan must work around.
 
-`{ "id", "title", "date", "start"?: "HH:MM", "end"?: "HH:MM", "kind": "booking"|"appointment"|"work"|"other", "booked"?: bool, "stayId"?, "place"?, "ref"?, "url"?, "priority"?, "how"?, "price"?: Price, "notes"?, "activityId"? }`
+`{ "id", "title", "date", "start"?: "HH:MM", "end"?: "HH:MM", "kind": "booking"|"appointment"|"work"|"other", "booked"?: bool, "stayId"?, "place"?, "ref"?, "url"?, "bookDaysBefore"?, "how"?, "price"?: Price, "notes"?, "activityId"? }`
 
 `booked: true` means a reservation exists outside the app. The app never moves it and warns before anything is planned on top of it. `activityId` links a booked tour to the activity it is for. A commitment of kind `booking`, or any booked one, appears on the Bookings screen. Recurring work hours belong in the stay's `workRhythm`, not here.
 
