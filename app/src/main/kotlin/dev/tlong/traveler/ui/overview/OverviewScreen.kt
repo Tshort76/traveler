@@ -99,9 +99,7 @@ import dev.tlong.traveler.ui.Navigator
 import dev.tlong.traveler.ui.activity.dayName
 import dev.tlong.traveler.ui.common.LocalContainer
 import dev.tlong.traveler.ui.common.Pill
-import dev.tlong.traveler.ui.common.climateDescription
-import dev.tlong.traveler.ui.common.climateGlyph
-import dev.tlong.traveler.ui.common.degrees
+import dev.tlong.traveler.ui.common.ClimateLabel
 import dev.tlong.traveler.ui.common.SaveIndicator
 import dev.tlong.traveler.ui.common.copyToClipboard
 import dev.tlong.traveler.ui.common.modeEmoji
@@ -451,13 +449,7 @@ private fun StayCard(
                         maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
                     )
                     // The typical weather for the dates, so the region gives way first on a narrow card.
-                    stay.climate?.let { c ->
-                        Text(
-                            c.flags.joinToString("") { climateGlyph(it) } + " ${degrees(c.highC)}/${degrees(c.lowC)}",
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 8.dp).semantics { contentDescription = climateDescription(c) },
-                        )
-                    }
+                    stay.climate?.let { ClimateLabel(it, Modifier.padding(start = 8.dp)) }
                 }
                 // Bullets, not prose: the must-dos, or the plan's priorities when nothing has three stars.
                 (standouts.map { "• $it" }.ifEmpty { stay.priorities.map { "• $it" } }).take(3).forEach {
