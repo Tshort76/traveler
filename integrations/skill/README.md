@@ -1,6 +1,6 @@
-# The traveler-trip skill (ChatGPT and Claude)
+# The traveler-trip skill (ChatGPT)
 
-One skill, in the open Agent Skills format (a folder with a `SKILL.md`) that ChatGPT and Claude both load. `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`.
+One skill, in the open Agent Skills format (a folder with a `SKILL.md`). `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`.
 
 OpenAI is retiring custom GPTs on 11 December 2026 in favour of plugins built from skills, so this replaces a custom GPT.
 
@@ -14,10 +14,8 @@ This writes `build/skill/`:
 
 | Output | Use it for |
 | --- | --- |
-| `traveler-trip.zip` | Uploading the skill to Claude, or to ChatGPT where it accepts skills (one top-level skill folder) |
 | `chatgpt-project/` | ChatGPT on a personal plan: the same instructions as flat files for a ChatGPT Project |
 | `traveler-plugin.zip`, `traveler-plugin/` | A skills-only plugin wrapping the skill, for OpenAI's plugin submission or Codex |
-| `traveler-trip/` | The unzipped skill, for Claude Code or Codex |
 
 Rebuild and re-upload whenever the prompt or the format changes.
 
@@ -30,13 +28,6 @@ On a personal plan (Plus or Pro), ChatGPT on the web and phone refuses uploaded 
 1. Create a Project (say "Travel") and paste `chatgpt-project/INSTRUCTIONS.txt` into its instructions.
 2. Add the other files in `chatgpt-project/` as project files, plus your travel profile if you want your preferences followed.
 3. Plan trips in chats inside that Project. It writes and checks files with ChatGPT's code tool, so the chat must be able to run code.
-
-If you use the desktop app or a business plan, you can instead upload `traveler-trip.zip` under **Skills → Create → Upload from your computer**.
-
-## Claude
-
-- **claude.ai**: Settings → Capabilities → Skills → upload `traveler-trip.zip`. This can replace the Concierge project's itinerary files: the project's own instructions and profile stay, and the skill brings the format, the validator and the example.
-- **Claude Code**: copy `build/skill/traveler-trip/` into `~/.claude/skills/`.
 
 ## From the phone
 

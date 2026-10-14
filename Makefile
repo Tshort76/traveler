@@ -41,7 +41,7 @@ check: tools-test validate skill ## Everything runnable without a phone (the pre
 validate: ## Validate every example trip file
 	@python3 tools/validate_trip.py schema/examples/*.json
 
-skill: ## Build the traveler-trip skill and plugin for ChatGPT and Claude (integrations/skill)
+skill: ## Build the traveler-trip ChatGPT Project files and plugin (integrations/skill)
 	@python3 tools/make_skill.py
 
 fixtures: ## Regenerate the derived example trips

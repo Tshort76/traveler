@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Builds build/skill/: the traveler-trip skill for ChatGPT and Claude, and a plugin wrapping it.
+"""Builds build/skill/: the traveler-trip skill as files for a ChatGPT Project, and a plugin wrapping it.
 
 Each SKILL.md is a preamble from integrations/skill/ (front matter, and for traveler-trip the
 working rules) followed by the matching prompt from prompts/, minus its usage comment, so the
 skills and the app's "Copy instructions" buttons work from the same text. Skills follow the open
-Agent Skills format, which ChatGPT and Claude both read; each zip holds one top-level skill folder.
+Agent Skills format.
 
 ChatGPT refuses uploaded skills on personal plans outside its desktop app, so chatgpt-project/
 holds the same text as flat files for a ChatGPT Project, which works on any plan.
@@ -76,12 +76,12 @@ def build_skill(name: str, dest: Path):
         shutil.copy(ROOT / src, dest / to)
 
 
-def build_project(dest: Path):
+def build_project(dest: Path, skills: Path):
     """The skills flattened into ChatGPT Project files: one folder, no subfolders."""
     dest.mkdir(parents=True)
     (dest / "INSTRUCTIONS.txt").write_text(PROJECT_INSTRUCTIONS)
     for name, spec in SKILLS.items():
-        text = (OUT / name / "SKILL.md").read_text()
+        text = (skills / name / "SKILL.md").read_text()
         body = re.sub(r"\A---.*?---\s*", "", text, flags=re.S)
         for old in ("scripts/", "references/", " from this skill's folder"):
             body = body.replace(old, "")
@@ -90,24 +90,21 @@ def build_project(dest: Path):
             shutil.copy(ROOT / src, dest / Path(to).name)
 
 
-def zip_dir(src: Path, zip_path: Path, prefix: str = ""):
+def zip_dir(src: Path, zip_path: Path):
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(src.rglob("*")):
             if f.is_file():
-                z.write(f, prefix + f.relative_to(src).as_posix())
+                z.write(f, f.relative_to(src).as_posix())
 
 
 def main():
     shutil.rmtree(OUT, ignore_errors=True)
     plugin = OUT / "traveler-plugin"
     for name in SKILLS:
-        skill = OUT / name
-        build_skill(name, skill)
         build_skill(name, plugin / "skills" / name)
-        zip_dir(skill, OUT / f"{name}.zip", prefix=f"{name}/")
     (plugin / "plugin.json").write_text(json.dumps(PLUGIN, indent=2) + "\n")
     zip_dir(plugin, OUT / "traveler-plugin.zip")
-    build_project(OUT / "chatgpt-project")
+    build_project(OUT / "chatgpt-project", plugin / "skills")
     for p in sorted(OUT.iterdir()):
         print(p.relative_to(ROOT))
 

@@ -2,12 +2,8 @@
 The instructions an assistant needs to produce a trip file Traveler can load.
 
 How to use:
-  • Claude Concierge project — replace the "## Itineraries" section of the project
-    instructions with everything below the line, and upload schema/trip.schema.json and
-    tools/validate_trip.py as project files (they replace itinerary_template.html and
-    render_itinerary.py).
-  • ChatGPT, or Claude as a skill — `make skill` packages this file as the traveler-trip
-    skill; see integrations/skill/README.md.
+  • ChatGPT — `make skill` packages this file as the traveler-trip Project files;
+    see integrations/skill/README.md.
   • Any other LLM — paste everything below the line at the start of the conversation,
     with schema/examples/demo.trip.json attached as a worked example if the chat
     accepts files.
