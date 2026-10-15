@@ -6,9 +6,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material3.HorizontalDivider
-import dev.tlong.traveler.domain.isBooked
-import dev.tlong.traveler.ui.common.byRecommendation
-import dev.tlong.traveler.ui.common.marked
 import androidx.compose.foundation.layout.width
 import dev.tlong.traveler.domain.Bookable
 import androidx.compose.ui.semantics.contentDescription
@@ -286,8 +283,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            stay, trip.activities.filter { it.stayId == stay.id && it.stars == 3 }.sortedWith(byRecommendation).map { marked(it.name, null, it.booking != null, trip.isBooked(it)) },
-                            tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
+                            stay, tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
                 }
@@ -420,11 +416,11 @@ private fun MapCard(
 
 @Composable
 private fun StayCard(
-    stay: Stay, standouts: List<String>, tally: Map<Bookable.Group, Pair<Int, Int>>,
+    stay: Stay, tally: Map<Bookable.Group, Pair<Int, Int>>,
     onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Row(Modifier.padding(14.dp)) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -440,10 +436,6 @@ private fun StayCard(
                     )
                     // The typical weather for the dates, so the region gives way first on a narrow card.
                     stay.climate?.let { ClimateLabel(it, Modifier.padding(start = 8.dp)) }
-                }
-                // Bullets, not prose: the must-dos, or the plan's priorities when nothing has three stars.
-                (standouts.map { "• $it" }.ifEmpty { stay.priorities.map { "• $it" } }).take(3).forEach {
-                    Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }

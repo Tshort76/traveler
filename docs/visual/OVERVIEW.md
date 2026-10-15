@@ -19,7 +19,7 @@ The dashed boxes are the two places code runs: the app on the phone, and the bui
 |---|---|---|
 | Android app | `app/` | Receives a file you open or share, reads and checks it, shows a preview, imports it or merges it with your edits, saves every edit at once with undo, plans days and slots, tracks bookings, draws the trip and stay maps, exports the plan and backs up all trips |
 | Trip format | `schema/` | Defines the trip file as JSON Schema, holds the example trips the app ships, and holds the broken files both readers are tested against |
-| Validator | `tools/validate_trip.py` | Loads the schema, checks structure, then cross-checks ids, dates and time zones, optionally requires stars, prices and priorities, prints OK or each ERROR and WARNING, and exits 1 on any error |
+| Validator | `tools/validate_trip.py` | Loads the schema, checks structure, then cross-checks ids, dates and time zones, optionally requires stars, prices and booking lead times, prints OK or each ERROR and WARNING, and exits 1 on any error |
 | Skill builder | `tools/make_skill.py`, `integrations/skill/` | Clears `build/skill/`, joins each preamble with its prompt into two skills, zips each, wraps both in a plugin, and writes flat ChatGPT Project files |
 | Fixture builder | `tools/make_fixtures.py` | Reads the hand-written Iguazú trip and writes its second revision and a 14-stay synthetic trip, byte-identical on every run |
 | Basemap builder | `tools/make_basemap.py` | Downloads Natural Earth country outlines once, rounds them to 0.02°, and writes the offline country map the app draws first |
