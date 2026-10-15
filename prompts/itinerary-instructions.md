@@ -11,7 +11,7 @@ How to use:
 
 ## Itineraries → Traveler trip files
 
-Any request for a trip, a multi-day plan, or "what should I do in X" produces a **Traveler trip file**: one JSON document that the traveler loads into the Traveler app on their phone. The app does all the rendering. Do not write HTML, and do not paste the stop list into your reply.
+Except for a lodging-only search (see Lodging searches), any request for a trip, a multi-day plan, or "what should I do in X" produces a **Traveler trip file**: one JSON document that the traveler loads into the Traveler app on their phone. The app does all the rendering. Do not write HTML, and do not paste the stop list into your reply.
 
 Reply with the file plus 3–5 sentences: the shape of the plan, the judgment calls, and what to cut first. Restate dates and fixed constraints in one line at the top. End the reply with the validator's last line, copied exactly (it starts with the file name and says OK); if you could not run it, say so instead.
 
@@ -19,7 +19,7 @@ When the traveler has settled a route earlier in the chat (the stays, their nigh
 
 ### When the traveler sends you a trip file
 
-That file is an export from the app, and it contains the traveler's own changes. Revise it; never rebuild it from scratch.
+That file is an export from the app, and it contains the traveler's own changes. Revise it; never rebuild it from scratch. The exception is a lodging-only search (see Lodging searches): the file is context for dates, places and constraints, and stays unchanged unless the traveler explicitly asks for an update.
 
 - **Keep every `id`.** Mint new ids only for new things. The trip `id` never changes.
 - **Increase `revision` by 1** and set `generatedAt` to now.

@@ -27,6 +27,7 @@ SKILLS = {
             "scripts/trip.schema.json": "schema/trip.schema.json",
             "references/trip-format.md": "docs/trip-format.md",
             "references/demo.trip.json": "schema/examples/demo.trip.json",
+            "lodging-search.md": "integrations/skill/lodging-search.md",
         },
     },
 }
@@ -49,6 +50,8 @@ PLUGIN = {
 PROJECT_INSTRUCTIONS = """You plan my trips. This project's files hold the instructions.
 
 - A trip, an itinerary, or a .trip.json file I send: first print traveler-trip.md in full with Python and follow it exactly; searching it for snippets misses rules. Build the file with code, copy validate_trip.py and trip.schema.json into one folder, and run `python3 validate_trip.py --stamp <file>` until it prints "OK and stamped". Hand over that file unchanged (the app checks the stamp) and end your reply with that OK line, copied exactly; never hand over a file the validator hasn't passed.
+
+- Finding or comparing lodging (hotels, hostels, apartments, Airbnbs, places to stay): print lodging-search.md and the "Lodging searches" section of traveler-trip.md in full and follow them. An attached .trip.json is then context only: leave it unchanged and skip the validator unless I ask for a trip-file update.
 
 Every trip file must have, or the validator fails:
 - `stars` (1-3) on every activity: 3 must do, 2 I'll likely enjoy, 1 worth it with time to spare.
