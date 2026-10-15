@@ -42,7 +42,6 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.ln
-import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
@@ -154,8 +153,10 @@ fun TripMapCanvas(
         }
         val clusters = cluster(points, screen, 24f * density)
         // Halos first, under every marker; a shared marker sums its stops' nights.
-        clusters.forEach { c ->
-            val band = haloBand(c.points.sumOf { it.nights })
+        val nights = clusters.map { c -> c.points.sumOf { it.nights } }
+        val fewest = nights.filter { it > 0 }.minOrNull() ?: 0
+        clusters.forEachIndexed { i, c ->
+            val band = if (nights[i] > 0) haloBand(nights[i], fewest) else 0f
             if (band > 0) drawHalo(c.at, markerRadius(measurer.measure(badgeOf(c.points), badgeStyle)) + 2f * density + band * density, colors.marker)
         }
         // Every marker is drawn before any label, so labels can avoid all of them.
@@ -269,8 +270,11 @@ private fun DrawScope.drawTransfer(a: Offset, b: Offset, color: Color, k: Float)
     drawPath(head, color)
 }
 
-/** How far a stop's halo reaches past its marker, in dp: 5 per step of log2(nights + 1), so 26 nights is 4.75 times one night. */
-internal fun haloBand(nights: Int): Float = if (nights <= 0) 0f else 5f * log2(nights + 1f)
+/**
+ * How far a stop's halo reaches past its marker, in dp: 3 for every night beyond the trip's
+ * shortest stop, up to 45. The shortest stop, and a trip of one stop, get none.
+ */
+internal fun haloBand(nights: Int, fewest: Int): Float = (3f * (nights - fewest)).coerceIn(0f, 45f)
 
 private fun DrawScope.drawHalo(p: Offset, r: Float, color: Color) {
     drawCircle(color.copy(alpha = 0.32f), r, p)

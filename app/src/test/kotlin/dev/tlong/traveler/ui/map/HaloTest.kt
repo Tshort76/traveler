@@ -5,8 +5,8 @@ import org.junit.Test
 
 class HaloTest {
     @Test
-    fun `a stop's halo grows with log2 of its nights`() {
-        assertEquals(listOf(0f, 5f, 10f, 15f), listOf(0, 1, 3, 7).map { haloBand(it) })
-        assertEquals(4.75f, haloBand(26) / haloBand(1), 0.01f)
+    fun `a stop's halo grows 3 dp per night beyond the shortest stop, up to 45`() {
+        assertEquals(listOf(0f, 3f, 12f, 45f), listOf(3, 4, 7, 27).map { haloBand(it, fewest = 3) })
+        assertEquals(0f, haloBand(30, fewest = 30)) // one long stay on its own gets no halo
     }
 }
