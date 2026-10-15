@@ -80,7 +80,6 @@ import dev.tlong.traveler.domain.dateRangeLabel
 import dev.tlong.traveler.domain.departDate
 import dev.tlong.traveler.domain.end
 import dev.tlong.traveler.domain.label
-import dev.tlong.traveler.domain.nights
 import dev.tlong.traveler.domain.phase
 import dev.tlong.traveler.domain.shortLabel
 import dev.tlong.traveler.domain.start
@@ -433,13 +432,10 @@ private fun StayCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()}" +
-                            leaving.joinToString("") { t -> " ${modeEmoji(t.shownMode)}" + (t.depart?.let { " $it" } ?: "") } +
-                            " · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
-                            (stay.region?.let { " · $it" } ?: ""),
+                            leaving.joinToString("") { t -> " ${modeEmoji(t.shownMode)}" + (t.depart?.let { " $it" } ?: "") },
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
                     )
-                    // The typical weather for the dates, so the region gives way first on a narrow card.
                     stay.climate?.let { ClimateLabel(it, Modifier.padding(start = 8.dp)) }
                 }
             }
