@@ -179,7 +179,9 @@ private fun ItineraryTab(trip: Trip, stay: Stay, work: WorkPlan, onDay: (String)
 private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate, isToday: Boolean, onClick: () -> Unit, onActivity: (String) -> Unit) {
     val day = trip.day(date.toString())
     val kind = DayKind.of(day?.kind)
-    val booked = trip.commitments.filter { it.date == date.toString() }
+    // A booking for a planned activity shows as that activity's row, not a second line.
+    val planned = day?.plan?.map { it.activityId }.orEmpty().toSet()
+    val booked = trip.commitments.filter { it.date == date.toString() && it.activityId !in planned }
     // The day's actual work blocks, first start to last end.
     val blocks = workPlan.blocksOn(date.toString(), workHoursOn(stay, date))
     val work = blocks.takeIf { it.isNotEmpty() }?.let { "${it.first().start}–${it.maxOf { b -> b.end }}" }

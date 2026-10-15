@@ -164,8 +164,10 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
         timed += CalEntry("t-${t.id}", Span(s, e), EntryKind.TRANSFER, "${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)}",
             listOfNotNull(listOfNotNull(t.depart, t.arrive).joinToString("–"), t.details).joinToString(" · "))
     }
+    // A booking for a planned activity is drawn as that activity, at the booked time.
+    val linked = linkedBookings(trip, day)
     val looseBookings = mutableListOf<Commitment>()
-    trip.commitments.filter { it.date == day.date }.forEach { c ->
+    trip.commitments.filter { it.date == day.date && it !in linked.values }.forEach { c ->
         val s = minutesOf(c.start) ?: return@forEach run { looseBookings += c }
         val e = minutesOf(c.end)?.takeIf { it > s } ?: minOf(s + 60, END)
         timed += CalEntry("c-${c.id}", Span(s, e), EntryKind.BOOKING, (if (c.isBooked) "🔒 " else "") + c.title, listOfNotNull(c.start, c.end).joinToString("–"), tag = c)
@@ -177,9 +179,13 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
         val status = ItemStatus.of(item.status)
         val pill = when (status) { ItemStatus.DONE -> "✓ Done"; ItemStatus.SKIPPED -> "Skipped"; else -> null }
         val title = listOfNotNull(a?.tag, a?.marked(trip.isBooked(a)) ?: "(removed activity)").joinToString(" ")
-        val s = minutesOf(item.time)
-        if (s != null) timed += CalEntry("i-$i-${item.activityId}", Span(s, minOf(s + minutes, END)), EntryKind.ACTIVITY, title, "${item.time} · ${durationLabel(minutes)}", pill = pill, movable = true, tag = i)
-        else loose += CalEntry("i-$i-${item.activityId}", Span(0, minutes), EntryKind.ACTIVITY, title, "anytime · ${durationLabel(minutes)}", loose = true, pill = pill, movable = true, tag = i) to Slot.of(item.slot)
+        val c = linked[item.activityId]
+        val s = minutesOf(c?.start ?: item.time)
+        val e = minutesOf(c?.end)?.takeIf { s != null && it > s } ?: s?.let { minOf(it + minutes, END) }
+        if (s != null && e != null) {
+            val label = if (c?.end != null) "${c.start}–${c.end}" else "${c?.start ?: item.time} · ${durationLabel(minutes)}"
+            timed += CalEntry("i-$i-${item.activityId}", Span(s, e), EntryKind.ACTIVITY, title, label, pill = pill, movable = c == null, tag = i)
+        } else loose += CalEntry("i-$i-${item.activityId}", Span(0, minutes), EntryKind.ACTIVITY, title, "anytime · ${durationLabel(minutes)}", loose = true, pill = pill, movable = c == null, tag = i) to Slot.of(item.slot)
     }
     looseBookings.forEach { c -> loose += CalEntry("c-${c.id}", Span(0, 60), EntryKind.BOOKING, (if (c.isBooked) "🔒 " else "") + c.title, "no time set", loose = true, tag = c) to Slot.ALLDAY }
 
@@ -195,6 +201,12 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
     }
     val placed = DayLayout.placeLoose(timed.map { it.span }, loose.map { (e, s) -> window(s) to e.span.minutes.coerceAtMost(window(s).minutes) })
     return timed + loose.mapIndexed { i, (e, _) -> e.copy(span = placed[i]) } to range
+}
+
+/** The day's bookings linked to an activity on its plan, by activity id. */
+private fun linkedBookings(trip: Trip, day: Day): Map<String, Commitment> {
+    val planned = day.plan.map { it.activityId }.toSet()
+    return trip.commitments.filter { it.date == day.date && it.activityId in planned }.associateBy { it.activityId!! }
 }
 
 private const val END = 24 * 60 - 1
@@ -400,8 +412,12 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                     onDismiss = { selected = null },
                     buildList {
                         a?.let { add("Details" to { act { overlays.detail = it.id } }) }
-                        add((if (item.time == null) "Set a time…" else "Change time…") to { act { timeFor = ref } })
-                        if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
+                        val bookedAs = day?.let { linkedBookings(trip, it)[item.activityId] }
+                        if (bookedAs != null) add("Edit booking…" to { act { booking = BookingTarget(bookedAs) } })
+                        else {
+                            add((if (item.time == null) "Set a time…" else "Change time…") to { act { timeFor = ref } })
+                            if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
+                        }
                         if (status != ItemStatus.DONE) add("Mark done" to { act { if (session.edit("Mark done") { Edits.setStatus(it, ref, ItemStatus.DONE) }) undoable("Marked “${a?.name}” done") } })
                         if (status != ItemStatus.SKIPPED) add("Mark skipped" to { act { if (session.edit("Mark skipped") { Edits.setStatus(it, ref, ItemStatus.SKIPPED) }) undoable("Marked “${a?.name}” skipped") } })
                         if (status != ItemStatus.PROPOSED) add("Back to planned" to { act { session.edit("Mark planned") { Edits.setStatus(it, ref, ItemStatus.PROPOSED) } } })
