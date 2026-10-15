@@ -50,6 +50,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -341,6 +342,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                         modifier = Modifier.semantics { contentDescription = "Times are ${shortZone(it, local)}" })
                 }
                 Spacer(Modifier.weight(1f))
+                IconButton(onClick = { navigator.tripCalendar(trip.id) }) { Icon(Icons.Default.DateRange, "Trip calendar") }
                 Box {
                     IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add to this day") }
                     DropdownMenu(addMenu, onDismissRequest = { addMenu = false }) {

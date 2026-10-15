@@ -25,7 +25,7 @@ import dev.tlong.traveler.ui.trips.TripsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable data object TripsRoute
-@Serializable data class OverviewRoute(val tripId: String)
+@Serializable data class OverviewRoute(val tripId: String, val tab: Int = 0)
 @Serializable data class StayRoute(val tripId: String, val stayId: String, val tab: Int = 0)
 @Serializable data class DayRoute(val tripId: String, val date: String)
 @Serializable data object ImportRoute
@@ -44,6 +44,10 @@ class Navigator(private val nav: NavHostController) {
     fun trips() = nav.navigate(TripsRoute) { popUpTo(TripsRoute) { inclusive = true } }
     fun overview(tripId: String, replaceStack: Boolean = false) = nav.navigate(OverviewRoute(tripId)) {
         if (replaceStack) popUpTo(TripsRoute)
+    }
+    /** The trip page on its Trip info tab, in place of the trip page already on the stack. */
+    fun tripCalendar(tripId: String) = nav.navigate(OverviewRoute(tripId, tab = 1)) {
+        popUpTo<OverviewRoute> { inclusive = true }
     }
     fun stay(tripId: String, stayId: String, tab: Int = 0) = nav.navigate(StayRoute(tripId, stayId, tab))
     fun day(tripId: String, date: String, replace: Boolean = false) = nav.navigate(DayRoute(tripId, date)) {
@@ -72,7 +76,7 @@ fun TravelerNav() {
 
     NavHost(nav, startDestination = TripsRoute) {
         composable<TripsRoute> { TripsScreen(navigator) }
-        composable<OverviewRoute> { OverviewScreen(it.toRoute<OverviewRoute>().tripId, navigator) }
+        composable<OverviewRoute> { val r = it.toRoute<OverviewRoute>(); OverviewScreen(r.tripId, navigator, r.tab) }
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }
         composable<ImportRoute> { ImportScreen(navigator) }

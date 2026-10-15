@@ -143,6 +143,29 @@ fun Trip.isBooked(a: Activity): Boolean = a.booking?.isBooked == true || commitm
 
 fun Trip.bookablesOn(date: String): List<Bookable> = bookables().filter { it.date == date }
 
+/** How full a day is: of the things planned on it, how many are booked. */
+data class DayLoad(val booked: Int, val planned: Int)
+
+/**
+ * Each date with something on it: its planned activities (skipped ones left out) and its
+ * reservations not tied to one of them, such as a dinner booked on its own. Work is not counted.
+ */
+fun Trip.dayLoads(): Map<String, DayLoad> {
+    val loads = mutableMapOf<String, DayLoad>()
+    fun add(date: String, booked: Boolean) {
+        val l = loads[date] ?: DayLoad(0, 0)
+        loads[date] = DayLoad(l.booked + if (booked) 1 else 0, l.planned + 1)
+    }
+    days.forEach { d ->
+        d.plan.filter { ItemStatus.of(it.status) != ItemStatus.SKIPPED }.forEach { item ->
+            add(d.date, activity(item.activityId)?.let { isBooked(it) } == true)
+        }
+    }
+    commitments.filter { c -> c.kind == "booking" && day(c.date)?.plan?.none { it.activityId == c.activityId } != false }
+        .forEach { add(it.date, it.isBooked) }
+    return loads
+}
+
 /** Spending per currency: the estimate across everything, and what is booked. Prices without a currency count as USD. */
 data class Totals(val currency: String, val estimateLow: Double, val estimateHigh: Double, val booked: Double) {
     val estimate get() = Price(estimateLow, estimateHigh, currency).label()

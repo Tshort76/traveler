@@ -214,4 +214,14 @@ class BookingsTest {
         assertEquals("$45.50", Price(45.5).label())
         assertEquals("ARS 85,000", money(85000.0, "ARS"))
     }
+
+    @Test
+    fun `a day's load counts its planned activities and the bookings standing on their own, skipped ones left out`() {
+        val loads = trip.dayLoads()
+        assertEquals(DayLoad(booked = 1, planned = 4), loads["2026-11-08"])
+        assertEquals(DayLoad(booked = 0, planned = 2), loads["2026-11-06"])
+        assertEquals(DayLoad(booked = 1, planned = 2), loads["2026-11-15"]) // the market, and the flight home booked on its own
+        val skipped = Edits.setStatus(trip, Edits.ItemRef("2026-11-06", 0), dev.tlong.traveler.model.ItemStatus.SKIPPED)
+        assertEquals(DayLoad(booked = 0, planned = 1), skipped.dayLoads()["2026-11-06"])
+    }
 }

@@ -28,7 +28,10 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dev.tlong.traveler.domain.DayLoad
 import dev.tlong.traveler.domain.NightPair
+import dev.tlong.traveler.domain.dayLoads
 import dev.tlong.traveler.domain.destinations
 import dev.tlong.traveler.domain.end
 import dev.tlong.traveler.domain.label
@@ -58,6 +61,7 @@ fun rememberStayTints(trip: Trip): Map<String, Color> {
 @Composable
 fun StayCalendar(trip: Trip, tint: Map<String, Color>, today: LocalDate, modifier: Modifier = Modifier, onDay: (LocalDate) -> Unit) {
     val pairs = remember(trip.stays, trip.startDate, trip.endDate) { trip.nightPairs().associateBy { it.date } }
+    val loads = remember(trip) { trip.dayLoads() }
     val firstDay = WeekFields.of(Locale.getDefault()).firstDayOfWeek
     val weeks = remember(trip.start, trip.end, firstDay) {
         val from = trip.start.with(TemporalAdjusters.previousOrSame(firstDay))
@@ -78,7 +82,7 @@ fun StayCalendar(trip: Trip, tint: Map<String, Color>, today: LocalDate, modifie
                 week.forEach { d ->
                     val pair = pairs[d]
                     if (pair == null) Box(Modifier.weight(1f).aspectRatio(1f))
-                    else DayCell(pair, tint[pair.before?.id], tint[pair.after?.id], d == today, d == trip.start || d.dayOfMonth == 1, Modifier.weight(1f)) { onDay(d) }
+                    else DayCell(pair, tint[pair.before?.id], tint[pair.after?.id], d == today, d == trip.start || d.dayOfMonth == 1, loads[d.toString()], Modifier.weight(1f)) { onDay(d) }
                 }
             }
         }
@@ -99,7 +103,7 @@ fun StayKey(trip: Trip, tint: Map<String, Color>, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun DayCell(pair: NightPair, before: Color?, after: Color?, today: Boolean, showMonth: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun DayCell(pair: NightPair, before: Color?, after: Color?, today: Boolean, showMonth: Boolean, load: DayLoad?, modifier: Modifier, onClick: () -> Unit) {
     val d = pair.date
     val description = d.label() + when {
         !pair.transition -> pair.after?.let { ", ${it.name}" } ?: ""
@@ -125,5 +129,12 @@ private fun DayCell(pair: NightPair, before: Color?, after: Color?, today: Boole
             style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center, maxLines = 2,
             modifier = Modifier.clearAndSetSemantics {},
         )
+        // Booked of planned, so a busy day shows at a glance.
+        load?.let {
+            Text(
+                "${it.booked}/${it.planned}", Modifier.align(Alignment.BottomEnd).padding(end = 3.dp, bottom = 1.dp),
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, lineHeight = 9.sp),
+            )
+        }
     }
 }

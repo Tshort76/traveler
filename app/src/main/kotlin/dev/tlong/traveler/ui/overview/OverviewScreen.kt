@@ -122,9 +122,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OverviewScreen(tripId: String, navigator: Navigator) {
+fun OverviewScreen(tripId: String, navigator: Navigator, initialTab: Int = 0) {
     val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
-    Overview(session, navigator)
+    Overview(session, navigator, initialTab)
 }
 
 /** The empty frame shown for the moment a trip takes to open. */
@@ -162,7 +162,7 @@ fun mapDescription(trip: Trip, points: List<MapPoint>): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Overview(session: TripSession, navigator: Navigator) {
+private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int) {
     val container = LocalContainer.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -181,7 +181,7 @@ private fun Overview(session: TripSession, navigator: Navigator) {
     var offlineMaps by remember { mutableStateOf(false) }
     var fullMap by remember { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
-    var tab by rememberSaveable { mutableIntStateOf(0) }
+    var tab by rememberSaveable { mutableIntStateOf(initialTab) }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
