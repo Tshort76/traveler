@@ -80,6 +80,7 @@ import dev.tlong.traveler.domain.dateRangeLabel
 import dev.tlong.traveler.domain.departDate
 import dev.tlong.traveler.domain.end
 import dev.tlong.traveler.domain.label
+import dev.tlong.traveler.domain.nights
 import dev.tlong.traveler.domain.phase
 import dev.tlong.traveler.domain.shortLabel
 import dev.tlong.traveler.domain.start
@@ -138,7 +139,7 @@ fun BackButton(navigator: Navigator) {
 fun Trip.mapModel(): Pair<List<MapPoint>, List<MapSegment>> {
     val stays = destinations
     val withCoords = stays.withIndex().filter { it.value.place?.hasCoordinates == true }
-    val points = withCoords.map { (i, s) -> MapPoint(s.place!!.lat!!, s.place.lng!!, "${i + 1}", s.name) }
+    val points = withCoords.map { (i, s) -> MapPoint(s.place!!.lat!!, s.place.lng!!, "${i + 1}", s.name, s.nights) }
     val index = withCoords.mapIndexed { pi, iv -> iv.value.id to pi }.toMap()
     val segments = stays.zipWithNext().mapNotNull { (a, b) ->
         val from = index[a.id] ?: return@mapNotNull null

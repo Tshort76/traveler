@@ -50,7 +50,8 @@ import kotlin.math.tan
 
 /** A numbered place on the map. Several points at one spot (a repeat visit) share a marker. */
 @Immutable
-data class MapPoint(val lat: Double, val lng: Double, val badge: String, val name: String)
+/** [nights] > 0 draws a halo behind the marker whose area grows with them; the activity maps leave it at 0. */
+data class MapPoint(val lat: Double, val lng: Double, val badge: String, val name: String, val nights: Int = 0)
 
 /** A transfer between two points, by index; drawn as a dashed arc so it never reads as a road. */
 @Immutable
@@ -151,6 +152,10 @@ fun TripMapCanvas(
             }
         }
         val clusters = cluster(points, screen, 24f * density)
+        // Halos first, under every marker: a shared marker sums its stops' nights, and the longest gets the widest.
+        val nights = clusters.map { c -> c.points.sumOf { it.nights } }
+        val most = nights.maxOrNull() ?: 0
+        if (most > 0) clusters.forEachIndexed { i, c -> if (nights[i] > 0) drawHalo(c.at, HALO_MAX * density * sqrt(nights[i].toFloat() / most), colors.marker) }
         // Every marker is drawn before any label, so labels can avoid all of them.
         val placed = clusters.mapTo(mutableListOf()) { c -> drawMarker(c.at, badgeOf(c.points), measurer, badgeStyle, colors.marker) }
         clusters.forEach { c ->
@@ -260,6 +265,13 @@ private fun DrawScope.drawTransfer(a: Offset, b: Offset, color: Color, k: Float)
         close()
     }
     drawPath(head, color)
+}
+
+private const val HALO_MAX = 30f
+
+private fun DrawScope.drawHalo(p: Offset, r: Float, color: Color) {
+    drawCircle(color.copy(alpha = 0.2f), r, p)
+    drawCircle(color.copy(alpha = 0.5f), r, p, style = Stroke(width = density))
 }
 
 /** Draws a numbered marker and returns the area it covers, for label placement. */
