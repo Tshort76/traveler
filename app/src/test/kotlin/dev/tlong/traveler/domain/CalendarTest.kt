@@ -89,4 +89,14 @@ class CalendarTest {
         assertEquals(false, pairs.getValue("2026-11-06").transition)
         assertNull(pairs.getValue(trip.endDate).after)
     }
+
+    @Test
+    fun `calendar rows start each month on a row of its own`() {
+        // 22 Sep to 10 Oct 2026, Sunday first: the week of Sun 27 Sep splits at Thu 1 Oct.
+        val rows = calendarRows(LocalDate.parse("2026-09-22"), LocalDate.parse("2026-10-10"), java.time.DayOfWeek.SUNDAY)
+        assertEquals(4, rows.size)
+        assertEquals(listOf(27, 28, 29, 30, null, null, null), rows[1].map { it?.dayOfMonth })
+        assertEquals(listOf(null, null, null, null, 1, 2, 3), rows[2].map { it?.dayOfMonth })
+        assertEquals(1, calendarRows(LocalDate.parse("2026-10-18"), LocalDate.parse("2026-10-24"), java.time.DayOfWeek.SUNDAY).size)
+    }
 }

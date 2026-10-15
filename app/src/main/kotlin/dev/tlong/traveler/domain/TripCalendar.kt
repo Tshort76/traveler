@@ -13,6 +13,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 fun String.toDate(): LocalDate? = runCatching { LocalDate.parse(this) }.getOrNull()
@@ -169,6 +170,17 @@ fun dateRangeLabel(a: LocalDate, b: LocalDate): String =
 data class NightPair(val date: LocalDate, val before: Stay?, val after: Stay?) {
     val transition get() = before?.id != after?.id
 }
+
+/**
+ * The dates from [from] to [to] as calendar rows of seven, starting on [firstDay]. A week the
+ * month changes in becomes two rows, so every month starts on a row of its own; a null is a blank.
+ */
+fun calendarRows(from: LocalDate, to: LocalDate, firstDay: DayOfWeek): List<List<LocalDate?>> =
+    generateSequence(from.with(TemporalAdjusters.previousOrSame(firstDay))) { it.plusWeeks(1) }.takeWhile { it <= to }
+        .flatMap { w ->
+            val days = (0L..6L).map { w.plusDays(it) }
+            days.filter { it in from..to }.map { it.month }.distinct().map { m -> days.map { d -> d.takeIf { it.month == m } } }
+        }.toList()
 
 /** Every trip date with the stays slept in either side of it; a zero-night stay, like the home airport, never counts. */
 fun Trip.nightPairs(): List<NightPair> {

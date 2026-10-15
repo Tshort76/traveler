@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.tlong.traveler.domain.DayLoad
+import dev.tlong.traveler.domain.calendarRows
 import dev.tlong.traveler.domain.NightPair
 import dev.tlong.traveler.domain.dayLoads
 import dev.tlong.traveler.domain.destinations
@@ -42,7 +43,6 @@ import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.ui.theme.LocalStayColors
 import java.time.LocalDate
 import java.time.format.TextStyle
-import java.time.temporal.TemporalAdjusters
 import java.time.temporal.WeekFields
 import java.util.Locale
 
@@ -63,16 +63,12 @@ fun StayCalendar(trip: Trip, tint: Map<String, Color>, today: LocalDate, modifie
     val pairs = remember(trip.stays, trip.startDate, trip.endDate) { trip.nightPairs().associateBy { it.date } }
     val loads = remember(trip) { trip.dayLoads() }
     val firstDay = WeekFields.of(Locale.getDefault()).firstDayOfWeek
-    val weeks = remember(trip.start, trip.end, firstDay) {
-        val from = trip.start.with(TemporalAdjusters.previousOrSame(firstDay))
-        generateSequence(from) { it.plusWeeks(1) }.takeWhile { it <= trip.end }
-            .map { w -> (0L..6L).map { w.plusDays(it) } }.toList()
-    }
+    val weeks = remember(trip.start, trip.end, firstDay) { calendarRows(trip.start, trip.end, firstDay) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row {
-            weeks.first().forEach { d ->
+            (0L..6L).map { firstDay.plus(it) }.forEach { d ->
                 Text(
-                    d.dayOfWeek.getDisplayName(TextStyle.NARROW, Locale.getDefault()), Modifier.weight(1f),
+                    d.getDisplayName(TextStyle.NARROW, Locale.getDefault()), Modifier.weight(1f),
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
                 )
             }
@@ -80,7 +76,7 @@ fun StayCalendar(trip: Trip, tint: Map<String, Color>, today: LocalDate, modifie
         weeks.forEach { week ->
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 week.forEach { d ->
-                    val pair = pairs[d]
+                    val pair = d?.let { pairs[it] }
                     if (pair == null) Box(Modifier.weight(1f).aspectRatio(1f))
                     else DayCell(pair, tint[pair.before?.id], tint[pair.after?.id], d == today, d == trip.start || d.dayOfMonth == 1, loads[d.toString()], Modifier.weight(1f)) { onDay(d) }
                 }
