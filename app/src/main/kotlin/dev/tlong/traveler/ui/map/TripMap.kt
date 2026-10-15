@@ -50,7 +50,7 @@ import kotlin.math.tan
 
 /** A numbered place on the map. Several points at one spot (a repeat visit) share a marker. */
 @Immutable
-/** [nights] > 0 draws a halo behind the marker whose area grows with them; the activity maps leave it at 0. */
+/** [nights] draws a halo behind the marker, wider for longer stays ([haloBand]); the activity maps leave it at 0. */
 data class MapPoint(val lat: Double, val lng: Double, val badge: String, val name: String, val nights: Int = 0)
 
 /** A transfer between two points, by index; drawn as a dashed arc so it never reads as a road. */
@@ -152,10 +152,11 @@ fun TripMapCanvas(
             }
         }
         val clusters = cluster(points, screen, 24f * density)
-        // Halos first, under every marker: a shared marker sums its stops' nights, and the longest gets the widest.
-        val nights = clusters.map { c -> c.points.sumOf { it.nights } }
-        val most = nights.maxOrNull() ?: 0
-        if (most > 0) clusters.forEachIndexed { i, c -> if (nights[i] > 0) drawHalo(c.at, HALO_MAX * density * sqrt(nights[i].toFloat() / most), colors.marker) }
+        // Halos first, under every marker; a shared marker sums its stops' nights.
+        clusters.forEach { c ->
+            val band = haloBand(c.points.sumOf { it.nights })
+            if (band > 0) drawHalo(c.at, markerRadius(measurer.measure(badgeOf(c.points), badgeStyle)) + 2f * density + band * density, colors.marker)
+        }
         // Every marker is drawn before any label, so labels can avoid all of them.
         val placed = clusters.mapTo(mutableListOf()) { c -> drawMarker(c.at, badgeOf(c.points), measurer, badgeStyle, colors.marker) }
         clusters.forEach { c ->
@@ -267,17 +268,25 @@ private fun DrawScope.drawTransfer(a: Offset, b: Offset, color: Color, k: Float)
     drawPath(head, color)
 }
 
-private const val HALO_MAX = 30f
+/** How far a stop's halo reaches past its marker, in dp: none for a night or two, then three steps. */
+internal fun haloBand(nights: Int): Float = when {
+    nights <= 2 -> 0f
+    nights <= 7 -> 8f
+    nights <= 14 -> 20f
+    else -> 32f
+}
 
 private fun DrawScope.drawHalo(p: Offset, r: Float, color: Color) {
-    drawCircle(color.copy(alpha = 0.2f), r, p)
-    drawCircle(color.copy(alpha = 0.5f), r, p, style = Stroke(width = density))
+    drawCircle(color.copy(alpha = 0.32f), r, p)
+    drawCircle(color.copy(alpha = 0.85f), r, p, style = Stroke(width = 1.5f * density))
 }
+
+private fun DrawScope.markerRadius(text: androidx.compose.ui.text.TextLayoutResult) = max(11f * density, text.size.width / 2f + 5f * density)
 
 /** Draws a numbered marker and returns the area it covers, for label placement. */
 private fun DrawScope.drawMarker(p: Offset, badge: String, measurer: TextMeasurer, style: TextStyle, color: Color): Rect {
     val text = measurer.measure(badge, style)
-    val r = max(11f * density, text.size.width / 2f + 5f * density)
+    val r = markerRadius(text)
     val outer = r + 2f * density
     drawCircle(Color.White, outer, p)
     drawCircle(color, r, p)
