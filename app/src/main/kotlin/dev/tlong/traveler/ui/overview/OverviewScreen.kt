@@ -88,6 +88,7 @@ import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.domain.stayFor
 import dev.tlong.traveler.model.Link
 import dev.tlong.traveler.model.Stay
+import dev.tlong.traveler.model.Transfer
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.ui.Navigator
 import dev.tlong.traveler.ui.activity.dayName
@@ -280,15 +281,18 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
             val folded = active && !showPastStays
             trip.stays.forEachIndexed { i, stay ->
                 if (folded && stay.departDate < today) return@forEachIndexed
+                val next = trip.stays.getOrNull(i + 1)
+                val legs = next?.let { n -> trip.transfers.filter { it.from == stay.id && it.to == n.id } }.orEmpty()
+                // A move between two stays rides on the card it leaves; only the trip's way out and back are lines.
+                val between = stay.id in shown && next?.id in shown
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            stay, tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
+                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
                 }
-                trip.stays.getOrNull(i + 1)?.let { next ->
-                    trip.transfers.filter { it.from == stay.id && it.to == next.id }.forEach { t ->
+                if (!between) legs.forEach { t ->
                         item("t-${t.id}") {
                             Text(
                                 "${modeEmoji(t.shownMode)}  ${modeLabel(t.shownMode)} · ${dayName(t.date)}" +
@@ -297,7 +301,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                                 modifier = Modifier.padding(start = 12.dp),
                             )
                         }
-                    }
                 }
             }
           }
@@ -416,7 +419,7 @@ private fun MapCard(
 
 @Composable
 private fun StayCard(
-    stay: Stay, tally: Map<Bookable.Group, Pair<Int, Int>>,
+    stay: Stay, leaving: List<Transfer>, tally: Map<Bookable.Group, Pair<Int, Int>>,
     onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
@@ -429,7 +432,9 @@ private fun StayCard(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()} · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
+                        "${stay.arriveDate.shortLabel()} – ${stay.departDate.shortLabel()}" +
+                            leaving.joinToString("") { t -> " ${modeEmoji(t.shownMode)}" + (t.depart?.let { " $it" } ?: "") } +
+                            " · ${stay.nights} night${if (stay.nights == 1) "" else "s"}" +
                             (stay.region?.let { " · $it" } ?: ""),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
