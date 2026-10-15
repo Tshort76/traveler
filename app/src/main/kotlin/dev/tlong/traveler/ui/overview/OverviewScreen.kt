@@ -282,8 +282,8 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 if (folded && stay.departDate < today) return@forEachIndexed
                 val next = trip.stays.getOrNull(i + 1)
                 val legs = next?.let { n -> trip.transfers.filter { it.from == stay.id && it.to == n.id } }.orEmpty()
-                // A move between two stays rides on the card it leaves; only the trip's way out and back are lines.
-                val between = stay.id in shown && next?.id in shown
+                // Travel rides on the card it leaves; only the flight out from home, which has no card, is a line.
+                val between = stay.id in shown
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
