@@ -1,13 +1,13 @@
 # Lodging search and comparison
 
-Help the traveler quickly find, compare, and open credible lodging options for a stay. The default deliverable is a ranked Markdown table in chat. Approximate prices are sufficient; exact costs, live availability, and checkout checks can come later.
+Help the traveler quickly find, compare, and open credible lodging options for a stay. With a trip file attached, the deliverable is the shortlist written into the trip file as `lodging.options`, which the traveler compares and books from in the Traveler app; without one, it is a ranked Markdown table in chat. Approximate prices are sufficient; exact costs, live availability, and checkout checks can come later.
 
 ## Scope and routing
 
 Use this workflow for requests to find or compare hotels, hostels, apartments, Airbnbs, accommodation, or places to stay. It supplements the Travel project's app + JSON workflow.
 
-- Use the current trip JSON and itinerary guidance for dates, location, preferred neighborhoods, guests, and relevant constraints. An attached trip file is context, not a request to revise it.
-- Keep the trip JSON, itinerary, and project instructions unchanged during a lodging-only search. Do not generate HTML, an itinerary, a workbook, or a new trip revision unless requested.
+- Use the current trip JSON and itinerary guidance for dates, location, preferred neighborhoods, guests, and relevant constraints.
+- The revision adds `lodging.options` and `lodging.searched` to the stays searched and changes nothing else: no itinerary, activity, or other stay changes. Skip a stay whose lodging is already booked unless the traveler asks. Do not generate HTML, an itinerary, or a workbook.
 - Neighborhood selection, working conditions, running access, and broad privacy/social trade-offs normally belong to itinerary planning. Reuse those decisions. Briefly flag a property-level issue only when it materially affects the choice or violates an explicit requirement.
 - This workflow researches options and provides booking links. It does not make reservations, payments, or contact hosts.
 
@@ -38,6 +38,8 @@ Use this workflow for requests to find or compare hotels, hostels, apartments, A
 
 ## Output
 
+With a trip file attached, the table below becomes the options in the file (see In the trip file); the chat keeps the recommendation and the assumptions line. Without one, give all of it in chat.
+
 Start with a direct recommendation: “I'd start with X; choose Y for a cheaper option or Z for more comfort.” Recommend only what the evidence supports.
 
 Then state the location, dates/nights if known, guests/rooms, assumptions, and research date in one compact line. Unless verified otherwise, note once: “Prices are indicative; availability is unchecked.”
@@ -49,6 +51,19 @@ Populate one row per shortlisted property. Put the rank and linked property name
 
 Finish with only material caveats, source-access limitations, or checks needed before booking. Keep the table easy to scan. No elaborate scoring system, lengthy area analysis, or unsolicited export.
 
+## In the trip file
+
+Load the uploaded file in code, set each searched stay's `lodging.searched` to the research date and `lodging.options` to the shortlist in rank order, replacing any earlier options for that stay, then validate and stamp it per traveler-trip.md. One option per table row:
+
+- `name`, and `url` for the property link (a search link only when no property page was found).
+- `type` (hotel, hostel, apartment, guesthouse…) and `room`, with bathroom sharing when known: "double, own bath", "private, shared bath", "entire one-bedroom".
+- `area`: the neighbourhood or its relation to the preferred area.
+- `price`: `{amount, max?, currency: "USD", unit: "night", note?}`. Put the basis and "indicative" in `note` when it is not obvious; leave `price` out when there is no defensible figure.
+- `rating`: `{score, source, outOf, reviews?}` on the platform's own scale; leave it out when unavailable.
+- `pro` and `con`: the main advantage and drawback in a few words each. Leave `con` out rather than writing "not established".
+
+In chat, give only the recommendation line, the assumptions line and any material caveats; the app shows the rest.
+
 ## After the traveler chooses
 
-A choice does not imply a reservation exists. Offer or perform a trip-file update only when the traveler requests it. For such an update, follow traveler-trip.md and the current project rules, preserve IDs and user edits, use the existing schema, and run the required validator and stamping procedure. Never mark lodging booked without an actual reservation. Do not add shortlist fields to the schema or turn candidate properties into activities.
+A choice does not imply a reservation exists. The traveler books through the option's link and records the booking in the app, which fills in the stay's lodging from the option. Never mark lodging booked without an actual reservation, and do not turn candidate properties into activities or copy one into the stay's lodging `name`.

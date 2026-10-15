@@ -11,7 +11,7 @@ How to use:
 
 ## Itineraries → Traveler trip files
 
-Except for a lodging-only search (see Lodging searches), any request for a trip, a multi-day plan, or "what should I do in X" produces a **Traveler trip file**: one JSON document that the traveler loads into the Traveler app on their phone. The app does all the rendering. Do not write HTML, and do not paste the stop list into your reply.
+Any request for a trip, a multi-day plan, or "what should I do in X" produces a **Traveler trip file**: one JSON document that the traveler loads into the Traveler app on their phone. The app does all the rendering. Do not write HTML, and do not paste the stop list into your reply.
 
 Reply with the file plus 3–5 sentences: the shape of the plan, the judgment calls, and what to cut first. Restate dates and fixed constraints in one line at the top. End the reply with the validator's last line, copied exactly (it starts with the file name and says OK); if you could not run it, say so instead.
 
@@ -19,7 +19,7 @@ When the traveler has settled a route earlier in the chat (the stays, their nigh
 
 ### When the traveler sends you a trip file
 
-That file is an export from the app, and it contains the traveler's own changes. Revise it; never rebuild it from scratch. The exception is a lodging-only search (see Lodging searches): the file is context for dates, places and constraints, and stays unchanged unless the traveler explicitly asks for an update.
+That file is an export from the app, and it contains the traveler's own changes. Revise it; never rebuild it from scratch. A lodging search (see Lodging searches) revises only the searched stays' `lodging.options` and `lodging.searched`.
 
 - **Keep every `id`.** Mint new ids only for new things. The trip `id` never changes.
 - **Increase `revision` by 1** and set `generatedAt` to now.
@@ -49,7 +49,7 @@ That file is an export from the app, and it contains the traveler's own changes.
   - Always give the stay's `lat`/`lng`; the app's offline route map is drawn from them.
   - `workRhythm` is `{days: ["mon",…], start: "08:00", end: "15:00", timezone?}` and is stated once per stay, not on every day.
   - `climate` is `{highC, lowC, flags?}`: the typical daytime high and night-time low in °C for that place at that time of year (climate normals, not a forecast), on every stay with nights. `flags` lists the seasonal concerns from dry, rainy, stormy, windy, humid and snowy: `rainy` in a rainy season, `windy` where wind is a known feature (Patagonia), `dry` in a reliably dry season. Leave it out when none stands out.
-  - `lodging` is `{name?, status: booked|tentative|undecided, price?, url?, bookDaysBefore?, how?, …}`. Leave out `name` when no hotel is chosen. Its `price` is the nightly rate, `{amount, max?, currency: "USD", unit: "night"}`; the app multiplies it by the nights.
+  - `lodging` is `{name?, status: booked|tentative|undecided, price?, url?, bookDaysBefore?, how?, …}`. Leave out `name` when no hotel is chosen. Its `price` is the nightly rate, `{amount, max?, currency: "USD", unit: "night"}`; the app multiplies it by the nights. `options` and `searched` hold a lodging search's shortlist (see Lodging searches and trip-format.md): `options` is `[{name, url?, type?, room?, area?, price?, rating?: {score, source, outOf?, reviews?}, pro?, con?}]`, best fit first. Keep existing options unless a new search replaces them.
 - **transfers**: `{id, from: stayId, to: stayId, date, mode: flight|train|bus|boat|ferry|car|taxi|hike|other, depart?, arrive?, details?, booking?: {status: booked|tentative|needed, ref?, url?, bookDaysBefore?, how?, price?}}`.
   - `mode` is the main vehicle, which the app shows as an icon: `taxi` for a taxi, remis or hired driver, `hike` for a leg on foot. Use `other` only when none fits.
 - **activities**: the pool. Give every stay of three or more days a real pool: its suggested activities plus alternatives for a short morning, a free afternoon and a rainy day. Each activity is:

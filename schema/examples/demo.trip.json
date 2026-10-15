@@ -177,7 +177,90 @@
           "note": "Waterfront; about ARS 105,000–140,000 a night"
         },
         "how": "Book on the waterfront (the rambla) so the town is walkable; whale season fills it.",
-        "url": "https://www.booking.com/"
+        "url": "https://www.booking.com/",
+        "searched": "2027-09-20",
+        "options": [
+          {
+            "name": "Hotel Costanera Sur",
+            "url": "https://example.com/costanera-sur",
+            "type": "hotel",
+            "room": "double, sea view",
+            "area": "Rambla, south end",
+            "price": {
+              "amount": 135,
+              "currency": "USD",
+              "unit": "night"
+            },
+            "rating": {
+              "score": 9.0,
+              "outOf": 10,
+              "source": "Booking.com",
+              "reviews": 1240
+            },
+            "pro": "Sea view and breakfast",
+            "con": "Top of the range"
+          },
+          {
+            "name": "Posada del Golfo",
+            "url": "https://example.com/posada-del-golfo",
+            "type": "guesthouse",
+            "room": "double, own bath",
+            "area": "Rambla, centre",
+            "price": {
+              "amount": 95,
+              "currency": "USD",
+              "unit": "night"
+            },
+            "rating": {
+              "score": 8.6,
+              "outOf": 10,
+              "source": "Booking.com",
+              "reviews": 2010
+            },
+            "pro": "On the beach walk",
+            "con": "Dated rooms"
+          },
+          {
+            "name": "Loft Rambla Norte",
+            "url": "https://example.com/loft-rambla-norte",
+            "type": "apartment",
+            "room": "one bedroom",
+            "area": "Centro",
+            "price": {
+              "amount": 80,
+              "max": 90,
+              "currency": "USD",
+              "unit": "night"
+            },
+            "rating": {
+              "score": 4.9,
+              "outOf": 5,
+              "source": "Airbnb",
+              "reviews": 96
+            },
+            "pro": "Kitchen and a desk",
+            "con": "Street noise reported"
+          },
+          {
+            "name": "Hostel La Ballena",
+            "url": "https://example.com/hostel-la-ballena",
+            "type": "hostel",
+            "room": "private, own bath",
+            "area": "Centro, 3 blocks from the water",
+            "price": {
+              "amount": 55,
+              "currency": "USD",
+              "unit": "night"
+            },
+            "rating": {
+              "score": 9.2,
+              "outOf": 10,
+              "source": "Hostelworld",
+              "reviews": 410
+            },
+            "pro": "Cheapest private room"
+          }
+        ]
       },
       "transport": "Walkable centre; rent a car or book a remis for El Doradillo and Punta Loma.",
       "notes": [
@@ -1239,6 +1322,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "749032353b1d33e5"
+    "hash": "a9328c4884e4a310"
   }
 }

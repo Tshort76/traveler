@@ -255,6 +255,71 @@
         }
       }
     },
+    "lodgingOption": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "description": "A candidate place to stay, from a lodging search; the app lists them under the stay's lodging until it is booked.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "description": "The property's page on a booking platform or its own site."
+        },
+        "type": {
+          "type": "string",
+          "description": "hotel, hostel, apartment, guesthouse…"
+        },
+        "room": {
+          "type": "string",
+          "description": "The room or unit, with bathroom sharing when known: \"double, own bath\"."
+        },
+        "area": {
+          "type": "string",
+          "description": "The neighbourhood, or where it sits relative to the stay's preferred area."
+        },
+        "price": {
+          "$ref": "#/$defs/price"
+        },
+        "rating": {
+          "type": "object",
+          "required": [
+            "score",
+            "source"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0
+            },
+            "outOf": {
+              "type": "number",
+              "minimum": 1,
+              "description": "The platform's scale: 10 for Booking.com, 5 for Airbnb."
+            },
+            "source": {
+              "type": "string",
+              "description": "The platform the rating is from."
+            },
+            "reviews": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "pro": {
+          "type": "string",
+          "description": "The main advantage, a few words."
+        },
+        "con": {
+          "type": "string",
+          "description": "The main drawback, a few words."
+        }
+      }
+    },
     "booking": {
       "type": "object",
       "properties": {
@@ -404,6 +469,17 @@
             },
             "price": {
               "$ref": "#/$defs/price"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/lodgingOption"
+              },
+              "description": "Candidates from a lodging search, best fit first."
+            },
+            "searched": {
+              "$ref": "#/$defs/date",
+              "description": "When the options were researched; their prices are indicative from that day."
             }
           }
         },

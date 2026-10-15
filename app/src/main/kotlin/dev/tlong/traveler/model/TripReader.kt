@@ -121,6 +121,8 @@ object TripReader {
             price(s.lodging?.price, "$where.lodging.price", errors, lodging = true)
             s.lodging?.priority?.let { priority(it, "$where.lodging.priority", errors) }
             s.lodging?.bookDaysBefore?.let { lead(it, "$where.lodging.bookDaysBefore", errors) }
+            s.lodging?.searched?.let { date(it, "$where.lodging.searched", errors) }
+            s.lodging?.options?.forEachIndexed { j, o -> price(o.price, "$where.lodging.options[$j].price", errors, lodging = true) }
             checkPlace(s.place, where, errors)
         }
         trip.transfers.forEachIndexed { i, t ->

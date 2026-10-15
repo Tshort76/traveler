@@ -269,7 +269,7 @@ def check_references(trip, rep):
     for where, price in _prices(trip):
         if isinstance(price.get("amount"), (int, float)) and isinstance(price.get("max"), (int, float)) and price["max"] < price["amount"]:
             rep.error(where, "max is below amount")
-        if price.get("unit") == "night" and ".lodging.price" not in where:
+        if price.get("unit") == "night" and not re.search(r"\.lodging(\.options\[\d+\])?\.price$", where):
             rep.error(f"{where}.unit", '"night" is only for lodging; give this price for the whole item')
 
     for i, c in enumerate(commits):

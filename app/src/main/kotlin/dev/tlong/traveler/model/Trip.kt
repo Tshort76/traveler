@@ -115,9 +115,30 @@ data class Lodging(
     val how: String? = null,
     val notes: String? = null,
     val price: Price? = null,
+    /** Candidates from a lodging search, best fit first, researched on [searched]. */
+    val options: List<LodgingOption> = emptyList(),
+    val searched: String? = null,
 ) {
     val isBooked get() = status == "booked"
 }
+
+/** A candidate place to stay; its [price] is indicative, usually per night. */
+@Serializable
+data class LodgingOption(
+    val name: String,
+    val url: String? = null,
+    val type: String? = null,
+    val room: String? = null,
+    val area: String? = null,
+    val price: Price? = null,
+    val rating: Rating? = null,
+    val pro: String? = null,
+    val con: String? = null,
+)
+
+/** A platform's own score, on its own scale: 9.0 of 10 on Booking.com, 4.9 of 5 on Airbnb. */
+@Serializable
+data class Rating(val score: Double, val source: String, val outOf: Double? = null, val reviews: Int? = null)
 
 /**
  * A cost: [amount] alone is exact (or a single estimate), [amount] to [max] a range. [unit] says what
