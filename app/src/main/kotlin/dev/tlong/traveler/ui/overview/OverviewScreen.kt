@@ -2,11 +2,9 @@ package dev.tlong.traveler.ui.overview
 
 import dev.tlong.traveler.ui.common.EarlierRow
 import dev.tlong.traveler.domain.departDate
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
 import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.ui.common.byRecommendation
@@ -170,7 +168,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
     val trip by session.trip.collectAsStateWithLifecycle()
     val base by session.base.collectAsStateWithLifecycle()
     val saveState by session.saveState.collectAsStateWithLifecycle()
-    val exportedHash by session.exportedHash.collectAsStateWithLifecycle()
     val online by rememberOnline()
     var menu by remember { mutableStateOf(false) }
     var exportMenu by remember { mutableStateOf(false) }
@@ -185,7 +182,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
-    val unexported = exportedHash != Export.hash(trip)
 
     val openRevision = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) scope.launch { container.openUri(uri) }
@@ -206,12 +202,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 actions = {
                     SaveIndicator(saveState, session::retrySave)
                     Box {
-                        // A dot when there are changes the last export does not have.
-                        IconButton(onClick = { exportMenu = true }) {
-                            BadgedBox(badge = { if (unexported && changes > 0) Badge() }) {
-                                Icon(Icons.Default.Share, if (unexported && changes > 0) "Export trip, changes not exported" else "Export trip")
-                            }
-                        }
+                        IconButton(onClick = { exportMenu = true }) { Icon(Icons.Default.Share, "Export trip") }
                         DropdownMenu(exportMenu, onDismissRequest = { exportMenu = false }) {
                             DropdownMenuItem(text = { Text("Share trip file") }, onClick = {
                                 exportMenu = false

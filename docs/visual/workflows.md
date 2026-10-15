@@ -123,7 +123,7 @@ sequenceDiagram
 
 - **The export keeps the base revision.** `Export.tripFile` (`domain/Export.kt:18`) leaves `revision` at the last import and adds `exportedFrom` with the number of local changes; the assistant raises the revision.
 - **The file name says whether you edited.** `Export.fileName` (`domain/Export.kt:31`) adds `-edited` when there are local changes.
-- **"Unexported changes" is a hash comparison.** The overview compares the plan's hash with the one saved at the last export (`ui/overview/OverviewScreen.kt:181`).
+- **The last export is recorded, not shown.** `markExported` stores the plan's hash (`data/TripStore.kt`); the share icon carries no badge, since nearly every edit would light it and sharing always sends the current plan.
 
 Save trip file and Copy JSON in the same menu differ only in where the text goes.
 

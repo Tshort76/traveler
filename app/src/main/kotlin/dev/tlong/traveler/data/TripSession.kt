@@ -1,7 +1,6 @@
 package dev.tlong.traveler.data
 
 import dev.tlong.traveler.domain.Checklist
-import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.domain.WorkPlan
 import dev.tlong.traveler.model.Trip
@@ -34,9 +33,6 @@ class TripSession(
 
     private val _base = MutableStateFlow(initial.base)
     val base: StateFlow<Trip> = _base.asStateFlow()
-
-    private val _exportedHash = MutableStateFlow(initial.row.lastExportedHash)
-    val exportedHash: StateFlow<String?> = _exportedHash.asStateFlow()
 
     /** The traveler's notes, stored beside the trip file rather than in it; see [TripRow.notes]. */
     private val _notes = MutableStateFlow(initial.row.notes)
@@ -156,7 +152,6 @@ class TripSession(
         undoStack.clear()
         _base.value = stored.base
         _trip.value = stored.local
-        _exportedHash.value = stored.row.lastExportedHash
         _checklist.value = TripStore.checklistOf(stored.row)
         _work.value = TripStore.workOf(stored.row)
         _saveState.value = SaveState.Saved
@@ -164,7 +159,6 @@ class TripSession(
 
     suspend fun markExported() {
         store.markExported(_trip.value)
-        _exportedHash.value = Export.hash(_trip.value)
     }
 
     fun localChangeCount() = Merge.localChangeCount(_base.value, _trip.value)
