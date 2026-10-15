@@ -5,7 +5,8 @@ import org.junit.Test
 
 class HaloTest {
     @Test
-    fun `a stop's halo steps up with its nights`() {
-        assertEquals(listOf(0f, 0f, 8f, 8f, 20f, 20f, 32f, 32f), listOf(1, 2, 3, 7, 8, 14, 15, 26).map { haloBand(it) })
+    fun `a stop's halo grows with log2 of its nights`() {
+        assertEquals(listOf(0f, 5f, 10f, 15f), listOf(0, 1, 3, 7).map { haloBand(it) })
+        assertEquals(4.75f, haloBand(26) / haloBand(1), 0.01f)
     }
 }

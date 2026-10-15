@@ -135,7 +135,7 @@ flowchart LR
 | Component | Path | What it does |
 |---|---|---|
 | Trip picture | `ui/map/TripBackdrop.kt` | Looks for a saved picture for this trip, size and set of stays; if none and online, renders one with MapLibre's snapshotter, shows it, and saves it as WebP |
-| Trip map | `ui/map/TripMap.kt` | Projects stays to Web Mercator, draws the picture or the offline country outlines, numbered stay markers clustered on screen with halos stepped by nights, dashed transfer arcs, and a scale bar |
+| Trip map | `ui/map/TripMap.kt` | Projects stays to Web Mercator, draws the picture or the offline country outlines, numbered stay markers clustered on screen with halos sized by log2 of the nights, dashed transfer arcs, and a scale bar |
 | Terrain map | `ui/map/AreaMap.kt` | Starts MapLibre with a 100 MB tile cache, builds the terrain-only style, fits the pins, draws numbered pin bitmaps, re-clusters them when the camera settles, caps zoom at 13 |
 | Saved maps | `ui/map/OfflineMaps.kt` | Deletes the trip's old regions, stores the style under a placeholder URL, creates one region per stay, downloads them one by one with progress, sizes them, prunes regions of deleted trips |
 | Save dialog | `ui/map/OfflineMapsDialog.kt` | Shows what is saved and its size, warns on a metered or missing connection, and offers save, update, stop or remove |

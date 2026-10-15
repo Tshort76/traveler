@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -73,7 +74,11 @@ fun StayCalendar(trip: Trip, tint: Map<String, Color>, today: LocalDate, modifie
                 )
             }
         }
-        weeks.forEach { week ->
+        weeks.forEachIndexed { i, week ->
+            // A hairline above each new month, which a month starting on the week's first day needs most.
+            if (i > 0 && week.firstNotNullOf { it }.month != weeks[i - 1].firstNotNullOf { it }.month) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                 week.forEach { d ->
                     val pair = d?.let { pairs[it] }

@@ -42,6 +42,7 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.ln
+import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.sin
@@ -268,13 +269,8 @@ private fun DrawScope.drawTransfer(a: Offset, b: Offset, color: Color, k: Float)
     drawPath(head, color)
 }
 
-/** How far a stop's halo reaches past its marker, in dp: none for a night or two, then three steps. */
-internal fun haloBand(nights: Int): Float = when {
-    nights <= 2 -> 0f
-    nights <= 7 -> 8f
-    nights <= 14 -> 20f
-    else -> 32f
-}
+/** How far a stop's halo reaches past its marker, in dp: 5 per step of log2(nights + 1), so 26 nights is 4.75 times one night. */
+internal fun haloBand(nights: Int): Float = if (nights <= 0) 0f else 5f * log2(nights + 1f)
 
 private fun DrawScope.drawHalo(p: Offset, r: Float, color: Color) {
     drawCircle(color.copy(alpha = 0.32f), r, p)
