@@ -109,6 +109,13 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.ui.platform.LocalContext
 import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rich
+import dev.tlong.traveler.model.LodgingOption
+import dev.tlong.traveler.model.Rating
+import dev.tlong.traveler.domain.total
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun BookingsScreen(tripId: String, date: String?, navigator: Navigator, stayId: String? = null, group: String? = null) {
@@ -162,6 +169,8 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     }
     var expanded by rememberSaveable { mutableStateOf(setOf<String>()) }
     var open by remember { mutableStateOf<Bookable?>(null) }
+    // The lodging option "Booked" was tapped on, which fills in the booking form.
+    var chosen by remember { mutableStateOf<LodgingOption?>(null) }
     val listState = rememberLazyListState()
     fun undoable(message: String) = scope.launch { snackbar.offerUndo(session, message) }
     fun markNotBooked(b: Bookable) {
@@ -225,7 +234,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
                     BookableRow(
                         trip, b, today, b.key in expanded,
                         onToggle = { expanded = if (b.key in expanded) expanded - b.key else expanded + b.key },
-                        onDetails = { open = b },
+                        onDetails = { o -> chosen = o; open = b },
                         onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } },
                     )
                 }
@@ -241,7 +250,7 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     open?.let { b ->
         val close = { open = null }
         when (b.kind) {
-            Bookable.Kind.LODGING, Bookable.Kind.TRANSFER -> ReservationDialog(trip, b, close,
+            Bookable.Kind.LODGING, Bookable.Kind.TRANSFER -> ReservationDialog(trip, b, chosen, close,
                 onNotBooked = if (b.booked) ({ close(); markNotBooked(b) }) else null,
             ) { d ->
                 close()
@@ -321,7 +330,7 @@ private fun Tag(text: String, due: Boolean) {
 @Composable
 private fun BookableRow(
     trip: Trip, b: Bookable, today: LocalDate, expanded: Boolean,
-    onToggle: () -> Unit, onDetails: () -> Unit, onLink: (String) -> Unit,
+    onToggle: () -> Unit, onDetails: (LodgingOption?) -> Unit, onLink: (String) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth().clickable(onClickLabel = if (expanded) "Hide how to book" else "Show how to book", onClick = onToggle).padding(vertical = 2.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -337,10 +346,13 @@ private fun BookableRow(
             }
             b.price?.let { Text(it.label(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 8.dp)) }
         }
-        if (expanded && b.booked) BookingDetails(trip, b, onLink, onDetails)
+        if (expanded && b.booked) BookingDetails(trip, b, onLink) { onDetails(null) }
         else if (expanded) Column(Modifier.padding(start = 36.dp, end = 4.dp, bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             b.how?.let { Text(rich(it), style = MaterialTheme.typography.bodyMedium) }
             b.price?.note?.let { Text("Price: $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            if (b.kind == Bookable.Kind.LODGING) trip.stay(b.stayId)?.lodging?.let { l ->
+                if (l.options.isNotEmpty()) LodgingOptions(l.options, l.searched, onLink) { onDetails(it) }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 b.url?.let { url ->
                     Button(onClick = { onLink(url) }) {
@@ -349,10 +361,63 @@ private fun BookableRow(
                     }
                 }
                 FilledTonalIconButton(onClick = { onLink(searchUrl(trip, b)) }) { Icon(Icons.Default.Search, "Search the web for ${b.title}") }
-                FilledTonalIconButton(onClick = onDetails) { Icon(Icons.Default.Edit, "I booked it: enter the details") }
+                FilledTonalIconButton(onClick = { onDetails(null) }) { Icon(Icons.Default.Edit, "I booked it: enter the details") }
             }
         }
     }
+}
+
+/** A lodging search's shortlist: one line each, tap one for its advantage, drawback, link and "Booked". */
+@Composable
+private fun LodgingOptions(options: List<LodgingOption>, searched: String?, onLink: (String) -> Unit, onBooked: (LodgingOption) -> Unit) {
+    var openIndex by rememberSaveable { mutableStateOf(-1) }
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Column {
+        Text(
+            listOfNotNull("${options.size} option${if (options.size == 1) "" else "s"}", searched?.let { runCatching { LocalDate.parse(it).shortLabel() }.getOrNull() }).joinToString(" · "),
+            style = MaterialTheme.typography.labelMedium, color = muted, modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+        )
+        options.forEachIndexed { i, o ->
+            val isOpen = i == openIndex
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .then(if (isOpen) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp)) else Modifier)
+                    .clickable(onClickLabel = if (isOpen) "Hide details" else "Show details") { openIndex = if (isOpen) -1 else i }
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("${i + 1}  ${o.name}", style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                    o.price?.let { Text(it.rateLabel() ?: it.label(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 8.dp)) }
+                }
+                Text(
+                    listOfNotNull(o.type?.replaceFirstChar { it.uppercase() }, o.room.takeIf { isOpen }, o.area, o.rating?.label(full = isOpen)).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, color = muted,
+                    maxLines = if (isOpen) 3 else 1, overflow = TextOverflow.Ellipsis,
+                )
+                if (isOpen) {
+                    listOfNotNull(o.pro?.let { "+ $it" }, o.con?.let { "− $it" }).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    o.price?.note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = muted) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 2.dp)) {
+                        o.url?.let { url ->
+                            OutlinedButton(onClick = { onLink(url) }) {
+                                Text("Open")
+                                Icon(OpenInNew, null, Modifier.padding(start = 6.dp).size(18.dp))
+                            }
+                        }
+                        OutlinedButton(onClick = { onBooked(o) }) { Text("Booked") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** "9.0 Booking.com", or with [full] "9.0/10 Booking.com (1,240)": always on the platform's own scale. */
+private fun Rating.label(full: Boolean): String {
+    val score = "%.1f".format(score) + (outOf?.takeIf { full }?.let { "/" + "%.0f".format(it) } ?: "")
+    val count = reviews?.takeIf { full }?.let { " (" + "%,d".format(it) + ")" } ?: ""
+    return "$score $source$count"
 }
 
 /** What was recorded when it was booked, in place of the buttons; tap it to change the details. */
@@ -407,16 +472,16 @@ private fun detailLine(trip: Trip, b: Bookable): String = listOfNotNull(
 
 /** Records a lodging or transfer booking: the details the confirmation gives, and what it cost. */
 @Composable
-private fun ReservationDialog(trip: Trip, b: Bookable, onDismiss: () -> Unit, onNotBooked: (() -> Unit)?, onSave: (Edits.Booked) -> Unit) {
+private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, onDismiss: () -> Unit, onNotBooked: (() -> Unit)?, onSave: (Edits.Booked) -> Unit) {
     val lodging = b.kind == Bookable.Kind.LODGING
     val stay = trip.stay(b.stayId)
-    var name by remember { mutableStateOf(stay?.lodging?.name.orEmpty()) }
+    var name by remember { mutableStateOf(option?.name ?: stay?.lodging?.name.orEmpty()) }
     var start by remember { mutableStateOf(b.time.orEmpty()) }
     var end by remember { mutableStateOf(trip.transfers.firstOrNull { it.id == b.id }?.arrive.orEmpty()) }
     var ref by remember { mutableStateOf(b.ref.orEmpty()) }
-    var url by remember { mutableStateOf(b.url.orEmpty()) }
+    var url by remember { mutableStateOf(option?.url ?: b.url.orEmpty()) }
     var notes by remember { mutableStateOf(stay?.lodging?.notes.orEmpty()) }
-    val price = rememberPriceInput(b.price)
+    val price = rememberPriceInput(option?.price?.let { p -> stay?.let { p.total(it.nights) } ?: p } ?: b.price)
     val s = normalizeTime(start)
     val e = normalizeTime(end)
     val ok = (start.isBlank() || s != null) && (end.isBlank() || e != null) && price.ok
