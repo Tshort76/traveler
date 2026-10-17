@@ -71,6 +71,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.datesOf
+import dev.tlong.traveler.domain.toTime
+import dev.tlong.traveler.ui.common.modeEmoji
+import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.domain.day
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.shortLabel
@@ -185,6 +188,20 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
     // The day's actual work blocks, first start to last end.
     val blocks = workPlan.blocksOn(date.toString(), workHoursOn(stay, date))
     val work = blocks.takeIf { it.isNotEmpty() }?.let { "${it.first().start}–${it.maxOf { b -> b.end }}" }
+    val rows = buildList {
+        day?.plan?.forEach { item ->
+            val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
+            val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
+            add(ItineraryRow(minuteOf(item.time) ?: Slot.of(item.slot).minute, "$status${item.time ?: Slot.of(item.slot).label}  ${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}") { onActivity(a.id) })
+        }
+        // Flights and other transfers leaving today; on the stay's first day, also one that left the day before (an overnight flight in).
+        trip.transfers.filter { it.date == date.toString() }.forEach { t ->
+            add(ItineraryRow(minuteOf(t.depart) ?: 0, "${t.depart ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} to ${trip.stay(t.to)?.name ?: t.to}", onClick))
+        }
+        if (date == trip.datesOf(stay).firstOrNull()) trip.transfers.filter { it.to == stay.id && it.date < date.toString() }.forEach { t ->
+            add(ItineraryRow(minuteOf(t.arrive) ?: 0, "${t.arrive ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} from ${trip.stay(t.from)?.name ?: t.from}", onClick))
+        }
+    }
     Card(
         onClick = onClick, modifier = Modifier.fillMaxWidth(),
         colors = if (isToday) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer) else CardDefaults.cardColors(),
@@ -196,20 +213,21 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
                 if (work != null) Pill("💻 $work") else if (kind != DayKind.PLAN) Pill(kind.label)
             }
             booked.forEach { c -> Text("🔒 ${listOfNotNull(c.start, c.end).joinToString("–")} ${c.title}".trim(), style = MaterialTheme.typography.bodySmall) }
-            day?.plan?.forEach { item ->
-                val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
-                val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
-                TextButton(onClick = { onActivity(a.id) }, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)) {
-                    Text(
-                        "$status${item.time ?: Slot.of(item.slot).label}  " + "${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}",
-                        style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
+            rows.sortedBy { it.minute }.forEach { r ->
+                TextButton(onClick = r.onClick, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)) {
+                    Text(r.text, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
     }
 }
+
+/** One line on a day card, ordered by [minute]: its time, or where its part of the day starts. */
+private class ItineraryRow(val minute: Int, val text: String, val onClick: () -> Unit)
+
+private fun minuteOf(time: String?) = time?.toTime()?.let { it.hour * 60 + it.minute }
+
+private val Slot.minute get() = when (this) { Slot.MORNING -> 9 * 60; Slot.AFTERNOON -> 13 * 60; Slot.EVENING -> 18 * 60; Slot.ALLDAY -> 12 * 60 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

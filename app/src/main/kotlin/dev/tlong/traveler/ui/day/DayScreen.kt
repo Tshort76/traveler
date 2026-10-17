@@ -101,6 +101,7 @@ import dev.tlong.traveler.domain.scheduledIds
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.shortZone
 import dev.tlong.traveler.domain.stayOf
+import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
 import dev.tlong.traveler.domain.window
@@ -164,6 +165,14 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
         val e = minutesOf(t.arrive)?.takeIf { it > s } ?: minOf(s + 60, END)
         timed += CalEntry("t-${t.id}", Span(s, e), EntryKind.TRANSFER, "${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)}",
             listOfNotNull(listOfNotNull(t.depart, t.arrive).joinToString("–"), t.details).joinToString(" · "))
+    }
+    // An overnight flight in, on the stay's first day: the hour before it lands.
+    trip.stayOf(day)?.takeIf { trip.datesOf(it).firstOrNull()?.toString() == day.date }?.let { stay ->
+        trip.transfers.filter { it.to == stay.id && it.date < day.date }.forEach { t ->
+            val e = minutesOf(t.arrive) ?: return@forEach
+            timed += CalEntry("ta-${t.id}", Span(maxOf(e - 60, 0), e), EntryKind.TRANSFER, "${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)}",
+                listOfNotNull("arrives ${t.arrive}", t.details).joinToString(" · "))
+        }
     }
     // A booking for a planned activity is drawn as that activity, at the booked time.
     val linked = linkedBookings(trip, day)
