@@ -1,6 +1,6 @@
 # The traveler-trip skill (ChatGPT)
 
-One skill, in the open Agent Skills format (a folder with a `SKILL.md`). `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`. `lodging-search.md` is the lodging search and comparison workflow, which writes the shortlist into the trip file as `lodging.options`; the prompt's "Lodging searches" section routes to it, and it ships beside `SKILL.md`.
+One skill, in the open Agent Skills format (a folder with a `SKILL.md`). `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`. `lodging-search.md` is the lodging search and comparison workflow, which writes the shortlist into the trip file as `lodging.options`; the prompt's "Lodging searches" section routes to it, and it ships beside `SKILL.md`. `travel-focus.md` is the `/travel <place>` mode, a chat about one stay that starts from `stay_brief.py`'s summary of it.
 
 OpenAI is retiring custom GPTs on 11 December 2026 in favour of plugins built from skills, so this replaces a custom GPT.
 

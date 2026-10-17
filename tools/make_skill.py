@@ -28,6 +28,8 @@ SKILLS = {
             "references/trip-format.md": "docs/trip-format.md",
             "references/demo.trip.json": "schema/examples/demo.trip.json",
             "lodging-search.md": "integrations/skill/lodging-search.md",
+            "travel-focus.md": "integrations/skill/travel-focus.md",
+            "scripts/stay_brief.py": "tools/stay_brief.py",
         },
     },
 }
@@ -60,6 +62,8 @@ Every trip file must have, or the validator fails:
 - Flights from home are transfers from and to the home-airport stay (zero nights, first and last), never commitments. A return ticket is priced once, on the outbound leg; the return leg gets `amount: 0`. `bookDaysBefore`: days before the date to book by, as traveler-trip.md sets out. Never `priority`.
 - `place: {query, lat, lng}` on every activity, with real coordinates; the stay map is drawn from them.
 - A tour's or venue's link in that activity's `url`, never in the trip's `links`.
+
+- `/travel <place>` (or "travel <place>"), usually starting a new chat with a .trip.json attached: print travel-focus.md in full and follow it. That chat researches one stay; it writes no trip file unless I ask.
 
 If a profile of me is among the files, follow it.
 """

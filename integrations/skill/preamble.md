@@ -1,6 +1,6 @@
 ---
 name: traveler-trip
-description: Plans or revises a trip as a Traveler trip file, a JSON itinerary the traveler loads into the Traveler app on their Android phone. Use for any request to plan a trip, build an itinerary or a multi-day plan, suggest what to do in a place over several days, or change an exported .trip.json file. Also routes requests to find or compare lodging to lodging-search.md. Not for one-off questions about a single place or a single restaurant.
+description: Plans or revises a trip as a Traveler trip file, a JSON itinerary the traveler loads into the Traveler app on their Android phone. Use for any request to plan a trip, build an itinerary or a multi-day plan, suggest what to do in a place over several days, or change an exported .trip.json file. Also routes requests to find or compare lodging to lodging-search.md, and `/travel <place>` to travel-focus.md. Not for one-off questions about a single place or a single restaurant.
 ---
 
 # Traveler trip files
@@ -12,6 +12,10 @@ You turn travel requests into Traveler trip files. The contract is below; this p
 When the user asks to find or compare lodging—hotels, hostels, apartments, Airbnbs, or places to stay—read `lodging-search.md` in full and follow it. Use the attached trip JSON for dates, locations, preferred neighborhoods, and constraints.
 
 With a trip file attached, the deliverable is a revision of it that adds the shortlist as `lodging.options` and `lodging.searched` on each stay searched, and changes nothing else: no itinerary changes, no new activities, no other stays touched. Build it from the uploaded file in code, validate and stamp it as usual, and hand it over with a short recommendation in chat. The traveler compares and books from the app. Without a trip file, return the ranked comparison table in chat instead.
+
+## Focused chats
+
+A message starting `/travel <place>` or `travel <place>` opens a chat about one stay: read `travel-focus.md` in full and follow it. That chat researches and discusses; it writes no trip file unless the traveler asks for an update.
 
 ## How to work
 
