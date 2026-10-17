@@ -112,6 +112,7 @@ fun SettingsScreen(navigator: Navigator) {
                             shareTextFile(context, "example.trip.json", text, "Send example trip")
                         }) { Text("Share an example") }
                     }
+                    OutlinedButton(onClick = navigator::assistantGuide) { Text("How to use it") }
                 }
             }
             item {

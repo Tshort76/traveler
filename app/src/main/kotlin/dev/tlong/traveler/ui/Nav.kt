@@ -20,6 +20,7 @@ import dev.tlong.traveler.ui.history.HistoryScreen
 import dev.tlong.traveler.ui.importer.ImportScreen
 import dev.tlong.traveler.ui.overview.OverviewScreen
 import dev.tlong.traveler.ui.settings.SettingsScreen
+import dev.tlong.traveler.ui.settings.AssistantGuideScreen
 import dev.tlong.traveler.ui.stay.StayScreen
 import dev.tlong.traveler.ui.trips.TripsScreen
 import kotlinx.serialization.Serializable
@@ -36,6 +37,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class ChecklistRoute(val tripId: String, val tab: Int = 0)
 @Serializable data class NotesRoute(val tripId: String)
 @Serializable data object TemplatesRoute
+@Serializable data object AssistantGuideRoute
 @Serializable data class TemplateRoute(val id: String)
 
 /** Navigation callbacks the screens share, so none of them holds the controller. */
@@ -60,6 +62,7 @@ class Navigator(private val nav: NavHostController) {
     fun checklist(tripId: String, tab: Int = 0) = nav.navigate(ChecklistRoute(tripId, tab))
     fun notes(tripId: String) = nav.navigate(NotesRoute(tripId))
     fun templates() = nav.navigate(TemplatesRoute)
+    fun assistantGuide() = nav.navigate(AssistantGuideRoute)
     fun template(id: String) = nav.navigate(TemplateRoute(id))
 }
 
@@ -86,6 +89,7 @@ fun TravelerNav() {
         composable<ChecklistRoute> { val r = it.toRoute<ChecklistRoute>(); ChecklistScreen(r.tripId, r.tab, navigator) }
         composable<NotesRoute> { NotesScreen(it.toRoute<NotesRoute>().tripId, navigator) }
         composable<TemplatesRoute> { TemplatesScreen(navigator) }
+        composable<AssistantGuideRoute> { AssistantGuideScreen(navigator) }
         composable<TemplateRoute> { TemplateScreen(it.toRoute<TemplateRoute>().id, navigator) }
     }
 }
