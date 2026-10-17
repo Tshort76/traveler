@@ -19,10 +19,11 @@ class FindTest(unittest.TestCase):
 
 
 class BriefTest(unittest.TestCase):
-    def test_a_stay_lists_only_its_own_days(self):
-        text = sb.brief(DEMO, next(s for s in DEMO["stays"] if s["id"] == "san-telmo"))
-        self.assertIn("Teatro Colón", text)
-        self.assertNotIn("waterfront rambla", text)
+    def test_a_stay_lists_its_own_standouts_and_their_days(self):
+        text = sb.brief(DEMO, next(s for s in DEMO["stays"] if s["id"] == "madryn"))
+        self.assertIn("Puerto Madryn waterfront rambla · Fri 22 Oct afternoon", text)
+        self.assertNotIn("Punta Cuevas", text)  # 2 stars
+        self.assertNotIn("Teatro Colón", text)  # another stay
 
 
 if __name__ == "__main__":
