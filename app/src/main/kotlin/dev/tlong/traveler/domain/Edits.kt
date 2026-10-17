@@ -212,11 +212,13 @@ object Edits {
     }
 
     /** What the traveler records on booking lodging or a transfer; [start]/[end] are check-in or depart/arrive. */
-    data class Booked(val name: String?, val ref: String?, val url: String?, val price: Price?, val notes: String?, val start: String?, val end: String?)
+    data class Booked(val name: String?, val ref: String?, val url: String?, val price: Price?, val notes: String?, val start: String?, val end: String?, val address: String? = null)
 
     fun markBooked(trip: Trip, b: Bookable, d: Booked): Trip = when (b.kind) {
         Bookable.Kind.LODGING -> updateLodging(trip, b.id) {
-            it.copy(status = "booked", name = d.name ?: it.name, ref = d.ref, url = d.url, price = d.price, notes = d.notes, checkIn = d.start)
+            // A changed address replaces the place, so stale coordinates never point somewhere else.
+            val place = if (d.address == (it.place?.address ?: it.place?.query)) it.place else d.address?.let { a -> Place(address = a, query = a) }
+            it.copy(status = "booked", name = d.name ?: it.name, ref = d.ref, url = d.url, price = d.price, notes = d.notes, checkIn = d.start, place = place)
         }
         Bookable.Kind.TRANSFER -> updateTransfer(trip, b.id) {
             it.copy(depart = d.start, arrive = d.end, booking = (it.booking ?: Booking()).copy(status = "booked", ref = d.ref, url = d.url, price = d.price))

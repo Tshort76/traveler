@@ -110,6 +110,7 @@ import androidx.compose.ui.platform.LocalContext
 import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rich
 import dev.tlong.traveler.model.LodgingOption
+import dev.tlong.traveler.domain.MapsLinks
 import dev.tlong.traveler.model.Rating
 import dev.tlong.traveler.domain.total
 import androidx.compose.foundation.background
@@ -424,6 +425,7 @@ private fun Rating.label(full: Boolean): String {
 @Composable
 private fun BookingDetails(trip: Trip, b: Bookable, onLink: (String) -> Unit, onEdit: () -> Unit) {
     val notes = b.record?.notes ?: trip.stay(b.stayId)?.lodging?.notes?.takeIf { b.kind == Bookable.Kind.LODGING }
+    val place = trip.stay(b.stayId)?.lodging?.place?.takeIf { b.kind == Bookable.Kind.LODGING }
     Card(
         onClick = onEdit, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         modifier = Modifier.fillMaxWidth().padding(start = 36.dp, end = 4.dp, bottom = 6.dp).semantics { onClick("Edit booking details") { onEdit(); true } },
@@ -440,6 +442,10 @@ private fun BookingDetails(trip: Trip, b: Bookable, onLink: (String) -> Unit, on
                 notes?.let { "Notes" to it },
             ).forEach { (k, v) ->
                 Row { Text(k, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(96.dp)); Text(v, style = MaterialTheme.typography.bodyMedium) }
+            }
+            place?.let { p ->
+                Text("${p.address ?: p.query ?: "Map"} ↗", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable(onClickLabel = "Open in Maps") { onLink(MapsLinks.open(p, b.title, trip.stay(b.stayId)?.name)) }.padding(vertical = 4.dp))
             }
             b.url?.let { url ->
                 Text("Open booking ↗", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
@@ -481,6 +487,7 @@ private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, o
     var ref by remember { mutableStateOf(b.ref.orEmpty()) }
     var url by remember { mutableStateOf(option?.url ?: b.url.orEmpty()) }
     var notes by remember { mutableStateOf(stay?.lodging?.notes.orEmpty()) }
+    var address by remember { mutableStateOf(stay?.lodging?.place?.let { it.address ?: it.query }.orEmpty()) }
     val price = rememberPriceInput(option?.price?.let { p -> stay?.let { p.total(it.nights) } ?: p } ?: b.price)
     val s = normalizeTime(start)
     val e = normalizeTime(end)
@@ -498,6 +505,7 @@ private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, o
                 val number = KeyboardOptions(keyboardType = KeyboardType.Number)
                 if (lodging) {
                     OutlinedTextField(name, { name = it }, label = { Text("Where you're staying") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(address, { address = it }, label = { Text("Address (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     OutlinedTextField(start, { start = it }, label = { Text("Check-in time (optional)") }, singleLine = true, keyboardOptions = number,
                         isError = start.isNotBlank() && s == null, modifier = Modifier.fillMaxWidth())
                 } else Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -515,7 +523,7 @@ private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, o
         confirmButton = {
             TextButton(enabled = ok, onClick = {
                 fun clean(v: String) = v.trim().ifEmpty { null }
-                onSave(Edits.Booked(clean(name), clean(ref), clean(url), price.value, clean(notes), s, e))
+                onSave(Edits.Booked(clean(name), clean(ref), clean(url), price.value, clean(notes), s, e, clean(address)))
             }) { Text(if (b.booked) "Save" else "Mark booked") }
         },
         dismissButton = {

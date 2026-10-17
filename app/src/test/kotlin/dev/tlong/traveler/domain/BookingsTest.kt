@@ -132,8 +132,9 @@ class BookingsTest {
     @Test
     fun `marking lodging booked records the details as the traveler's edit`() {
         val paid = Price(510.0, currency = "USD")
-        val t = Edits.markBooked(trip, item("lodging:iguazu"), Edits.Booked("Hotel Cataratas", "AB12", null, paid, null, "14:00", null))
+        val t = Edits.markBooked(trip, item("lodging:iguazu"), Edits.Booked("Hotel Cataratas", "AB12", null, paid, null, "14:00", null, "Av. Córdoba 123"))
         val stay = t.stay("iguazu")!!
+        assertEquals("Av. Córdoba 123", stay.lodging?.place?.address)
         assertEquals(listOf("booked", "Hotel Cataratas", "AB12", "14:00"), listOf(stay.lodging?.status, stay.lodging?.name, stay.lodging?.ref, stay.lodging?.checkIn))
         assertEquals(paid, stay.lodging?.price)
         assertTrue("lodging" in stay.userEdited)
