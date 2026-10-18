@@ -8,6 +8,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.width
 import dev.tlong.traveler.domain.Bookable
+import dev.tlong.traveler.domain.dueToBook
+import dev.tlong.traveler.ui.bookings.BookingsList
+import androidx.compose.runtime.key
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import dev.tlong.traveler.domain.destinations
@@ -177,6 +181,10 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
     var fullMap by remember { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
+    // A stay card's tally opens the Bookings tab filtered to that stay and group.
+    var focusStay by rememberSaveable { mutableStateOf<String?>(null) }
+    var focusGroup by rememberSaveable { mutableStateOf<String?>(null) }
+    val due = remember(trip) { trip.dueToBook().isNotEmpty() }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
@@ -234,14 +242,17 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
         Column(Modifier.fillMaxSize().padding(padding)) {
         PrimaryTabRow(selectedTabIndex = tab) {
             Tab(tab == 0, onClick = { tab = 0 }, text = { Text("Stays") })
-            Tab(tab == 1, onClick = { tab = 1 }, text = { Text("Trip info") })
+            // Red while something is due to book this week.
+            Tab(tab == 1, onClick = { tab = 1; focusStay = null; focusGroup = null }, text = { Text("Bookings", color = if (due) MaterialTheme.colorScheme.error else Color.Unspecified) })
+            Tab(tab == 2, onClick = { tab = 2 }, text = { Text("Trip info") })
         }
-        LazyColumn(
+        if (tab == 1) key(focusStay, focusGroup) { BookingsList(session, snackbar, focusStay = focusStay, focusGroup = focusGroup) }
+        else LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 32.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-          if (tab == 1) {
+          if (tab == 2) {
             item("dates") {
                 Text(
                     "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays · rev ${base.revision}" +
@@ -252,7 +263,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
             item("shortcuts") {
                 TripShortcuts(
                     trip, checklist,
-                    onBookings = { navigator.bookings(trip.id) },
                     onChecklist = { navigator.checklist(trip.id, it) },
                     onNotes = { navigator.notes(trip.id) },
                 )
@@ -288,7 +298,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> navigator.bookings(trip.id, stayId = stay.id, group = g.name) },
+                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> focusStay = stay.id; focusGroup = g.name; tab = 1 },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
                 }

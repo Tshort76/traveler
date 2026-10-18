@@ -26,6 +26,18 @@ class EditsTest {
     }
 
     @Test
+    fun `placing a stay's work block writes it once and allows it on many days`() {
+        val stay = trip.stayFor(java.time.LocalDate.parse(sat))!!.id
+        val work = workBlock(stay)
+        assertNull(trip.activity(work.id))
+        assertTrue(trip.activitiesWithWork.any { it.id == work.id })
+        val twice = Edits.place(Edits.place(trip, work.id, sat, Slot.MORNING), work.id, sun, Slot.MORNING)
+        assertEquals(1, twice.activities.count { it.id == work.id })
+        assertEquals(listOf(sat, sun), twice.placementsOf(work.id).map { it.date })
+        assertEquals(120, twice.activity(work.id)!!.duration?.minutes)
+    }
+
+    @Test
     fun `returning an item to the pool keeps the activity`() {
         val removed = Edits.remove(trip, Edits.ItemRef(sat, 0))
         val id = trip.day(sat)!!.plan[0].activityId

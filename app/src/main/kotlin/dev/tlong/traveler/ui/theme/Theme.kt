@@ -56,6 +56,9 @@ private fun mapColors(s: ColorScheme, dark: Boolean) = if (dark) {
     MapColors(Color(0xFFDCE8EE), Color(0xFFF7F4EC), Color(0xFFC9C1B2), s.tertiary, s.primary, s.onPrimary, s.onSurface)
 }
 
+/** The text colour of something booked, beside its ✓: green enough to read at a glance, 4.5:1 on surface and primaryContainer. */
+val LocalBookedColor = staticCompositionLocalOf { Color(0xFF1B6E20) }
+
 /** Tints that tell stays apart on the trip calendar, in visit order and cycling; onSurface text reads on each. */
 val LocalStayColors = staticCompositionLocalOf { lightStays }
 
@@ -69,7 +72,7 @@ private val darkStays = listOf(
 @Composable
 fun TravelerTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val scheme = if (dark) Dark else Light
-    androidx.compose.runtime.CompositionLocalProvider(LocalMapColors provides mapColors(scheme, dark), LocalStayColors provides if (dark) darkStays else lightStays) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalMapColors provides mapColors(scheme, dark), LocalBookedColor provides if (dark) Color(0xFF81C784) else Color(0xFF1B6E20), LocalStayColors provides if (dark) darkStays else lightStays) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
 }

@@ -5,6 +5,7 @@ import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Booking
 import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.Day
+import dev.tlong.traveler.model.Duration
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Link
 import dev.tlong.traveler.model.Lodging
@@ -51,7 +52,7 @@ object Edits {
 
     /** Appends to the end of [slot], or inserts at [positionInSlot] among that slot's items. */
     fun place(trip: Trip, activityId: String, date: String, slot: Slot, time: String? = null, positionInSlot: Int? = null): Trip =
-        trip.updateDay(date) { day ->
+        trip.withWorkBlock(activityId).updateDay(date) { day ->
             day.withPlan(insertInSlot(day.plan, PlanItem(activityId = activityId, slot = slot.key, time = time), positionInSlot))
         }
 
@@ -255,3 +256,17 @@ fun Trip.placementsOf(activityId: String): List<Placement> = days.flatMap { d ->
 fun Trip.scheduledIds(): Set<String> = days.flatMapTo(mutableSetOf()) { d -> d.plan.map { it.activityId } }
 
 fun Trip.activity(id: String): Activity? = activities.firstOrNull { it.id == id }
+
+/** A stay's two-hour work block: an entry of the traveler's own that goes on as many days as needed. */
+fun workBlock(stayId: String) = Activity(
+    id = "my-work-$stayId", stayId = stayId, name = "Work", tag = "💻", duration = Duration(minutes = 120), origin = ORIGIN_USER,
+)
+
+/** The trip's activities plus each stay's [workBlock], which reaches the file only once it is placed. */
+val Trip.activitiesWithWork: List<Activity> get() =
+    activities + destinations.map { workBlock(it.id) }.filter { w -> activities.none { it.id == w.id } }
+
+fun Trip.activityOrWork(id: String): Activity? = activity(id) ?: activitiesWithWork.firstOrNull { it.id == id }
+
+private fun Trip.withWorkBlock(id: String): Trip =
+    if (activity(id) != null) this else activityOrWork(id)?.let { copy(activities = activities + it) } ?: this

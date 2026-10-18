@@ -31,8 +31,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class DayRoute(val tripId: String, val date: String)
 @Serializable data object ImportRoute
 @Serializable data class HistoryRoute(val tripId: String)
-/** [stayId] and [group] (a [dev.tlong.traveler.domain.Bookable.Group] name) open the list filtered to them. */
-@Serializable data class BookingsRoute(val tripId: String, val date: String? = null, val stayId: String? = null, val group: String? = null)
+@Serializable data class BookingsRoute(val tripId: String, val date: String? = null)
 @Serializable data object SettingsRoute
 @Serializable data class ChecklistRoute(val tripId: String, val tab: Int = 0)
 @Serializable data class NotesRoute(val tripId: String)
@@ -48,7 +47,7 @@ class Navigator(private val nav: NavHostController) {
         if (replaceStack) popUpTo(TripsRoute)
     }
     /** The trip page on its Trip info tab, in place of the trip page already on the stack. */
-    fun tripCalendar(tripId: String) = nav.navigate(OverviewRoute(tripId, tab = 1)) {
+    fun tripCalendar(tripId: String) = nav.navigate(OverviewRoute(tripId, tab = 2)) {
         popUpTo<OverviewRoute> { inclusive = true }
     }
     fun stay(tripId: String, stayId: String, tab: Int = 0) = nav.navigate(StayRoute(tripId, stayId, tab))
@@ -56,8 +55,7 @@ class Navigator(private val nav: NavHostController) {
         if (replace) nav.currentBackStackEntry?.destination?.id?.let { popUpTo(it) { inclusive = true } }
     }
     fun history(tripId: String) = nav.navigate(HistoryRoute(tripId))
-    fun bookings(tripId: String, date: String? = null, stayId: String? = null, group: String? = null) =
-        nav.navigate(BookingsRoute(tripId, date, stayId, group))
+    fun bookings(tripId: String, date: String) = nav.navigate(BookingsRoute(tripId, date))
     fun settings() = nav.navigate(SettingsRoute)
     fun checklist(tripId: String, tab: Int = 0) = nav.navigate(ChecklistRoute(tripId, tab))
     fun notes(tripId: String) = nav.navigate(NotesRoute(tripId))
@@ -83,7 +81,7 @@ fun TravelerNav() {
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }
         composable<ImportRoute> { ImportScreen(navigator) }
-        composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator, r.stayId, r.group) }
+        composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator) }
         composable<HistoryRoute> { HistoryScreen(it.toRoute<HistoryRoute>().tripId, navigator) }
         composable<SettingsRoute> { SettingsScreen(navigator) }
         composable<ChecklistRoute> { val r = it.toRoute<ChecklistRoute>(); ChecklistScreen(r.tripId, r.tab, navigator) }

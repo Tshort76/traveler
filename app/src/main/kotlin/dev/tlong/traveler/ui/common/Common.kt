@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.common
 
+import dev.tlong.traveler.ui.theme.LocalBookedColor
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.FilterChip
 import androidx.compose.ui.geometry.CornerRadius
@@ -328,6 +329,10 @@ fun marked(name: String, stars: Int?, ticket: Boolean, booked: Boolean): String 
 }
 
 fun Activity.marked(booked: Boolean) = marked(name, stars, booking != null, booked)
+
+/** Green for a booked item's name, otherwise [otherwise]. */
+@Composable
+fun bookedColor(booked: Boolean, otherwise: Color = Color.Unspecified): Color = if (booked) LocalBookedColor.current else otherwise
 
 fun starLabel(stars: Int?) = when (stars) { 3 -> "✨ Standout"; 2 -> "⭐ You'll likely enjoy it"; else -> null }
 

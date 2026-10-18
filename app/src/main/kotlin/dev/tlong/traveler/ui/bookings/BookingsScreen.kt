@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import dev.tlong.traveler.domain.shortLabel
 import dev.tlong.traveler.ui.common.TriStateFilter
 import dev.tlong.traveler.ui.common.marked
+import dev.tlong.traveler.ui.common.bookedColor
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.departDate
 import androidx.compose.material.icons.filled.Close
@@ -118,10 +119,16 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedButton
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookingsScreen(tripId: String, date: String?, navigator: Navigator, stayId: String? = null, group: String? = null) {
+fun BookingsScreen(tripId: String, date: String?, navigator: Navigator) {
     val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
-    BookingsContent(session, date, navigator, stayId, group)
+    val saveState by session.saveState.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("Bookings") }, navigationIcon = { BackButton(navigator) }, actions = { SaveIndicator(saveState, session::retrySave) }) },
+        snackbarHost = { SnackbarHost(snackbar) },
+    ) { padding -> BookingsList(session, snackbar, Modifier.padding(padding), date) }
 }
 
 fun Bookable.Group.glyph(): String = when (this) {
@@ -140,12 +147,14 @@ fun Bookable.glyph(): String = when (kind) {
 fun List<Bookable>.tallyLabel(): String? =
     if (isEmpty()) null else "${if (all { it.booked }) "✅ " else ""}${count { it.booked }}/$size booked"
 
+/** The trip's bookings with their filters and dialogs: its own page from a day, and a tab of the trip page. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BookingsContent(session: TripSession, focusDate: String?, navigator: Navigator, focusStay: String?, focusGroup: String?) {
+fun BookingsList(
+    session: TripSession, snackbar: SnackbarHostState, modifier: Modifier = Modifier,
+    focusDate: String? = null, focusStay: String? = null, focusGroup: String? = null,
+) {
     val trip by session.trip.collectAsStateWithLifecycle()
-    val saveState by session.saveState.collectAsStateWithLifecycle()
-    val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
@@ -154,7 +163,8 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
     var booked by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
-    var order by rememberSaveable { mutableStateOf(if (focusStay != null) Order.STAY else Order.DATE) }
+    // Opened from a day, it is ordered by date so the list can start at that day.
+    var order by rememberSaveable { mutableStateOf(if (focusDate != null) Order.DATE else Order.BOOK_BY) }
     val today = LocalDate.now()
     val groups = remember(items, order, booked, group, onlyStay, today) {
         val shown = items
@@ -188,63 +198,58 @@ private fun BookingsContent(session: TripSession, focusDate: String?, navigator:
         }
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Bookings") }, navigationIcon = { BackButton(navigator) }, actions = { SaveIndicator(saveState, session::retrySave) }) },
-        snackbarHost = { SnackbarHost(snackbar) },
-    ) { padding ->
-        LazyColumn(
-            Modifier.fillMaxSize().padding(padding), state = listState,
-            contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            item("summary") { Summary(items, today) }
-            item("order") {
-                var sorting by remember { mutableStateOf(false) }
-                // One line: the sort as a menu, then the filters in a row that scrolls sideways.
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box {
-                        TextButton(onClick = { sorting = true }) {
-                            Text(order.label)
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Change order")
-                        }
-                        DropdownMenu(sorting, onDismissRequest = { sorting = false }) {
-                            Order.entries.forEach { o ->
-                                DropdownMenuItem(
-                                    text = { Text(o.label) }, onClick = { order = o; sorting = false },
-                                    leadingIcon = { if (order == o) Icon(Icons.Default.Check, contentDescription = null) },
-                                )
-                            }
+    LazyColumn(
+        modifier.fillMaxSize(), state = listState,
+        contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        item("summary") { Summary(items, today) }
+        item("order") {
+            var sorting by remember { mutableStateOf(false) }
+            // One line: the sort as a menu, then the filters in a row that scrolls sideways.
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box {
+                    TextButton(onClick = { sorting = true }) {
+                        Text(order.label)
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = "Change order")
+                    }
+                    DropdownMenu(sorting, onDismissRequest = { sorting = false }) {
+                        Order.entries.forEach { o ->
+                            DropdownMenuItem(
+                                text = { Text(o.label) }, onClick = { order = o; sorting = false },
+                                leadingIcon = { if (order == o) Icon(Icons.Default.Check, contentDescription = null) },
+                            )
                         }
                     }
-                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        onlyStay?.let { id ->
-                            InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
-                                trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay", Modifier.size(18.dp)) })
-                        }
-                        // Glyphs, like the trip page's row; each says its name to TalkBack.
-                        Bookable.Group.entries.forEach { g ->
-                            FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.glyph()) },
-                                modifier = Modifier.semantics { contentDescription = g.label })
-                        }
-                        TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing not booked only" } }) { booked = it }
+                }
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    onlyStay?.let { id ->
+                        InputChip(true, onClick = { onlyStay = null }, label = { Text(trip.stay(id)?.name ?: id) },
+                            trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay", Modifier.size(18.dp)) })
                     }
+                    // Glyphs, like the trip page's row; each says its name to TalkBack.
+                    Bookable.Group.entries.forEach { g ->
+                        FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.glyph()) },
+                            modifier = Modifier.semantics { contentDescription = g.label })
+                    }
+                    TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing not booked only" } }) { booked = it }
                 }
             }
-            groups.forEach { (title, list) ->
-                item("h-$title") { SectionTitle(title, Modifier.padding(top = 12.dp)) }
-                items(list, key = { it.key }) { b ->
-                    BookableRow(
-                        trip, b, today, b.key in expanded,
-                        onToggle = { expanded = if (b.key in expanded) expanded - b.key else expanded + b.key },
-                        onDetails = { o -> chosen = o; open = b },
-                        onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } },
-                    )
-                }
+        }
+        groups.forEach { (title, list) ->
+            item("h-$title") { SectionTitle(title, Modifier.padding(top = 12.dp)) }
+            items(list, key = { it.key }) { b ->
+                BookableRow(
+                    trip, b, today, b.key in expanded,
+                    onToggle = { expanded = if (b.key in expanded) expanded - b.key else expanded + b.key },
+                    onDetails = { o -> chosen = o; open = b },
+                    onLink = { url -> if (!openUrl(context, url)) scope.launch { snackbar.showSnackbar("No app can open $url") } },
+                )
             }
-            if (items.isEmpty()) item("empty") {
-                Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
-            } else if (groups.isEmpty()) item("empty") {
-                Text(if (booked == false) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
-            }
+        }
+        if (items.isEmpty()) item("empty") {
+            Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
+        } else if (groups.isEmpty()) item("empty") {
+            Text(if (booked == false) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
         }
     }
 
@@ -339,7 +344,7 @@ private fun BookableRow(
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                     BookByTag(b, today)
-                    Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, color = bookedColor(b.booked), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 detailLine(trip, b).takeIf { it.isNotEmpty() }?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -69,6 +69,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.domain.isBooked
+import dev.tlong.traveler.domain.activity
+import dev.tlong.traveler.domain.activitiesWithWork
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.toTime
@@ -96,6 +98,7 @@ import dev.tlong.traveler.ui.activity.PlaceRequest
 import dev.tlong.traveler.ui.activity.rememberOverlays
 import dev.tlong.traveler.ui.common.byRecommendation
 import dev.tlong.traveler.ui.common.marked
+import dev.tlong.traveler.ui.common.bookedColor
 import dev.tlong.traveler.ui.common.Pill
 import dev.tlong.traveler.ui.common.SaveIndicator
 import dev.tlong.traveler.ui.common.SectionTitle
@@ -123,7 +126,7 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
     val snackbar = remember { SnackbarHostState() }
     val overlays = rememberOverlays()
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
-    val pool = remember(trip, stay.id) { trip.activities.filter { it.stayId == stay.id } }
+    val pool = remember(trip, stay.id) { trip.activitiesWithWork.filter { it.stayId == stay.id } }
 
     Scaffold(
         topBar = {
@@ -192,14 +195,14 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
         day?.plan?.forEach { item ->
             val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
             val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
-            add(ItineraryRow(minuteOf(item.time) ?: Slot.of(item.slot).minute, "$status${item.time ?: Slot.of(item.slot).label}  ${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}") { onActivity(a.id) })
+            add(ItineraryRow(minuteOf(item.time) ?: Slot.of(item.slot).minute, "$status${item.time ?: Slot.of(item.slot).label}  ${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}", trip.isBooked(a)) { onActivity(a.id) })
         }
         // Flights and other transfers leaving today; on the stay's first day, also one that left the day before (an overnight flight in).
         trip.transfers.filter { it.date == date.toString() }.forEach { t ->
-            add(ItineraryRow(minuteOf(t.depart) ?: 0, "${t.depart ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} to ${trip.stay(t.to)?.name ?: t.to}", onClick))
+            add(ItineraryRow(minuteOf(t.depart) ?: 0, "${t.depart ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} to ${trip.stay(t.to)?.name ?: t.to}", onClick = onClick))
         }
         if (date == trip.datesOf(stay).firstOrNull()) trip.transfers.filter { it.to == stay.id && it.date < date.toString() }.forEach { t ->
-            add(ItineraryRow(minuteOf(t.arrive) ?: 0, "${t.arrive ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} from ${trip.stay(t.from)?.name ?: t.from}", onClick))
+            add(ItineraryRow(minuteOf(t.arrive) ?: 0, "${t.arrive ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} from ${trip.stay(t.from)?.name ?: t.from}", onClick = onClick))
         }
     }
     Card(
@@ -215,7 +218,7 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
             booked.forEach { c -> Text("🔒 ${listOfNotNull(c.start, c.end).joinToString("–")} ${c.title}".trim(), style = MaterialTheme.typography.bodySmall) }
             rows.sortedBy { it.minute }.forEach { r ->
                 TextButton(onClick = r.onClick, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp)) {
-                    Text(r.text, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = MaterialTheme.colorScheme.onSurface)
+                    Text(r.text, style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, color = bookedColor(r.booked, MaterialTheme.colorScheme.onSurface))
                 }
             }
         }
@@ -223,7 +226,7 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
 }
 
 /** One line on a day card, ordered by [minute]: its time, or where its part of the day starts. */
-private class ItineraryRow(val minute: Int, val text: String, val onClick: () -> Unit)
+private class ItineraryRow(val minute: Int, val text: String, val booked: Boolean = false, val onClick: () -> Unit)
 
 private fun minuteOf(time: String?) = time?.toTime()?.let { it.hour * 60 + it.minute }
 
@@ -285,7 +288,9 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         }
         if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }
         items(list, key = { it.id }) { a ->
-            PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = { overlays.place = PlaceRequest(a.id, null, null, null) })
+            val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
+            // The work block has no details until it is first placed.
+            PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { if (trip.activity(a.id) != null) overlays.detail = a.id else add() }, onAdd = add)
         }
     }
 }
@@ -318,7 +323,7 @@ private fun PoolRow(a: Activity, number: Int?, plannedOn: List<String>, booked: 
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             MapNumber(number, Modifier.padding(end = 12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                Text(listOfNotNull(a.tag, a.marked(booked)).joinToString("  "), style = MaterialTheme.typography.titleSmall)
+                Text(listOfNotNull(a.tag, a.marked(booked)).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(booked))
                 a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }

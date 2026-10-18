@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.day
 
+import dev.tlong.traveler.ui.common.bookedColor
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -69,6 +70,7 @@ data class CalEntry(
     val loose: Boolean = false,
     val pill: String? = null,
     val movable: Boolean = false,
+    val booked: Boolean = false,
     /** What the caller needs to act on it: a plan or work-block index, or the booking. */
     val tag: Any? = null,
 )
@@ -242,7 +244,7 @@ private fun Block(e: CalEntry, lifted: Boolean, modifier: Modifier, onTap: () ->
             if (!loose) Box(Modifier.width(4.dp).fillMaxSize().background(bar))
             Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(e.title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    Text(e.title, style = MaterialTheme.typography.titleSmall, color = bookedColor(e.booked), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     e.pill?.let { Pill(it, Modifier.padding(start = 6.dp), container = c.surfaceVariant, content = c.onSurfaceVariant) }
                 }
                 Text(e.detail, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)

@@ -1,5 +1,6 @@
 package dev.tlong.traveler.ui.day
 
+import dev.tlong.traveler.ui.common.bookedColor
 import android.Manifest
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.graphics.graphicsLayer
@@ -106,6 +107,7 @@ import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
 import dev.tlong.traveler.domain.window
 import dev.tlong.traveler.domain.workHoursOn
+import dev.tlong.traveler.domain.activitiesWithWork
 import dev.tlong.traveler.domain.zone
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Commitment
@@ -188,14 +190,15 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
         val minutes = (a?.duration?.minutes ?: 60).coerceAtLeast(30)
         val status = ItemStatus.of(item.status)
         val pill = when (status) { ItemStatus.DONE -> "✓ Done"; ItemStatus.SKIPPED -> "Skipped"; else -> null }
-        val title = listOfNotNull(a?.tag, a?.marked(trip.isBooked(a)) ?: "(removed activity)").joinToString(" ")
+        val booked = a != null && trip.isBooked(a)
+        val title = listOfNotNull(a?.tag, a?.marked(booked) ?: "(removed activity)").joinToString(" ")
         val c = linked[item.activityId]
         val s = minutesOf(c?.start ?: item.time)
         val e = minutesOf(c?.end)?.takeIf { s != null && it > s } ?: s?.let { minOf(it + minutes, END) }
         if (s != null && e != null) {
             val label = if (c?.end != null) "${c.start}–${c.end}" else "${c?.start ?: item.time} · ${durationLabel(minutes)}"
-            timed += CalEntry("i-$i-${item.activityId}", Span(s, e), EntryKind.ACTIVITY, title, label, pill = pill, movable = c == null, tag = i)
-        } else loose += CalEntry("i-$i-${item.activityId}", Span(0, minutes), EntryKind.ACTIVITY, title, "anytime · ${durationLabel(minutes)}", loose = true, pill = pill, movable = c == null, tag = i) to Slot.of(item.slot)
+            timed += CalEntry("i-$i-${item.activityId}", Span(s, e), EntryKind.ACTIVITY, title, label, pill = pill, movable = c == null, booked = booked, tag = i)
+        } else loose += CalEntry("i-$i-${item.activityId}", Span(0, minutes), EntryKind.ACTIVITY, title, "anytime · ${durationLabel(minutes)}", loose = true, pill = pill, movable = c == null, booked = booked, tag = i) to Slot.of(item.slot)
     }
     looseBookings.forEach { c -> loose += CalEntry("c-${c.id}", Span(0, 60), EntryKind.BOOKING, (if (c.isBooked) "🔒 " else "") + c.title, "no time set", loose = true, tag = c) to Slot.ALLDAY }
 
@@ -599,7 +602,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, onD
     var allStays by remember { mutableStateOf(false) }
     var fit by remember { mutableStateOf<String?>(null) }
     val scheduled = remember(trip) { trip.scheduledIds() }
-    val list = trip.activities
+    val list = trip.activitiesWithWork
         .filter { allStays || it.stayId == stayId }
         .filter { fit == null || it.fit == fit || (fit == "rainy-day" && "rainy-day" in it.conditions) }
         .sortedWith(compareBy<Activity> { it.id in scheduled }.then(byRecommendation))
@@ -617,7 +620,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, onD
                 items(list, key = { it.id }) { a ->
                     val planned = trip.placementsOf(a.id)
                     Column(Modifier.fillMaxWidth().clickable { onPick(a) }.padding(vertical = 8.dp)) {
-                        Text(listOfNotNull(a.tag, a.marked(trip.isBooked(a))).joinToString("  "), style = MaterialTheme.typography.titleSmall)
+                        Text(listOfNotNull(a.tag, a.marked(trip.isBooked(a))).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(trip.isBooked(a)))
                         Text(
                             listOfNotNull(a.short, a.factsLine().ifEmpty { null }, if (planned.isNotEmpty()) "planned ${planned.joinToString { dayName(it.date) }}" else null).joinToString(" · "),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2,
