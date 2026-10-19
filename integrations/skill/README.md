@@ -7,14 +7,14 @@ A ChatGPT Project plans and revises trips. Its chats read their instructions fro
 | `preamble.md` | How to work, and which other file each kind of request needs |
 | `../../prompts/itinerary-instructions.md` | The trip-file contract |
 | `lodging-search.md` | The lodging search, which writes the shortlist into the trip file as `lodging.options` |
-| `travel-focus.md` | The `/travel <place>` mode, a chat about one stay that starts from `stay_brief.py`'s summary of it |
+| `travel-guide.md` | The `/travel-guide --trip <trip> --stay <place>` mode, a chat about one stay that starts from `stay_brief.py`'s summary of it |
 
 ChatGPT's Python sandbox has no network, so the scripts it runs are uploaded as project files instead.
 
 ## Set up
 
 1. Create a Project (say "Travel") and paste `INSTRUCTIONS.txt` (in this folder) into its instructions.
-2. Add the three scripts as project files: `tools/validate_trip.py`, `schema/trip.schema.json` and `tools/stay_brief.py`, plus your travel profile if you want your preferences followed. Nothing else: an old instruction file left there competes with the repository's.
+2. Add the three scripts as project files: `tools/validate_trip.py`, `schema/trip.schema.json` and `tools/stay_brief.py`, plus your travel profile if you want your preferences followed, and your trips' exports if you want `/travel-guide` to find them without an attachment. Nothing else: an old instruction file left there competes with the repository's.
 3. Connect the GitHub connector, on the web, to this repository.
 
 Re-upload a script only when it changes, and `INSTRUCTIONS.txt` only when it changes; neither happens often.

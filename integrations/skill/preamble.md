@@ -10,7 +10,7 @@ With a trip file attached, the deliverable is a revision of it that adds the sho
 
 ## Focused chats
 
-A message starting `/travel <place>` or `travel <place>` opens a chat about one stay: read `integrations/skill/travel-focus.md` in full and follow it. That chat researches and discusses; it writes no trip file unless the traveler asks for an update.
+A message starting `/travel-guide` opens a chat about one stay: read `integrations/skill/travel-guide.md` in full and follow it. That chat researches and discusses; it writes no trip file unless the traveler asks for an update.
 
 ## How to work
 

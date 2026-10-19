@@ -2,14 +2,26 @@
 """Prints one stay of a Traveler trip file as the opening of a focused chat: its dates, lodging,
 flights in and out, and standout (3-star) activities.
 
-    python3 stay_brief.py <trip.json> <place>     # "Puerto Madryn", "madryn", or a number from the list
+    python3 stay_brief.py --trip argentina --stay madryn
+    python3 stay_brief.py --trip trip.json --stay 3      # a path, and a number from the stay list
 
-With no match, or more than one, it prints the stays numbered and exits 2, so the caller can ask
-which one is meant and run it again with that number.
+It finds the trip itself: every .json under /mnt/data, /mnt/user-data, the working folder and
+its own folder whose contents are a traveler-trip file, whatever it is named ("x.trip (1).json"
+included). --trip narrows them by title, id or file name; with no --trip, the one trip, or the
+one trip with that stay.
+Copies of one trip resolve to the newest (exported, generated, then file time).
+
+With no trip, several, or a stay that matches none or several, it prints the choices numbered and
+exits 2, so the caller can ask which one is meant and run it again.
 """
+import argparse
 import json
+import os
 import sys
 from datetime import date
+from pathlib import Path
+
+ROOTS = ["/mnt/data", "/mnt/user-data", ".", os.path.dirname(os.path.abspath(__file__))]
 
 def stays_of(trip):
     """The stays a traveler would name: every stay but a zero-night home airport."""
@@ -67,16 +79,61 @@ def brief(trip, s):
     return "\n".join(out)
 
 
+def trips_in(roots):
+    """Every traveler-trip file under roots, one per trip id: the newest copy."""
+    newest = {}
+    for root in roots:
+        for f in Path(root).rglob("*.json") if Path(root).is_dir() else []:
+            try:
+                trip = json.loads(f.read_text())
+            except (OSError, ValueError):
+                continue
+            if not isinstance(trip, dict) or trip.get("format") != "traveler-trip":
+                continue
+            age = (max((trip.get("exportedFrom") or {}).get("exportedAt") or "", trip.get("generatedAt") or ""), f.stat().st_mtime)
+            key = trip.get("id") or str(f)
+            if key not in newest or age > newest[key][0]:
+                newest[key] = (age, f, trip)
+    return [(f, trip) for _, f, trip in sorted(newest.values(), key=lambda x: x[2].get("title", ""))]
+
+
+def pick_trip(query, roots):
+    if query and Path(query).is_file():
+        return [(Path(query), json.loads(Path(query).read_text()))]
+    trips = trips_in(roots)
+    if not query:
+        return trips
+    q = query.strip().lower()
+    return [(f, t) for f, t in trips if all(w in " ".join([t.get("title", ""), t.get("id", ""), f.name]).lower() for w in q.split())]
+
+
 def main():
-    if len(sys.argv) != 3:
-        sys.exit(__doc__)
-    trip = json.load(open(sys.argv[1]))
-    stays = stays_of(trip)
-    found = find(stays, sys.argv[2])
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--trip", help="title, id or file name words, or a path")
+    ap.add_argument("--stay", help="place name or words, or a number from the stay list")
+    ap.add_argument("--dir", action="append", help="where to look instead of the default folders")
+    args = ap.parse_args()
+    roots = args.dir or ROOTS
+    found = pick_trip(args.trip, roots)
+    if len(found) > 1 and args.stay:  # no --trip: the trips with that stay
+        found = [x for x in found if len(find(stays_of(x[1]), args.stay)) == 1] or found
     if len(found) != 1:
-        print(("Several stays match" if found else f"No stay matches “{sys.argv[2]}”") + ". The stays:\n" + listing(stays))
+        every = trips_in(roots)
+        if not every:
+            print("No Traveler trip file found in " + ", ".join(roots) + ". Attach the trip's export (share icon in the app).")
+        else:
+            print(("Several trips match." if found else f"No trip matches “{args.trip}”.") + " The trips:\n"
+                  + "\n".join(f"- {t.get('title')} (r{t.get('revision')}, {f})" for f, t in every))
         sys.exit(2)
-    print(brief(trip, found[0]))
+    path, trip = found[0]
+    stays = stays_of(trip)
+    match = find(stays, args.stay) if args.stay else []
+    if len(match) != 1:
+        print(f"{trip.get('title')} ({path}): " + ("several stays match." if match else f"no stay matches “{args.stay}”." if args.stay else "which stay?")
+              + " The stays:\n" + listing(stays))
+        sys.exit(2)
+    print(f"(from {path})", file=sys.stderr)
+    print(brief(trip, match[0]))
 
 
 if __name__ == "__main__":

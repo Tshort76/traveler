@@ -1,4 +1,6 @@
 import json
+import shutil
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -24,6 +26,21 @@ class BriefTest(unittest.TestCase):
         self.assertIn("Puerto Madryn waterfront rambla · Fri 22 Oct afternoon", text)
         self.assertNotIn("Punta Cuevas", text)  # 2 stars
         self.assertNotIn("Teatro Colón", text)  # another stay
+
+
+class TripsInTest(unittest.TestCase):
+    def test_a_trip_is_found_by_its_contents_and_the_newest_copy_wins(self):
+        examples = Path(__file__).resolve().parent.parent / "schema/examples"
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "chat").mkdir()
+            shutil.copy(examples / "minimal.trip.json", Path(d) / "minimal.trip.json")
+            (Path(d) / "notes.json").write_text('{"title": "not a trip"}')
+            newer = dict(DEMO, exportedFrom={"exportedAt": "2099-01-01T00:00:00Z"})
+            (Path(d) / "demo.trip.json").write_text(json.dumps(DEMO))
+            (Path(d) / "chat" / "demo.trip (1).json").write_text(json.dumps(newer))
+            found = sb.trips_in([d])
+            self.assertEqual([f.name for f, _ in found], ["minimal.trip.json", "demo.trip (1).json"])
+            self.assertEqual([f.name for f, _ in sb.pick_trip("demo", [d])], ["demo.trip (1).json"])
 
 
 if __name__ == "__main__":

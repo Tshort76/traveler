@@ -24,7 +24,7 @@ import dev.tlong.traveler.ui.overview.BackButton
 private val GUIDE = listOf(
     "Plan a trip" to "In the project, ask for the trip: where, when, what you like. Open the file it hands back with Traveler.",
     "Change the plan" to "Trip → share icon → save the file. In your trip chat, attach it and say what to change: **\"Revise this trip: move Punta Tombo to Tuesday and drop Cerro Avanzado.\"** Open the file it returns; your own edits are kept.",
-    "Dig into one place" to "Start a new chat in the project, attach the trip file and type **/\u2060travel Puerto Madryn**. It shows that stay's dates and activities, then researches with you. Add what you choose from a day's **+** menu.",
+    "Dig into one place" to "Start a new chat in the project and type **/\u2060travel-guide --trip argentina --stay madryn**. It finds the trip among the project files or an attached export, shows that stay's dates and activities, then researches with you. Add what you choose from a day's **+** menu.",
     "Find lodging" to "Attach the trip file and ask **\"Find lodging for Puerto Madryn.\"** Open the file it returns, then compare and book from the stay's lodging in Bookings.",
     "Import lists fixes" to "Tap **Copy fix request** on the import screen and paste it into the trip chat.",
 )
