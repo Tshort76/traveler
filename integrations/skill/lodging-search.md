@@ -53,7 +53,7 @@ Finish with only material caveats, source-access limitations, or checks needed b
 
 ## In the trip file
 
-Load the uploaded file in code, set each searched stay's `lodging.searched` to the research date and `lodging.options` to the shortlist in rank order, replacing any earlier options for that stay, then validate and stamp it per traveler-trip.md. One option per table row:
+Load the uploaded file in code, set each searched stay's `lodging.searched` to the research date and `lodging.options` to the shortlist in rank order, replacing any earlier options for that stay, then validate and stamp it per `integrations/skill/preamble.md`. One option per table row:
 
 - `name`, and `url` for the property link (a search link only when no property page was found).
 - `type` (hotel, hostel, apartment, guesthouse…) and `room`, with bathroom sharing when known: "double, own bath", "private, shared bath", "entire one-bedroom".

@@ -12,7 +12,7 @@ The dashed boxes are the two places code runs: the app on the phone, and the bui
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="diagrams/overview-dark.svg">
-  <img alt="The traveler asks an assistant, using the prompt, for a trip file; the file goes to the Android app, whose screens call the reader, the rules and merge, and the sessions and store that write traveler.db, and which also fetch map tiles from OpenFreeMap, open Google Maps links and export the edited file back to the assistant. The trip format in schema/ feeds both the app's reader and the validator; the fixture builder writes examples into it; the skill builder turns the prompts into build/skill/, which is uploaded to the assistant." src="diagrams/overview-light.svg">
+  <img alt="The traveler asks an assistant, using the prompt, for a trip file; the file goes to the Android app, whose screens call the reader, the rules and merge, and the sessions and store that write traveler.db, and which also fetch map tiles from OpenFreeMap, open Google Maps links and export the edited file back to the assistant. The trip format in schema/ feeds both the app's reader and the validator; the fixture builder writes examples into it; the assistant reads the prompts from GitHub and has the validator uploaded to it." src="diagrams/overview-light.svg">
 </picture>
 
 | Container | Paths | What it does |
@@ -20,14 +20,13 @@ The dashed boxes are the two places code runs: the app on the phone, and the bui
 | Android app | `app/` | Receives a file you open or share, reads and checks it, shows a preview, imports it or merges it with your edits, saves every edit at once with undo, plans days and slots, tracks bookings, draws the trip and stay maps, exports the plan and backs up all trips |
 | Trip format | `schema/` | Defines the trip file as JSON Schema, holds the example trips the app ships, and holds the broken files both readers are tested against |
 | Validator | `tools/validate_trip.py` | Loads the schema, checks structure, then cross-checks ids, dates and time zones, optionally requires stars, prices and booking lead times, prints OK or each ERROR and WARNING, and exits 1 on any error |
-| Skill builder | `tools/make_skill.py`, `integrations/skill/` | Clears `build/skill/`, joins each preamble with its prompt into two skills, zips each, wraps both in a plugin, and writes flat ChatGPT Project files |
 | Fixture builder | `tools/make_fixtures.py` | Reads the hand-written Iguazú trip and writes its second revision and a 14-stay synthetic trip, byte-identical on every run |
 | Basemap builder | `tools/make_basemap.py` | Downloads Natural Earth country outlines once, rounds them to 0.02°, and writes the offline country map the app draws first |
 | Emulator driver | `tools/emu/ui.py` | Dumps the screen's element tree through adb, taps by visible text, drags, and takes screenshots |
 
-**The Makefile declares the first five, not the last two.** `make debug`, `install` and `test` build the app; `validate` and `tools-test` run the validator; `skill` and `fixtures` run their builders. The basemap and emulator scripts have no target; they are run by hand and appear here because each has its own entry point.
+**The Makefile declares the first four, not the last two.** `make debug`, `install` and `test` build the app; `validate` and `tools-test` run the validator; `fixtures` runs its builder. The basemap and emulator scripts have no target; they are run by hand and appear here because each has its own entry point.
 
-**The assistant is drawn outside the system.** Nothing in the repository calls it: you carry the file to it and back. The prompts and the skill are what the repository gives it.
+**The assistant is drawn outside the system.** Nothing in the repository calls it: you carry the file to it and back. The prompts, read from GitHub, and the uploaded scripts are what the repository gives it.
 
 <details>
 <summary>Component view: the Android app (8 packages)</summary>
@@ -153,10 +152,10 @@ Every knob, and the constants that only look like knobs, are in [configuration.m
 ```text
 app/            the Android app: Kotlin sources, tests, Room schema
 docs/           the hand-written design account, build guide and format; these maps
-integrations/   preambles and READMEs for the assistant skill and ChatGPT
+integrations/   the ChatGPT Project's instructions and how-to
 prompts/        the two assistant prompts; also shipped inside the app
 schema/         the JSON Schema, example trips and broken-file fixtures
-tools/          validator, skill, fixture and basemap builders, emulator driver
+tools/          validator, stay brief, fixture and basemap builders, emulator driver
 Makefile        every build, test and device command
 ```
 

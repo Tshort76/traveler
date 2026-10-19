@@ -1,33 +1,23 @@
-# The traveler-trip skill (ChatGPT)
+# The assistant (a ChatGPT Project)
 
-One skill, in the open Agent Skills format (a folder with a `SKILL.md`). `traveler-trip` writes Traveler trip files. `preamble.md` holds its front matter and working rules; the rest of its `SKILL.md` is `prompts/itinerary-instructions.md`. `lodging-search.md` is the lodging search and comparison workflow, which writes the shortlist into the trip file as `lodging.options`; the prompt's "Lodging searches" section routes to it, and it ships beside `SKILL.md`. `travel-focus.md` is the `/travel <place>` mode, a chat about one stay that starts from `stay_brief.py`'s summary of it.
+A ChatGPT Project plans and revises trips. Its chats read their instructions from this repository through ChatGPT's GitHub connector, so a change pushed to `main` reaches the next chat with no upload:
 
-OpenAI is retiring custom GPTs on 11 December 2026 in favour of plugins built from skills, so this replaces a custom GPT.
-
-## Build
-
-```bash
-make skill
-```
-
-This writes `build/skill/`:
-
-| Output | Use it for |
+| File | What it is |
 | --- | --- |
-| `chatgpt-project/` | ChatGPT on a personal plan: the same instructions as flat files for a ChatGPT Project |
-| `traveler-plugin.zip`, `traveler-plugin/` | A skills-only plugin wrapping the skill, for OpenAI's plugin submission or Codex |
+| `preamble.md` | How to work, and which other file each kind of request needs |
+| `../../prompts/itinerary-instructions.md` | The trip-file contract |
+| `lodging-search.md` | The lodging search, which writes the shortlist into the trip file as `lodging.options` |
+| `travel-focus.md` | The `/travel <place>` mode, a chat about one stay that starts from `stay_brief.py`'s summary of it |
 
-Rebuild and re-upload whenever the prompt or the format changes.
+ChatGPT's Python sandbox has no network, so the scripts it runs are uploaded as project files instead.
 
-## ChatGPT
+## Set up
 
-On a personal plan (Plus or Pro), ChatGPT on the web and phone refuses uploaded skills and fails with "Couldn't add plugin". Reports say the desktop app and Business, Enterprise and Edu plans accept them. A plugin reaches a personal account only through OpenAI's reviewed directory, which is a developer submission and not worth it for one user.
+1. Create a Project (say "Travel") and paste `INSTRUCTIONS.txt` (in this folder) into its instructions.
+2. Add the three scripts as project files: `tools/validate_trip.py`, `schema/trip.schema.json` and `tools/stay_brief.py`, plus your travel profile if you want your preferences followed. Nothing else: an old instruction file left there competes with the repository's.
+3. Connect the GitHub connector, on the web, to this repository.
 
-**Use a Project instead**, which works on any plan, on the web and on the phone:
-
-1. Create a Project (say "Travel") and paste `chatgpt-project/INSTRUCTIONS.txt` into its instructions.
-2. Add the other files in `chatgpt-project/` as project files, plus your travel profile if you want your preferences followed.
-3. Plan trips in chats inside that Project. It writes and checks files with ChatGPT's code tool, so the chat must be able to run code.
+Re-upload a script only when it changes, and `INSTRUCTIONS.txt` only when it changes; neither happens often.
 
 ## From the phone
 

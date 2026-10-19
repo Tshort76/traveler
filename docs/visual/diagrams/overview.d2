@@ -10,7 +10,7 @@ classes: {
 direction: right
 
 you: "You" { class: entry; shape: person }
-assistant: "Assistant\nClaude or ChatGPT" { class: ext }
+assistant: "Assistant\nChatGPT Project" { class: ext }
 
 contract: "Trip format\nschema/" { class: focus }
 prompts: "Prompts\nprompts/" { class: store }
@@ -28,11 +28,9 @@ phone: "Android app · app/" {
 tools: "Repo tools · tools/" {
   style: { fill: transparent; stroke: "#7A8B99"; stroke-dash: 4 }
   validator: "Validator\nvalidate_trip.py" { class: stage }
-  skill: "Skill builder\nmake_skill.py" { class: stage }
   fixtures: "Fixture builder\nmake_fixtures.py" { class: stage }
 }
 
-skillzip: "build/skill/" { class: store; shape: cylinder }
 tiles: "OpenFreeMap" { class: ext }
 gmaps: "Google Maps" { class: ext }
 
@@ -50,7 +48,6 @@ phone.ui -> assistant: "exported file" { class: cross }
 contract -> phone.model: "same rules" { class: edge }
 contract -> tools.validator: "same rules" { class: edge }
 tools.fixtures -> contract: "examples" { class: edge }
-prompts -> tools.skill { class: edge }
-tools.skill -> skillzip { class: edge }
-skillzip -> assistant: "uploaded" { class: cross }
+prompts -> assistant: "read from GitHub" { class: cross }
+tools.validator -> assistant: "uploaded" { class: cross }
 prompts -> phone.ui: "Copy instructions" { class: edge }

@@ -2,8 +2,7 @@
 The instructions an assistant needs to produce a trip file Traveler can load.
 
 How to use:
-  • ChatGPT — `make skill` packages this file as the traveler-trip Project files;
-    see integrations/skill/README.md.
+  • ChatGPT — the Project reads this file from GitHub; see integrations/skill/README.md.
   • Any other LLM — paste everything below the line at the start of the conversation,
     with schema/examples/demo.trip.json attached as a worked example if the chat
     accepts files.

@@ -22,7 +22,7 @@ Keep your profile files in the project as they are; they never belong in this re
 
 ## Using it with ChatGPT
 
-`make skill` builds the `traveler-trip` skill as files for a ChatGPT Project, which writes trip files for the app, plus a ChatGPT plugin wrapping it. [integrations/skill/README.md](integrations/skill/README.md) covers uploading it.
+A ChatGPT Project writes trip files for the app, reading its instructions from this repository. [integrations/skill/README.md](integrations/skill/README.md) covers setting it up.
 
 ## What's in the repository
 
@@ -32,7 +32,7 @@ Keep your profile files in the project as they are; they never belong in this re
 | `schema/trip.schema.json` | The same format as JSON Schema |
 | `schema/examples/` | Example trips; they also ship inside the app ("Try the example trip", and the full-feature demo under **Settings → Load the demo trip**) |
 | `prompts/itinerary-instructions.md` | The assistant prompt for trip files |
-| `integrations/skill/` | The assistant skill: ChatGPT Project files and plugin |
+| `integrations/skill/` | The assistant's instructions, read by a ChatGPT Project |
 | `tools/` | Validator, fixture and basemap generators, emulator helper |
 | `app/` | The Android app (Kotlin, Jetpack Compose, Room) |
 | `docs/ARCHITECTURE.md` | How the app is put together |

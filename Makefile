@@ -10,7 +10,7 @@ EMULATOR := $(SDK_DIR)/emulator/emulator
 PKG := dev.tlong.traveler
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor debug release install test check validate fixtures skill tools-test emulator screenshot push-examples clean
+.PHONY: help doctor debug release install test check validate fixtures tools-test emulator screenshot push-examples clean
 
 help: ## List the targets
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -35,14 +35,11 @@ install: ## Build and install onto the attached phone or emulator
 test: ## JVM tests only (model, merge, editing, UI under Robolectric)
 	@$(GRADLE) testDebugUnitTest
 
-check: tools-test validate skill ## Everything runnable without a phone (the pre-commit gate)
+check: tools-test validate ## Everything runnable without a phone (the pre-commit gate)
 	@$(GRADLE) testDebugUnitTest
 
 validate: ## Validate every example trip file
 	@python3 tools/validate_trip.py schema/examples/*.json
-
-skill: ## Build the traveler-trip ChatGPT Project files and plugin (integrations/skill)
-	@python3 tools/make_skill.py
 
 fixtures: ## Regenerate the derived example trips
 	@python3 tools/make_fixtures.py
