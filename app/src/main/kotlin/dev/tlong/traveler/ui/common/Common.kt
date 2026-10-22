@@ -328,7 +328,7 @@ fun marked(name: String, stars: Int?, ticket: Boolean, booked: Boolean): String 
     return if (marks.isEmpty()) name else "$name · ${marks.joinToString(" ")}"
 }
 
-fun Activity.marked(booked: Boolean) = marked(name, stars, booking != null, booked)
+fun Activity.marked(booked: Boolean) = marked(name, stars, booking != null && !booking.isOnSite, booked)
 
 /** Green for a booked item's name, otherwise [otherwise]. */
 @Composable

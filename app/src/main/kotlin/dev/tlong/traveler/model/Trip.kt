@@ -202,7 +202,11 @@ data class Booking(
     val price: Price? = null,
 ) {
     val isBooked get() = status == "booked"
+    /** Bought at the door or on the day: it carries a price, but there is nothing to reserve. */
+    val isOnSite get() = status == BOOKING_ONSITE
 }
+
+const val BOOKING_ONSITE = "onsite"
 
 @Serializable
 data class Activity(
@@ -361,7 +365,7 @@ object Vocab {
     val transferModes = listOf("flight", "train", "bus", "boat", "ferry", "car", "taxi", "hike", "other")
     val commitmentKinds = listOf("booking", "appointment", "work", "other")
     val lodgingStatuses = listOf("booked", "tentative", "undecided")
-    val bookingStatuses = listOf("booked", "tentative", "needed")
+    val bookingStatuses = listOf("booked", "tentative", "needed", BOOKING_ONSITE)
     val weekdays = listOf("mon", "tue", "wed", "thu", "fri", "sat", "sun")
     val origins = listOf("plan", "user")
 }

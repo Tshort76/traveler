@@ -419,7 +419,7 @@ def check_complete(trip, rep):
         if b is None and t.get("mode") in TICKETED:
             rep.error(f"transfer {t.get('id')}", "a ticketed transfer needs a booking {status, bookDaysBefore, price, how}")
         elif b is not None and b.get("status") != "booked":
-            missing = [k for k in ("price", "bookDaysBefore") if k not in b]
+            missing = [k for k in _needs(b) if k not in b]
             if missing:
                 rep.error(f"transfer {t.get('id')}.booking", f"needs {' and '.join(missing)}")
     old = [where for where, b in _bookings(trip) if "priority" in b]
@@ -429,9 +429,14 @@ def check_complete(trip, rep):
     for a in acts:
         b = a.get("booking")
         if b is not None and b.get("status") != "booked" and a.get("id") not in booked:
-            missing = [k for k in ("price", "bookDaysBefore") if k not in b]
+            missing = [k for k in _needs(b) if k not in b]
             if missing:
                 rep.error(f"activity {a.get('id')}.booking", f"needs {' and '.join(missing)}")
+
+
+def _needs(booking):
+    """What an open booking must carry: a price, and a lead time unless it is bought at the door ("onsite")."""
+    return ("price",) if booking.get("status") == "onsite" else ("price", "bookDaysBefore")
 
 
 def strip_fences(text):

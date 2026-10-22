@@ -31,6 +31,13 @@ class CompletenessCheck(unittest.TestCase):
     def test_the_example_is_complete(self):
         self.assertEqual(self.errors(self.trip), [])
 
+    def test_a_pay_at_the_door_entry_needs_a_price_but_no_lead(self):
+        a = next(x for x in self.trip["activities"] if x.get("booking", {}).get("price"))
+        a["booking"] = {"status": "onsite", "price": a["booking"]["price"]}
+        self.assertEqual(self.errors(self.trip), [])
+        a["booking"].pop("price")
+        self.assertIn(f"activity {a['id']}.booking: needs price", self.errors(self.trip)[0])
+
     def test_missing_stars_and_loose_booking_advice_fail(self):
         a = self.trip["activities"][0]
         del a["stars"]

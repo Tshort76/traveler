@@ -26,6 +26,17 @@ class BookingsTest {
     }
 
     @Test
+    fun `an entry bought at the door leaves Bookings and keeps its price, and comes back when it needs a reservation`() {
+        val door = Edits.setNeedsReservation(trip, "garganta-del-diablo", needed = false)
+        val a = door.activity("garganta-del-diablo")!!
+        assertTrue(a.booking!!.isOnSite)
+        assertEquals(trip.activity("garganta-del-diablo")!!.booking!!.price, a.booking!!.price)
+        assertTrue("booking" in a.userEdited)
+        assertFalse(door.bookables().any { it.key == "activity:garganta-del-diablo" })
+        assertTrue(Edits.setNeedsReservation(door, "garganta-del-diablo", needed = true).bookables().any { it.key == "activity:garganta-del-diablo" })
+    }
+
+    @Test
     fun `a suggestion booked through a commitment is one booked item carrying the booking's time and price`() {
         val paid = trip.copy(commitments = trip.commitments.map { if (it.id == "boat-gran-aventura") it.copy(price = Price(95.0, currency = "USD")) else it })
         val boat = paid.bookables().single { it.key == "activity:gran-aventura" }

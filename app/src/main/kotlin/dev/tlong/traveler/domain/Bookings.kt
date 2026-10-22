@@ -76,7 +76,7 @@ fun Trip.bookables(): List<Bookable> {
             stayId = s.id,
         )
     }
-    val transfers = transfers.filter { it.booking != null || it.mode in ticketedModes }.map { t ->
+    val transfers = transfers.filter { (it.booking != null || it.mode in ticketedModes) && it.booking?.isOnSite != true }.map { t ->
         Bookable(
             "transfer:${t.id}", Bookable.Kind.TRANSFER, "${stay(t.from)?.name ?: t.from} → ${stay(t.to)?.name ?: t.to}", t.date,
             time = t.depart, booked = t.booking?.isBooked == true, price = t.booking?.price?.total(travelers = people),
@@ -86,7 +86,7 @@ fun Trip.bookables(): List<Bookable> {
             stayId = if ((stay(t.to)?.nights ?: 0) > 0 || (stay(t.from)?.nights ?: 0) == 0) t.to else t.from,
         )
     }
-    val needsBooking = activities.filter { it.booking != null }
+    val needsBooking = activities.filter { it.booking != null && !it.booking.isOnSite }
     val activities = needsBooking.map { a ->
         val c = commitments.firstOrNull { it.activityId == a.id && it.isBooked }
         val placements = placementsOf(a.id)

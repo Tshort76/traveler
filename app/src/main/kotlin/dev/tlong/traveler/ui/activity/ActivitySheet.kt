@@ -47,7 +47,9 @@ import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.MapsLinks
 import dev.tlong.traveler.domain.MapsLocation
 import dev.tlong.traveler.domain.activity
+import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.domain.label
+import dev.tlong.traveler.domain.rateLabel
 import dev.tlong.traveler.domain.placementsOf
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.model.Activity
@@ -115,6 +117,13 @@ fun ActivitySheet(
                     DropdownMenu(more, onDismissRequest = { more = false }) {
                         DropdownMenuItem(text = { Text("Edit") }, onClick = { more = false; onEdit(a) })
                         DropdownMenuItem(text = { Text("I booked this…") }, onClick = { more = false; onBook(a, null) })
+                        if (!trip.isBooked(a)) {
+                            val reserve = a.booking == null || a.booking.isOnSite
+                            DropdownMenuItem(text = { Text(if (reserve) "Needs a reservation" else "No reservation needed") }, onClick = {
+                                more = false
+                                session.edit(if (reserve) "Needs a reservation" else "No reservation needed") { Edits.setNeedsReservation(it, a.id, reserve) }
+                            })
+                        }
                         DropdownMenuItem(text = { Text(if (a.place?.hasCoordinates == true) "Fix location" else "Set location") }, onClick = { more = false; editingPlace = true })
                         DropdownMenuItem(text = { Text(if (a.url == null) "Add link" else "Edit link") }, onClick = { more = false; editingLink = true })
                         DropdownMenuItem(text = { Text("Delete", color = MaterialTheme.colorScheme.error) }, onClick = { more = false; confirmDelete = true })
@@ -124,7 +133,10 @@ fun ActivitySheet(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (a.isCustom) Pill("Your entry")
                 starLabel(a.stars)?.let { Pill(it) }
-                if (a.booking != null) Pill("🎟️ Ticket or reservation needed")
+                a.booking?.let { b ->
+                    val what = when { trip.isBooked(a) -> "✓ Booked"; b.isOnSite -> "Pay at the door"; else -> "🎟️ Reserve ahead" }
+                    Pill(listOfNotNull(what, b.price?.let { it.rateLabel() ?: it.label() }).joinToString(" · "))
+                }
                 if (a.confidence == "check") Pill("⚠ Check before going", container = MaterialTheme.colorScheme.tertiaryContainer, content = MaterialTheme.colorScheme.onTertiaryContainer)
             }
             a.short?.let { Text(it, style = MaterialTheme.typography.titleMedium) }

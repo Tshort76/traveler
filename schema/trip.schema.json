@@ -327,7 +327,8 @@
           "enum": [
             "booked",
             "tentative",
-            "needed"
+            "needed",
+            "onsite"
           ]
         },
         "ref": {

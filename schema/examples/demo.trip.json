@@ -1027,7 +1027,16 @@
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
         "https://madryn.travel/anp-punta-loma/"
-      ]
+      ],
+      "booking": {
+        "status": "onsite",
+        "price": {
+          "amount": 12,
+          "currency": "USD",
+          "unit": "person",
+          "note": "Paid in pesos at the reserve's gate; approximate."
+        }
+      }
     },
     {
       "id": "playa-parana",
@@ -1322,6 +1331,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "a9328c4884e4a310"
+    "hash": "944507f6cdaf9ecf"
   }
 }

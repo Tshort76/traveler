@@ -3,6 +3,7 @@ package dev.tlong.traveler.domain
 import dev.tlong.traveler.model.APP_FIELDS
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Booking
+import dev.tlong.traveler.model.BOOKING_ONSITE
 import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.Day
 import dev.tlong.traveler.model.Duration
@@ -191,6 +192,11 @@ object Edits {
         val changed = (before.keys + after.keys).filter { it !in APP_FIELDS && before[it] != after[it] }
         b.copy(userEdited = (b.userEdited + changed).distinct())
     })
+
+    /** Reserve ahead (on Bookings) or buy at the door ([BOOKING_ONSITE], off Bookings); the price and advice stay. */
+    fun setNeedsReservation(trip: Trip, id: String, needed: Boolean): Trip = updateActivity(trip, id) { a ->
+        a.copy(booking = (a.booking ?: Booking()).copy(status = if (needed) "needed" else BOOKING_ONSITE))
+    }
 
     fun setUserNote(trip: Trip, id: String, note: String): Trip =
         trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userNote = note.ifBlank { null }) else it })

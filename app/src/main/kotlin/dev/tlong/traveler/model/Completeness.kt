@@ -50,7 +50,7 @@ object Completeness {
         trip.transfers.forEach { t ->
             val b = t.booking
             if (b == null && t.mode in ticketed) out += "transfer ${t.id}: a ticketed transfer needs a booking {status, bookDaysBefore, price, how}"
-            else if (b != null && b.status != "booked") missing(b.price, b.bookDaysBefore)?.let { out += "transfer ${t.id}.booking: needs $it" }
+            else if (b != null && b.status != "booked") missing(b.price, if (b.isOnSite) 0 else b.bookDaysBefore)?.let { out += "transfer ${t.id}.booking: needs $it" }
         }
         val old = buildList {
             trip.stays.forEach { s -> if (s.lodging?.priority != null) add("stay ${s.id}.lodging") }
@@ -62,7 +62,7 @@ object Completeness {
         val bookedVia = trip.commitments.filter { it.booked == true }.mapNotNull { it.activityId }.toSet()
         acts.forEach { a ->
             val b = a.booking ?: return@forEach
-            if (b.status != "booked" && a.id !in bookedVia) missing(b.price, b.bookDaysBefore)?.let { out += "activity ${a.id}.booking: needs $it" }
+            if (b.status != "booked" && a.id !in bookedVia) missing(b.price, if (b.isOnSite) 0 else b.bookDaysBefore)?.let { out += "activity ${a.id}.booking: needs $it" }
         }
         acts.filter { it.booking?.price != null }.groupBy { it.name }.filterValues { it.size > 1 }.forEach { (name, list) ->
             out += "activities: '$name' is listed in ${list.size} stays with a price; if more than one is planned, its price counts more than once. List it once, under the visit it suits"
