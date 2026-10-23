@@ -107,7 +107,6 @@ import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
 import dev.tlong.traveler.domain.window
 import dev.tlong.traveler.domain.workHoursOn
-import dev.tlong.traveler.domain.activitiesWithWork
 import dev.tlong.traveler.domain.zone
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Commitment
@@ -602,7 +601,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, onD
     var allStays by remember { mutableStateOf(false) }
     var fit by remember { mutableStateOf<String?>(null) }
     val scheduled = remember(trip) { trip.scheduledIds() }
-    val list = trip.activitiesWithWork
+    val list = trip.activities
         .filter { allStays || it.stayId == stayId }
         .filter { fit == null || it.fit == fit || (fit == "rainy-day" && "rainy-day" in it.conditions) }
         .sortedWith(compareBy<Activity> { it.id in scheduled }.then(byRecommendation))

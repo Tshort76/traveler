@@ -67,10 +67,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.TripSession
-import dev.tlong.traveler.domain.activitiesWithWork
 import dev.tlong.traveler.domain.activity
+import dev.tlong.traveler.domain.dates
 import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.day
+import dev.tlong.traveler.domain.departDate
 import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.shortLabel
@@ -133,7 +134,7 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
     var editingNights by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val pool = remember(trip, stay.id) { trip.activitiesWithWork.filter { it.stayId == stay.id } }
+    val pool = remember(trip, stay.id) { trip.activities.filter { it.stayId == stay.id } }
 
     Scaffold(
         topBar = {
@@ -178,7 +179,10 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
 
 @Composable
 private fun ItineraryTab(trip: Trip, stay: Stay, work: WorkPlan, onDay: (String) -> Unit, onActivity: (String) -> Unit) {
-    val dates = remember(trip, stay.id) { trip.datesOf(stay) }
+    // The stay's days, then the day it is left, which belongs to the next stay.
+    val own = remember(trip, stay.id) { trip.datesOf(stay) }
+    val leaving = stay.departDate.takeIf { it !in own && it in trip.dates() }
+    val dates = own + listOfNotNull(leaving)
     val today = LocalDate.now()
     // While the stay is under way its past days fold into one row, so the list opens at today.
     val past = if (today in dates) dates.filter { it < today } else emptyList()
@@ -192,29 +196,31 @@ private fun ItineraryTab(trip: Trip, stay: Stay, work: WorkPlan, onDay: (String)
             if (groups.size > 1) item("w$w") {
                 SectionTitle("Week ${w + 1} · ${week.first().shortLabel()} – ${week.last().shortLabel()}", Modifier.padding(top = 8.dp))
             }
-            items(shown, key = { it.toString() }) { d -> DayCard(trip, stay, work, d, d == today, onClick = { onDay(d.toString()) }, onActivity = onActivity) }
+            items(shown, key = { it.toString() }) { d -> DayCard(trip, stay, work, d, d == today, leaving = d == leaving, onClick = { onDay(d.toString()) }, onActivity = onActivity) }
         }
     }
 }
 
 @Composable
-private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate, isToday: Boolean, onClick: () -> Unit, onActivity: (String) -> Unit) {
+private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate, isToday: Boolean, leaving: Boolean, onClick: () -> Unit, onActivity: (String) -> Unit) {
     val day = trip.day(date.toString())
     val kind = DayKind.of(day?.kind)
     // A booking for a planned activity shows as that activity's row, not a second line.
-    val planned = day?.plan?.map { it.activityId }.orEmpty().toSet()
-    val booked = trip.commitments.filter { it.date == date.toString() && it.activityId !in planned }
+    // The day it is left shows only this stay's part of it: what is planned here and the way out.
+    val plan = day?.plan.orEmpty().filter { !leaving || trip.activity(it.activityId)?.stayId == stay.id }
+    val planned = plan.map { it.activityId }.toSet()
+    val booked = trip.commitments.filter { it.date == date.toString() && it.activityId !in planned && (!leaving || it.stayId == stay.id) }
     // The day's actual work blocks, first start to last end.
-    val blocks = workPlan.blocksOn(date.toString(), workHoursOn(stay, date))
+    val blocks = if (leaving) emptyList() else workPlan.blocksOn(date.toString(), workHoursOn(stay, date))
     val work = blocks.takeIf { it.isNotEmpty() }?.let { "${it.first().start}–${it.maxOf { b -> b.end }}" }
     val rows = buildList {
-        day?.plan?.forEach { item ->
+        plan.forEach { item ->
             val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
             val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
             add(ItineraryRow(minuteOf(item.time) ?: Slot.of(item.slot).minute, "$status${item.time ?: Slot.of(item.slot).label}  ${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}", trip.isBooked(a)) { onActivity(a.id) })
         }
         // Flights and other transfers leaving today; on the stay's first day, also one that left the day before (an overnight flight in).
-        trip.transfers.filter { it.date == date.toString() }.forEach { t ->
+        trip.transfers.filter { it.date == date.toString() && (!leaving || it.from == stay.id) }.forEach { t ->
             add(ItineraryRow(minuteOf(t.depart) ?: 0, "${t.depart ?: "Travel"}  ${modeEmoji(t.shownMode)} ${modeLabel(t.shownMode)} to ${trip.stay(t.to)?.name ?: t.to}", onClick = onClick))
         }
         if (date == trip.datesOf(stay).firstOrNull()) trip.transfers.filter { it.to == stay.id && it.date < date.toString() }.forEach { t ->
@@ -306,7 +312,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         items(list, key = { it.id }) { a ->
             val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
             // The work block has no details until it is first placed.
-            PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { if (trip.activity(a.id) != null) overlays.detail = a.id else add() }, onAdd = add)
+            PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = add)
         }
     }
 }

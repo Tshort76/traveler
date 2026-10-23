@@ -14,7 +14,6 @@ import androidx.compose.runtime.setValue
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.activity
-import dev.tlong.traveler.domain.activityOrWork
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.domain.toDate
@@ -91,7 +90,7 @@ fun OverlayHost(
     }
 
     overlays.place?.let { req ->
-        val a = trip.activityOrWork(req.activityId) ?: return@let
+        val a = trip.activity(req.activityId) ?: return@let
         PlaceSheet(
             trip, a, verb = if (req.move != null) "Move" else "Add",
             initialDate = req.initialDate, initialSlot = req.initialSlot, ignoreRef = req.move,

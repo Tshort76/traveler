@@ -22,7 +22,7 @@ class StayLengthTest {
         assertEquals("2026-11-08" to "2026-11-13", t.span("iguazu"))
         assertEquals("2026-11-08", t.transfers.single { it.id == "fly-bsas-iguazu" }.date)
         assertEquals("bsas-1", t.stayOn("2026-11-07"))
-        assertTrue(t.day("2026-11-07")!!.plan.all { t.activityOrWork(it.activityId)?.stayId == "bsas-1" })
+        assertTrue(t.day("2026-11-07")!!.plan.all { t.activity(it.activityId)?.stayId == "bsas-1" })
         assertEquals(trip.day("2026-11-07")!!.plan.count { trip.activity(it.activityId)?.stayId == "iguazu" }, change.unscheduled)
         assertEquals(trip.startDate to trip.endDate, t.startDate to t.endDate)
         assertTrue("depart" in t.stay("bsas-1")!!.userEdited && "arrive" in t.stay("iguazu")!!.userEdited)

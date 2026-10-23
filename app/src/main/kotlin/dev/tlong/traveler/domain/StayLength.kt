@@ -65,7 +65,7 @@ fun Trip.withNights(stayId: String, nights: Int, from: NightsFrom): StayLength? 
                 },
                 days = trip.days.map { d ->
                     if (d.date.toDate()?.let { it in range } != true) return@map d
-                    val kept = d.plan.filter { trip.activityOrWork(it.activityId)?.stayId == owner }
+                    val kept = d.plan.filter { trip.activity(it.activityId)?.stayId == owner }
                     unscheduled += d.plan.size - kept.size
                     val day = d.copy(stayId = owner)
                     if (kept.size == d.plan.size) day else day.copy(plan = kept, userEdited = (d.userEdited + "plan").distinct())
