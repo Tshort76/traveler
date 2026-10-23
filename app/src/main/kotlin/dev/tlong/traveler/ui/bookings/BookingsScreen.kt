@@ -255,9 +255,14 @@ fun BookingsList(
 
     open?.let { b ->
         val close = { open = null }
+        val delete = {
+            close()
+            if (session.edit("Delete ${b.title}") { Edits.deleteBookable(it, b) }) undoable("Deleted “${b.title}”")
+        }
         when (b.kind) {
             Bookable.Kind.LODGING, Bookable.Kind.TRANSFER -> ReservationDialog(trip, b, chosen, close,
                 onNotBooked = if (b.booked) ({ close(); markNotBooked(b) }) else null,
+                onDelete = delete.takeIf { b.kind == Bookable.Kind.TRANSFER },
             ) { d ->
                 close()
                 if (session.edit("Mark booked") { Edits.markBooked(it, b, d) }) undoable("Booked “${b.title}”")
@@ -269,10 +274,7 @@ fun BookingsList(
                     dates, b.date ?: dates.firstOrNull() ?: trip.startDate, b.record,
                     suggestions = trip.activities.filter { linked == null || it.stayId == linked.stayId }, initialLinked = linked, travelers = trip.travelers ?: 1,
                     onDismiss = close,
-                    onDelete = b.record?.takeIf { it.origin == "user" }?.let { c -> {
-                        close()
-                        if (session.edit("Delete booking") { Edits.deleteBooking(it, c.id) }) undoable("Deleted “${c.title}”")
-                    } },
+                    onDelete = delete,
                 ) { input ->
                     close()
                     if (saveBooking(session, b.record, input)) undoable("Booked “${input.title}” on ${dayName(input.date)}")
@@ -483,7 +485,7 @@ private fun detailLine(trip: Trip, b: Bookable): String = listOfNotNull(
 
 /** Records a lodging or transfer booking: the details the confirmation gives, and what it cost. */
 @Composable
-private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, onDismiss: () -> Unit, onNotBooked: (() -> Unit)?, onSave: (Edits.Booked) -> Unit) {
+private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, onDismiss: () -> Unit, onNotBooked: (() -> Unit)?, onDelete: (() -> Unit)?, onSave: (Edits.Booked) -> Unit) {
     val lodging = b.kind == Bookable.Kind.LODGING
     val stay = trip.stay(b.stayId)
     var name by remember { mutableStateOf(option?.name ?: stay?.lodging?.name.orEmpty()) }
@@ -525,16 +527,20 @@ private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, o
                 if (lodging) OutlinedTextField(notes, { notes = it }, label = { Text("Notes (optional)") }, minLines = 2, modifier = Modifier.fillMaxWidth())
             }
         },
+        // Cancel and Save stay together; with four buttons, Delete and Not booked wrap onto the next line.
         confirmButton = {
-            TextButton(enabled = ok, onClick = {
-                fun clean(v: String) = v.trim().ifEmpty { null }
-                onSave(Edits.Booked(clean(name), clean(ref), clean(url), price.value, clean(notes), s, e, clean(address)))
-            }) { Text(if (b.booked) "Save" else "Mark booked") }
+            Row {
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+                TextButton(enabled = ok, onClick = {
+                    fun clean(v: String) = v.trim().ifEmpty { null }
+                    onSave(Edits.Booked(clean(name), clean(ref), clean(url), price.value, clean(notes), s, e, clean(address)))
+                }) { Text(if (b.booked) "Save" else "Mark booked") }
+            }
         },
         dismissButton = {
             Row {
+                onDelete?.let { TextButton(onClick = it) { Text("Delete", color = MaterialTheme.colorScheme.error) } }
                 onNotBooked?.let { TextButton(onClick = it) { Text("Not booked") } }
-                TextButton(onClick = onDismiss) { Text("Cancel") }
             }
         },
     )

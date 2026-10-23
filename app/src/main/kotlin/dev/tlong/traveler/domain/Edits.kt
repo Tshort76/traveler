@@ -168,6 +168,16 @@ object Edits {
 
     fun deleteBooking(trip: Trip, id: String): Trip = trip.copy(commitments = trip.commitments.filter { it.id != id })
 
+    fun deleteTransfer(trip: Trip, id: String): Trip = trip.copy(transfers = trip.transfers.filter { it.id != id })
+
+    /** Takes [b] off the trip: a booking record, a transfer, or an activity with its booking. Lodging is never deleted. */
+    fun deleteBookable(trip: Trip, b: Bookable): Trip = when (b.kind) {
+        Bookable.Kind.BOOKING -> b.record?.let { deleteBooking(trip, it.id) } ?: trip
+        Bookable.Kind.TRANSFER -> deleteTransfer(trip, b.id)
+        Bookable.Kind.ACTIVITY -> deleteActivity(b.record?.let { deleteBooking(trip, it.id) } ?: trip, b.id)
+        Bookable.Kind.LODGING -> trip
+    }
+
     private fun scheduleBooked(trip: Trip, c: Commitment): Trip {
         val activityId = c.activityId ?: return trip
         val cleared = trip.days.fold(trip) { t, d ->

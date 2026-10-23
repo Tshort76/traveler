@@ -37,6 +37,17 @@ class BookingsTest {
     }
 
     @Test
+    fun `deleting a booked activity, a transfer or a booking takes it off Bookings, and lodging stays`() {
+        for ((key, gone) in listOf(
+            "activity:gran-aventura" to true, "transfer:fly-bsas-iguazu" to true, "commitment:flight-home" to true, "lodging:iguazu" to false,
+        )) {
+            val after = Edits.deleteBookable(trip, item(key)).bookables().map { it.key }
+            assertEquals(key, gone, key !in after)
+            assertEquals(key, if (gone) items.size - 1 else items.size, after.size)
+        }
+    }
+
+    @Test
     fun `a suggestion booked through a commitment is one booked item carrying the booking's time and price`() {
         val paid = trip.copy(commitments = trip.commitments.map { if (it.id == "boat-gran-aventura") it.copy(price = Price(95.0, currency = "USD")) else it })
         val boat = paid.bookables().single { it.key == "activity:gran-aventura" }
