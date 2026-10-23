@@ -7,44 +7,35 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import dev.tlong.traveler.domain.WorkPlan
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.clickable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import dev.tlong.traveler.ui.map.MapPoint
-import dev.tlong.traveler.ui.map.AreaMap
-import dev.tlong.traveler.ui.theme.LocalMapColors
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,33 +48,45 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import dev.tlong.traveler.domain.isBooked
-import dev.tlong.traveler.domain.activity
-import dev.tlong.traveler.domain.activitiesWithWork
 import dev.tlong.traveler.data.TripSession
+import dev.tlong.traveler.domain.activitiesWithWork
+import dev.tlong.traveler.domain.activity
 import dev.tlong.traveler.domain.datesOf
-import dev.tlong.traveler.domain.toTime
-import dev.tlong.traveler.ui.common.modeEmoji
-import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.domain.day
+import dev.tlong.traveler.domain.isBooked
 import dev.tlong.traveler.domain.label
 import dev.tlong.traveler.domain.shortLabel
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.domain.toDate
+import dev.tlong.traveler.domain.toTime
 import dev.tlong.traveler.domain.weekdayShort
 import dev.tlong.traveler.domain.weeks
+import dev.tlong.traveler.domain.withNights
 import dev.tlong.traveler.domain.workHoursOn
+import dev.tlong.traveler.domain.WorkPlan
+import dev.tlong.traveler.ui.common.modeEmoji
+import dev.tlong.traveler.ui.common.modeLabel
+import dev.tlong.traveler.ui.map.AreaMap
+import dev.tlong.traveler.ui.map.MapPoint
+import dev.tlong.traveler.ui.theme.LocalMapColors
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.DayKind
 import dev.tlong.traveler.model.ItemStatus
@@ -101,6 +104,7 @@ import dev.tlong.traveler.ui.common.marked
 import dev.tlong.traveler.ui.common.bookedColor
 import dev.tlong.traveler.ui.common.Pill
 import dev.tlong.traveler.ui.common.SaveIndicator
+import dev.tlong.traveler.ui.common.offerUndo
 import dev.tlong.traveler.ui.common.SectionTitle
 import dev.tlong.traveler.ui.common.conditionLabel
 import dev.tlong.traveler.ui.common.factsLine
@@ -108,6 +112,7 @@ import dev.tlong.traveler.ui.common.rememberSession
 import dev.tlong.traveler.ui.overview.BackButton
 import dev.tlong.traveler.ui.overview.LoadingScaffold
 import java.time.LocalDate
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,6 +131,8 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
     val snackbar = remember { SnackbarHostState() }
     val overlays = rememberOverlays()
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
+    var editingNights by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val pool = remember(trip, stay.id) { trip.activitiesWithWork.filter { it.stayId == stay.id } }
 
     Scaffold(
@@ -133,7 +140,10 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
             TopAppBar(
                 title = { Text(stay.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { BackButton(navigator) },
-                actions = { SaveIndicator(saveState, session::retrySave) },
+                actions = {
+                    SaveIndicator(saveState, session::retrySave)
+                    IconButton(onClick = { editingNights = true }) { Icon(Icons.Default.DateRange, "Change nights") }
+                },
             )
         },
         floatingActionButton = {
@@ -158,6 +168,12 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
         }
     }
     OverlayHost(session, trip, overlays, snackbar, onGoToDay = { navigator.day(trip.id, it) })
+    if (editingNights) NightsDialog(trip, stay, onDismiss = { editingNights = false }) { nights, from ->
+        editingNights = false
+        if (session.edit("Change nights") { it.withNights(stay.id, nights, from)?.trip ?: it }) {
+            scope.launch { snackbar.offerUndo(session, "${stay.name}: $nights night${if (nights == 1) "" else "s"}") }
+        }
+    }
 }
 
 @Composable
