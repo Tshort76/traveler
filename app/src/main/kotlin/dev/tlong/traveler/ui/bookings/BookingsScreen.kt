@@ -121,14 +121,16 @@ import androidx.compose.material3.OutlinedButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookingsScreen(tripId: String, date: String?, navigator: Navigator) {
+fun BookingsScreen(tripId: String, date: String?, navigator: Navigator, stayId: String? = null, events: Boolean = false) {
     val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
     val saveState by session.saveState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Bookings") }, navigationIcon = { BackButton(navigator) }, actions = { SaveIndicator(saveState, session::retrySave) }) },
+        topBar = { TopAppBar(title = { Text(if (events) "Events" else "Bookings") }, navigationIcon = { BackButton(navigator) }, actions = { SaveIndicator(saveState, session::retrySave) }) },
         snackbarHost = { SnackbarHost(snackbar) },
-    ) { padding -> BookingsList(session, snackbar, Modifier.padding(padding), date) }
+    ) { padding ->
+        BookingsList(session, snackbar, Modifier.padding(padding), group = if (events) Bookable.Group.EVENTS else null, focusDate = date, focusStay = stayId)
+    }
 }
 
 fun Bookable.Group.glyph(): String = when (this) {
@@ -147,35 +149,37 @@ fun Bookable.glyph(): String = when (kind) {
 fun List<Bookable>.tallyLabel(): String? =
     if (isEmpty()) null else "${if (all { it.booked }) "✅ " else ""}${count { it.booked }}/$size booked"
 
-/** The trip's bookings with their filters and dialogs: its own page from a day, and a tab of the trip page. */
+/**
+ * The trip's bookings with their filters and dialogs: logistics as a tab of the trip page, events as
+ * their own page, and everything on one day from that day. [group] null is both.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingsList(
     session: TripSession, snackbar: SnackbarHostState, modifier: Modifier = Modifier,
-    focusDate: String? = null, focusStay: String? = null, focusGroup: String? = null,
+    group: Bookable.Group? = null, focusDate: String? = null, focusStay: String? = null,
 ) {
     val trip by session.trip.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
     // Only what is on the plan: a suggestion needing a booking shows here once it is on a day.
-    val items = remember(all) { all.filterNot { it.unplanned } }
+    val items = remember(all, group) { all.filter { !it.unplanned && (group == null || it.group == group) } }
+    // The type chips this list offers: lodging, flights and transfers on Bookings; all four from a day; none on Events.
+    val types = Bookable.Type.entries.filter { group == null || (it == Bookable.Type.EVENT) == (group == Bookable.Group.EVENTS) }
     var booked by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var group by rememberSaveable { mutableStateOf(focusGroup?.let { g -> Bookable.Group.entries.firstOrNull { it.name == g } }) }
+    var type by rememberSaveable { mutableStateOf<Bookable.Type?>(null) }
     var onlyStay by rememberSaveable { mutableStateOf(focusStay) }
-    // Opened from a day, it is ordered by date so the list can start at that day.
-    var order by rememberSaveable { mutableStateOf(if (focusDate != null) Order.DATE else Order.BOOK_BY) }
+    var order by rememberSaveable { mutableStateOf(Order.DATE) }
     val today = LocalDate.now()
-    val groups = remember(items, order, booked, group, onlyStay, today) {
+    val groups = remember(items, order, booked, type, onlyStay, today) {
         val shown = items
-            .filter { (booked == null || it.booked == booked) && (group == null || it.group == group) && (onlyStay == null || it.stayId == onlyStay) }
+            .filter { (booked == null || it.booked == booked) && (type == null || it.type == type) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
             Order.STAY -> shown.groupBy { it.stayId }.toList()
                 .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
                 .associate { (id, list) -> (trip.stay(id)?.let { "${it.name} · ${it.arriveDate.shortLabel()} – ${it.departDate.shortLabel()}" } ?: "No stay") to list }
             Order.DATE -> shown.groupBy { it.date?.let(::dayName) ?: "Not scheduled yet" }
-            Order.BOOK_BY -> bookByGroups(shown, today)
-            Order.TYPE -> shown.sortedBy { it.kind }.groupBy { typeName(it) }
         }
     }
     var expanded by rememberSaveable { mutableStateOf(setOf<String>()) }
@@ -227,9 +231,9 @@ fun BookingsList(
                             trailingIcon = { Icon(Icons.Default.Close, contentDescription = "Show every stay", Modifier.size(18.dp)) })
                     }
                     // Glyphs, like the trip page's row; each says its name to TalkBack.
-                    Bookable.Group.entries.forEach { g ->
-                        FilterChip(group == g, onClick = { group = if (group == g) null else g }, label = { Text(g.glyph()) },
-                            modifier = Modifier.semantics { contentDescription = g.label })
+                    if (types.size > 1) types.forEach { t ->
+                        FilterChip(type == t, onClick = { type = if (type == t) null else t }, label = { Text(t.glyph) },
+                            modifier = Modifier.semantics { contentDescription = t.label })
                     }
                     TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing not booked only" } }) { booked = it }
                 }
@@ -301,25 +305,7 @@ private fun Summary(items: List<Bookable>, today: LocalDate) {
     }
 }
 
-private enum class Order(val label: String) { DATE("By date"), STAY("By stay"), BOOK_BY("By book-by date"), TYPE("By type") }
-
-/** The group for "By type": lodging, then each way of travelling, then each kind of activity. */
-private fun typeName(b: Bookable): String = when (b.kind) {
-    Bookable.Kind.LODGING -> "🏨 Lodging"
-    Bookable.Kind.TRANSFER -> "${modeEmoji(b.glyph)} ${modeLabel(b.glyph)}"
-    else -> b.glyph?.let { "$it ${TAGS[it] ?: "Other"}" } ?: "🎫 Other bookings"
-}
-
-/** Groups for "By book-by date": what is due this week, then the rest soonest first, then undated and booked. */
-private fun bookByGroups(items: List<Bookable>, today: LocalDate): Map<String, List<Bookable>> {
-    val open = items.filterNot { it.booked }.sortedBy { it.bookBy }
-    return linkedMapOf(
-        "Book this week" to open.filter { it.due(today) },
-        "Later" to open.filter { it.bookBy != null && !it.due(today) },
-        "No book-by date" to open.filter { it.bookBy == null },
-        "Booked" to items.filter { it.booked },
-    ).filterValues { it.isNotEmpty() }
-}
+private enum class Order(val label: String) { DATE("By date"), STAY("By stay") }
 
 /** "by 22 Nov", or "now" once that date has passed, on an open item: error red once it is due, quiet before. */
 @Composable

@@ -47,7 +47,19 @@ data class Bookable(
         Kind.LODGING, Kind.TRANSFER -> Group.LOGISTICS
         Kind.ACTIVITY -> Group.EVENTS
         // A booking of the traveler's own: an event unless it reads like travel or a bed.
-        Kind.BOOKING -> if (record?.activityId == null && logisticsWords.containsMatchIn(title)) Group.LOGISTICS else Group.EVENTS
+        Kind.BOOKING -> if (record?.activityId == null && (flightWords.containsMatchIn(title) || bedWords.containsMatchIn(title) || groundWords.containsMatchIn(title))) Group.LOGISTICS else Group.EVENTS
+    }
+
+    /** What the Bookings filters tell apart: a bed, a flight, other travel, and events (which have their own page). */
+    enum class Type(val glyph: String, val label: String) { LODGING("🏨", "Lodging"), FLIGHT("✈️", "Flights"), GROUND("🚌", "Transfers"), EVENT("🎟️", "Events") }
+
+    val type: Type get() = when {
+        group == Group.EVENTS -> Type.EVENT
+        kind == Kind.LODGING -> Type.LODGING
+        kind == Kind.TRANSFER -> if (glyph == "flight") Type.FLIGHT else Type.GROUND
+        flightWords.containsMatchIn(title) -> Type.FLIGHT
+        bedWords.containsMatchIn(title) -> Type.LODGING
+        else -> Type.GROUND
     }
 
     /** An activity that needs booking but is on no day yet: not a booking until it is planned. */
@@ -58,10 +70,9 @@ data class Bookable(
 }
 
 private val ticketedModes = setOf("flight", "train", "bus", "boat", "ferry")
-private val logisticsWords = Regex(
-    """\b(flights?|airline|hotel|hostel|lodge|apartment|airbnb|cabin|car|rental|train|bus|ferry|shuttle|transfer|taxi|parking)\b""",
-    RegexOption.IGNORE_CASE,
-)
+private val flightWords = Regex("""\b(flights?|airline)\b""", RegexOption.IGNORE_CASE)
+private val bedWords = Regex("""\b(hotel|hostel|lodge|apartment|airbnb|cabin)\b""", RegexOption.IGNORE_CASE)
+private val groundWords = Regex("""\b(car|rental|train|bus|ferry|shuttle|transfer|taxi|parking)\b""", RegexOption.IGNORE_CASE)
 
 fun Trip.bookables(): List<Bookable> {
     val people = travelers ?: 1

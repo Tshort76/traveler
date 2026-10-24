@@ -181,10 +181,9 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
     var fullMap by remember { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
-    // A stay card's tally opens the Bookings tab filtered to that stay and group.
+    // A stay card's 🧳 tally opens the Bookings tab filtered to that stay.
     var focusStay by rememberSaveable { mutableStateOf<String?>(null) }
-    var focusGroup by rememberSaveable { mutableStateOf<String?>(null) }
-    val due = remember(trip) { trip.dueToBook().isNotEmpty() }
+    val due = remember(trip) { trip.dueToBook().any { it.group == Bookable.Group.LOGISTICS } }
     val today = LocalDate.now()
     val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
@@ -242,11 +241,11 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
         Column(Modifier.fillMaxSize().padding(padding)) {
         PrimaryTabRow(selectedTabIndex = tab) {
             Tab(tab == 0, onClick = { tab = 0 }, text = { Text("Stays") })
-            // Red while something is due to book this week.
-            Tab(tab == 1, onClick = { tab = 1; focusStay = null; focusGroup = null }, text = { Text("Bookings", color = if (due) MaterialTheme.colorScheme.error else Color.Unspecified) })
+            // Red while lodging or travel is due to book this week; events have their own page.
+            Tab(tab == 1, onClick = { tab = 1; focusStay = null }, text = { Text("Bookings", color = if (due) MaterialTheme.colorScheme.error else Color.Unspecified) })
             Tab(tab == 2, onClick = { tab = 2 }, text = { Text("Trip info") })
         }
-        if (tab == 1) key(focusStay, focusGroup) { BookingsList(session, snackbar, focusStay = focusStay, focusGroup = focusGroup) }
+        if (tab == 1) key(focusStay) { BookingsList(session, snackbar, group = Bookable.Group.LOGISTICS, focusStay = focusStay) }
         else LazyColumn(
             Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 32.dp),
@@ -263,6 +262,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
             item("shortcuts") {
                 TripShortcuts(
                     trip, checklist,
+                    onEvents = { navigator.events(trip.id) },
                     onChecklist = { navigator.checklist(trip.id, it) },
                     onNotes = { navigator.notes(trip.id) },
                 )
@@ -298,7 +298,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> focusStay = stay.id; focusGroup = g.name; tab = 1 },
+                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> if (g == Bookable.Group.EVENTS) navigator.events(trip.id, stay.id) else { focusStay = stay.id; tab = 1 } },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
                 }
@@ -437,7 +437,7 @@ private fun StayCard(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(stay.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    // Booked out of planned, per group; each opens Bookings filtered to this stay and group.
+                    // Booked out of planned, per group; each opens Bookings or Events filtered to this stay.
                     Bookable.Group.entries.forEach { g -> tally[g]?.let { (booked, planned) -> BookingTally(g, booked, planned) { onBookings(g) } } }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {

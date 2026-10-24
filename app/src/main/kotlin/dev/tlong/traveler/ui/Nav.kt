@@ -32,6 +32,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object ImportRoute
 @Serializable data class HistoryRoute(val tripId: String)
 @Serializable data class BookingsRoute(val tripId: String, val date: String? = null)
+@Serializable data class EventsRoute(val tripId: String, val stayId: String? = null)
 @Serializable data object SettingsRoute
 @Serializable data class ChecklistRoute(val tripId: String, val tab: Int = 0)
 @Serializable data class NotesRoute(val tripId: String)
@@ -56,6 +57,7 @@ class Navigator(private val nav: NavHostController) {
     }
     fun history(tripId: String) = nav.navigate(HistoryRoute(tripId))
     fun bookings(tripId: String, date: String) = nav.navigate(BookingsRoute(tripId, date))
+    fun events(tripId: String, stayId: String? = null) = nav.navigate(EventsRoute(tripId, stayId))
     fun settings() = nav.navigate(SettingsRoute)
     fun checklist(tripId: String, tab: Int = 0) = nav.navigate(ChecklistRoute(tripId, tab))
     fun notes(tripId: String) = nav.navigate(NotesRoute(tripId))
@@ -82,6 +84,7 @@ fun TravelerNav() {
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }
         composable<ImportRoute> { ImportScreen(navigator) }
         composable<BookingsRoute> { val r = it.toRoute<BookingsRoute>(); BookingsScreen(r.tripId, r.date, navigator) }
+        composable<EventsRoute> { val r = it.toRoute<EventsRoute>(); BookingsScreen(r.tripId, null, navigator, r.stayId, events = true) }
         composable<HistoryRoute> { HistoryScreen(it.toRoute<HistoryRoute>().tripId, navigator) }
         composable<SettingsRoute> { SettingsScreen(navigator) }
         composable<ChecklistRoute> { val r = it.toRoute<ChecklistRoute>(); ChecklistScreen(r.tripId, r.tab, navigator) }

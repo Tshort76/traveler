@@ -1,6 +1,7 @@
 package dev.tlong.traveler.domain
 
 import dev.tlong.traveler.Fixtures
+import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.Price
 import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Transfer
@@ -45,6 +46,17 @@ class BookingsTest {
             assertEquals(key, gone, key !in after)
             assertEquals(key, if (gone) items.size - 1 else items.size, after.size)
         }
+    }
+
+    @Test
+    fun `each booking is typed as lodging, a flight, other travel or an event`() {
+        val bus = trip.copy(transfers = trip.transfers + Transfer("bus-1", "bsas-1", "iguazu", "2026-11-07", mode = "bus"),
+            commitments = trip.commitments + Commitment("car", "Rental car pickup", "2026-11-08", kind = "booking"))
+        val types = bus.bookables().associate { it.key to it.type }
+        for ((key, type) in listOf(
+            "lodging:iguazu" to Bookable.Type.LODGING, "transfer:fly-bsas-iguazu" to Bookable.Type.FLIGHT, "commitment:flight-home" to Bookable.Type.FLIGHT,
+            "transfer:bus-1" to Bookable.Type.GROUND, "commitment:car" to Bookable.Type.GROUND, "activity:gran-aventura" to Bookable.Type.EVENT,
+        )) assertEquals(key, type, types[key])
     }
 
     @Test
