@@ -56,9 +56,11 @@ class StayLayerTest(unittest.TestCase):
 
 
 class KmzTest(unittest.TestCase):
-    def test_a_layer_carries_every_icon_its_styles_name(self):
-        with zipfile.ZipFile(io.BytesIO(mm.kmz("Palermo", mm.activity_marks(DEMO, {"palermo"})))) as z:
-            hrefs = set(re.findall(r"<href>(.*?)</href>", z.read("doc.kml").decode()))
+    def test_one_file_holds_a_folder_per_layer_and_every_icon_its_styles_name(self):
+        with zipfile.ZipFile(io.BytesIO(mm.kmz("Demo", mm.layers(DEMO)))) as z:
+            doc = z.read("doc.kml").decode()
+            self.assertEqual([n for n, _ in mm.layers(DEMO)], re.findall(r"<Folder><name>(.*?)</name>", doc))
+            hrefs = set(re.findall(r"<href>(.*?)</href>", doc))
             self.assertTrue(hrefs and hrefs <= set(z.namelist()))
             self.assertTrue(all(z.read(h).startswith(b"\x89PNG") for h in hrefs))
 

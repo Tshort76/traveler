@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Turns a Traveler trip file into KMZ layers for one Google My Maps map.
+"""Turns a Traveler trip file into one KMZ for Google My Maps, a folder per layer.
 
-    python3 tools/make_map.py trip.json                # writes ~/Downloads/<trip-id>-map/
-    python3 tools/make_map.py trip.json --out somewhere
+    python3 tools/make_map.py trip.json                # writes ~/Downloads/<trip-id>-map.kmz
+    python3 tools/make_map.py trip.json --out map.kmz
 
-One file per layer, since My Maps imports a file into one layer and may drop KML folders:
-"01 Overview.kmz" (stays, lodging, airports and stations, and the transfers between towns as lines,
-by any vehicle; a ride across town is left out), then one
-file per stay with every activity for it, planned or not. The home airport (a zero-night stay that
+My Maps makes each top-level folder a layer, so one import gives them all: "Overview" (stays,
+lodging, airports and stations, and the transfers between towns as lines, by any vehicle; a ride
+across town is left out), then one per stay with every activity for it, planned or not. The home airport (a zero-night stay that
 opens or closes the trip) and the flights to and from it are left out; the airport at the other
 end of those flights stays. Each pin carries Stay, Status and Day as data columns, so a layer can
 be restyled by them in My Maps. Points are thin hollow rings packed into each KMZ, not teardrop
@@ -223,16 +222,12 @@ def layers(trip):
     return out
 
 
-def file_name(i, name):
-    safe = re.sub(r"[^\w ·,.-]+", "", name).strip()
-    return f"{i:02d} {safe}.kmz"
-
-
-def kmz(name, placemarks):
-    """The layer as a KMZ: the KML plus its ring icons, so My Maps needs nothing from the web."""
+def kmz(name, folders):
+    """The map as a KMZ: a folder per (layer name, placemarks), plus the ring icons, so My Maps needs nothing from the web."""
+    body = [f"<Folder><name>{esc(n)}</name>{''.join(marks)}</Folder>" for n, marks in folders]
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("doc.kml", kml(name, placemarks))
+        z.writestr("doc.kml", kml(name, body))
         for k, rgb in RINGS.items():
             z.writestr(f"images/{k}.png", ring_png(rgb))
     return buf.getvalue()
@@ -246,15 +241,12 @@ def main():
     trip = json.loads(Path(args.trip).read_text())
     if trip.get("format") != "traveler-trip":
         sys.exit(f"{args.trip} is not a traveler-trip file")
-    out = Path(args.out) if args.out else Path.home() / "Downloads" / f"{trip['id']}-map"
-    out.mkdir(parents=True, exist_ok=True)
-    for old in [*out.glob("*.kml"), *out.glob("*.kmz")]:
-        old.unlink()
-    for i, (name, marks) in enumerate(layers(trip), 1):
-        (out / file_name(i, name)).write_bytes(kmz(name, marks))
-        print(f"{file_name(i, name)}: {len(marks)} pins and lines")
+    out = Path(args.out) if args.out else Path.home() / "Downloads" / f"{trip['id']}-map.kmz"
+    folders = layers(trip)
+    out.write_bytes(kmz(trip.get("title") or trip["id"], folders))
+    for name, marks in folders:
+        print(f"{name}: {len(marks)} pins and lines")
     print(f"\nWrote {out}")
-
 
 if __name__ == "__main__":
     main()
