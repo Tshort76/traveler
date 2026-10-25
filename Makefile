@@ -44,8 +44,8 @@ validate: ## Validate every example trip file
 fixtures: ## Regenerate the derived example trips
 	@python3 tools/make_fixtures.py
 
-tools-test: ## The validator's own tests
-	@cd tools && python3 -m unittest -q test_validate_trip test_stay_brief
+tools-test: ## The Python tools' own tests
+	@cd tools && python3 -m unittest -q test_validate_trip test_stay_brief test_make_map
 
 emulator: ## Start the 'traveler' emulator headless (create it first: docs/BUILD.md)
 	@$(EMULATOR) -avd traveler -no-window -no-audio -no-boot-anim >/tmp/traveler-emulator.log 2>&1 &

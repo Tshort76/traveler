@@ -1,0 +1,48 @@
+import json
+import re
+import unittest
+from pathlib import Path
+
+import make_map as mm
+
+EXAMPLES = Path(__file__).resolve().parent.parent / "schema/examples"
+DEMO = json.loads((EXAMPLES / "demo.trip.json").read_text())
+LONG = json.loads((EXAMPLES / "long-synthetic.trip.json").read_text())
+
+
+def names(marks):
+    return [re.search(r"<name>(.*?)</name>", m).group(1) for m in marks]
+
+
+class OverviewTest(unittest.TestCase):
+    def test_the_home_airport_and_its_flights_are_left_out_but_the_far_airport_stays(self):
+        shown = names(mm.overview(DEMO))
+        self.assertNotIn("✈️ Los Angeles International Airport (LAX)", shown)
+        self.assertIn("✈️ Ezeiza International Airport (EZE)", shown)
+        self.assertEqual(["🚕 Buenos Aires · Palermo → Buenos Aires · San Telmo", "✈️ Buenos Aires · San Telmo → Puerto Madryn"],
+                         [n for n in shown if "→" in n])
+
+    def test_a_flight_is_drawn_between_its_airports(self):
+        line = next(m for m in mm.overview(DEMO) if "→ Puerto Madryn" in m)
+        self.assertIn("<coordinates>-58.4156,-34.5592,0 -65.2703,-43.2105,0</coordinates>", line)
+
+
+class StayLayerTest(unittest.TestCase):
+    def test_a_skipped_item_is_not_a_plan(self):
+        days = mm.planned_days({"days": [{"date": "2027-10-19", "plan": [
+            {"activityId": "a", "slot": "afternoon", "time": "14:30"}, {"activityId": "b", "status": "skipped"}]}]})
+        self.assertEqual({"a": ["Tue 19 Oct afternoon 14:30"]}, days)
+
+    def test_every_mapped_activity_is_in_exactly_one_layer_and_the_smallest_stays_merge_past_the_limit(self):
+        for trip in (DEMO, LONG):
+            with self.subTest(trip=trip["id"]):
+                layers = mm.layers(trip)
+                self.assertLessEqual(len(layers), mm.MAX_LAYERS)
+                shown = sorted(n for _, marks in layers[1:] for n in names(marks))
+                mapped = sorted(mm.esc(" ".join(x for x in [a.get("tag"), a["name"]] if x)) for a in trip["activities"] if mm.coords(a.get("place")))
+                self.assertEqual(mapped, shown)
+        self.assertEqual("Other stays", mm.layers(LONG)[-1][0])
+
+
+if __name__ == "__main__":
+    unittest.main()
