@@ -1,6 +1,11 @@
 package dev.tlong.traveler.ui.bookings
 
 import dev.tlong.traveler.domain.due
+import dev.tlong.traveler.domain.calendarEntry
+import dev.tlong.traveler.ui.common.addToCalendar
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import java.time.LocalDate
 import dev.tlong.traveler.ui.common.Pill
 import androidx.compose.ui.semantics.onClick
@@ -440,12 +445,22 @@ private fun BookingDetails(trip: Trip, b: Bookable, onLink: (String) -> Unit, on
                 Text("${p.address ?: p.query ?: "Map"} ↗", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable(onClickLabel = "Open in Maps") { onLink(MapsLinks.open(p, b.title, trip.stay(b.stayId)?.name)) }.padding(vertical = 4.dp))
             }
-            b.url?.let { url ->
-                Text("Open booking ↗", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable(onClickLabel = "Open the booking page") { onLink(url) }.padding(vertical = 4.dp))
+            val context = LocalContext.current
+            val entry = remember(trip, b) { trip.calendarEntry(b) }
+            Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                b.url?.let { url ->
+                    Link("Open booking ↗", "Open the booking page") { onLink(url) }
+                }
+                entry?.let { e -> Link("📅 Add to calendar", "Add to your calendar") { addToCalendar(context, e) } }
             }
         }
     }
+}
+
+@Composable
+private fun Link(text: String, label: String, onClick: () -> Unit) {
+    Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.heightIn(min = 48.dp).clickable(onClickLabel = label, onClick = onClick).wrapContentHeight())
 }
 
 private fun searchUrl(trip: Trip, b: Bookable): String {

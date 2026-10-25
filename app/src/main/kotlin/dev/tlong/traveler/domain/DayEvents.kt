@@ -54,5 +54,5 @@ fun dayEvents(trip: Trip, date: String, blocks: List<WorkBlock>): List<DayEvent>
     return events.sortedBy { it.start }
 }
 
-private fun locationOf(p: Place?): String? =
+internal fun locationOf(p: Place?): String? =
     p?.address ?: p?.query ?: p?.name ?: if (p?.hasCoordinates == true) "${p.lat},${p.lng}" else null
