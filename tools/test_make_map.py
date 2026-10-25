@@ -1,6 +1,8 @@
+import io
 import json
 import re
 import unittest
+import zipfile
 from pathlib import Path
 
 import make_map as mm
@@ -51,6 +53,14 @@ class StayLayerTest(unittest.TestCase):
                 mapped = sorted(mm.esc(" ".join(x for x in [a.get("tag"), a["name"]] if x)) for a in trip["activities"] if mm.coords(a.get("place")))
                 self.assertEqual(mapped, shown)
         self.assertEqual("Other stays", mm.layers(LONG)[-1][0])
+
+
+class KmzTest(unittest.TestCase):
+    def test_a_layer_carries_every_icon_its_styles_name(self):
+        with zipfile.ZipFile(io.BytesIO(mm.kmz("Palermo", mm.activity_marks(DEMO, {"palermo"})))) as z:
+            hrefs = set(re.findall(r"<href>(.*?)</href>", z.read("doc.kml").decode()))
+            self.assertTrue(hrefs and hrefs <= set(z.namelist()))
+            self.assertTrue(all(z.read(h).startswith(b"\x89PNG") for h in hrefs))
 
 
 if __name__ == "__main__":
