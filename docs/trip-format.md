@@ -97,7 +97,7 @@ A stay is a period based in one location. A return to the same city is a **separ
 
 `mode` is the main vehicle; the app shows it as an icon. For `"other"`, the app shows the first vehicle the `details` name.
 
-`fromPlace` and `toPlace` are where it leaves from and arrives at when that isn't the stay itself: for a flight, the airports (`{ "name": "Aeroparque Jorge Newbery (AEP)", "query", "lat", "lng" }`). The trip map pins them and draws the flight between them.
+`fromPlace` and `toPlace` are where it leaves from and arrives at when that isn't the stay itself: a flight's airports (`{ "name": "Aeroparque Jorge Newbery (AEP)", "query", "lat", "lng" }`), or the stations or ports of a long bus, train or ferry ride between towns. The trip map pins them and draws the leg between them.
 
 Times are local to the place they happen. The overview map draws transfers as straight dashed lines labelled by mode — never as driving routes.
 

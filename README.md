@@ -26,7 +26,7 @@ A ChatGPT Project writes trip files for the app, reading its instructions from t
 
 ## A Google My Maps map of a trip
 
-In Claude Code in this repository, `/build-map <exported trip file>` writes KML layers for one My Maps map: an Overview (stays, lodging, airports, transfers) and a layer per stay with every activity, planned or not. Import them at mymaps.google.com, and the map opens in Google Maps on the phone, where each layer can be hidden. Days are not layers: the day screen's 🧭 gives the day's route. The script behind it is `tools/make_map.py`.
+In Claude Code in this repository, `/build-map <exported trip file>` writes KML layers for one My Maps map: an Overview (stays, lodging, airports and stations, and the flights, buses and trains between towns) and a layer per stay with every activity, planned or not. Import them at mymaps.google.com, and the map opens in Google Maps on the phone, where each layer can be hidden. Days are not layers: the day screen's 🧭 gives the day's route. The script behind it is `tools/make_map.py`.
 
 ## What's in the repository
 

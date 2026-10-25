@@ -19,8 +19,17 @@ class OverviewTest(unittest.TestCase):
         shown = names(mm.overview(DEMO))
         self.assertNotIn("✈️ Los Angeles International Airport (LAX)", shown)
         self.assertIn("✈️ Ezeiza International Airport (EZE)", shown)
-        self.assertEqual(["🚕 Buenos Aires · Palermo → Buenos Aires · San Telmo", "✈️ Buenos Aires · San Telmo → Puerto Madryn"],
-                         [n for n in shown if "→" in n])
+        self.assertEqual(["✈️ Buenos Aires · San Telmo → Puerto Madryn"], [n for n in shown if "→" in n])  # not the taxi across town
+
+    def test_a_long_bus_ride_is_drawn_between_its_stations(self):
+        trip = {"stays": [
+            {"id": "salta", "name": "Salta", "arrive": "2027-01-01", "depart": "2027-01-03", "place": {"lat": -24.79, "lng": -65.41}},
+            {"id": "cafayate", "name": "Cafayate", "arrive": "2027-01-03", "depart": "2027-01-05", "place": {"lat": -26.07, "lng": -65.98}},
+        ], "transfers": [{"id": "bus", "from": "salta", "to": "cafayate", "date": "2027-01-03", "mode": "bus",
+                          "fromPlace": {"name": "Terminal Salta", "lat": -24.79, "lng": -65.40},
+                          "toPlace": {"name": "Terminal Cafayate", "lat": -26.08, "lng": -65.97}}]}
+        shown = names(mm.overview(trip))
+        self.assertEqual(["🚌 Salta → Cafayate", "🚌 Terminal Salta", "🚌 Terminal Cafayate"], [n for n in shown if "🚌" in n])
 
     def test_a_flight_is_drawn_between_its_airports(self):
         line = next(m for m in mm.overview(DEMO) if "→ Puerto Madryn" in m)

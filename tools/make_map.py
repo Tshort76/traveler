@@ -5,7 +5,8 @@
     python3 tools/make_map.py trip.json --out somewhere
 
 One file per layer, since My Maps imports a file into one layer and may drop KML folders:
-"01 Overview.kml" (stays, lodging, airports, and the transfers between them as lines), then one
+"01 Overview.kml" (stays, lodging, airports and stations, and the transfers between towns as lines,
+by any vehicle; a ride across town is left out), then one
 file per stay with every activity for it, planned or not. The home airport (a zero-night stay that
 opens or closes the trip) and the flights to and from it are left out; the airport at the other
 end of those flights stays. Each pin carries Stay, Status and Day as data columns, so a layer can
@@ -14,6 +15,7 @@ be restyled by them in My Maps. Standard library only.
 import argparse
 import html
 import json
+import math
 import re
 import sys
 from datetime import date
@@ -21,6 +23,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 MAX_LAYERS = 10  # My Maps' limit per map
+BETWEEN_TOWNS_KM = 20  # a transfer shorter than this, stay to stay, is a ride across town and isn't drawn
 GLYPHS = {"flight": "✈️", "train": "🚆", "bus": "🚌", "boat": "⛴️", "ferry": "⛴️", "car": "🚗", "taxi": "🚕", "hike": "🥾"}
 # The app's rule for a transfer of mode "other": the first vehicle its details name.
 MODE_WORDS = [
@@ -43,6 +46,15 @@ def shown_mode(t):
     text = (t.get("details") or "").lower()
     found = [(m.start(), name) for name, rx in MODE_WORDS if (m := re.search(rx, text))]
     return min(found)[1] if found else mode
+
+
+def km(p, q):
+    """Great-circle distance between two places; 0 when either has no coordinates."""
+    if not (coords(p) and coords(q)):
+        return 0
+    la1, lo1, la2, lo2 = map(math.radians, (p["lat"], p["lng"], q["lat"], q["lng"]))
+    h = math.sin((la2 - la1) / 2) ** 2 + math.cos(la1) * math.cos(la2) * math.sin((lo2 - lo1) / 2) ** 2
+    return 2 * 6371 * math.asin(math.sqrt(h))
 
 
 def coords(place):
@@ -111,23 +123,25 @@ def overview(trip):
             marks.append(placemark(f"🏨 {name}", [s["name"], "Booked" if lodging.get("status") == "booked" else "Not booked yet",
                                                  maps_url(lodging["place"], name, s["name"])], point(c), "lodging", {"Kind": "Lodging"}))
 
-    def airport(place):
+    def terminal(place, mode):
         c = coords(place)
         if c and c not in airports:
-            name = place.get("name") or place.get("query") or "Airport"
-            airports[c] = placemark(f"✈️ {name}", [maps_url(place, name)], point(c), "airport", {"Kind": "Airport"})
+            name = place.get("name") or place.get("query") or "Station"
+            airports[c] = placemark(f"{GLYPHS.get(mode, '📍')} {name}", [maps_url(place, name)], point(c), "airport",
+                                    {"Kind": "Airport" if mode == "flight" else "Station"})
         return c
 
     for t in trip.get("transfers", []):
         a, b = stays.get(t["from"], {}), stays.get(t["to"], {})
-        start = airport(t.get("fromPlace")) if not is_home(a) else None
-        end = airport(t.get("toPlace")) if not is_home(b) else None
-        if is_home(a) or is_home(b):
+        mode = shown_mode(t)
+        start = terminal(t.get("fromPlace"), mode) if not is_home(a) else None
+        end = terminal(t.get("toPlace"), mode) if not is_home(b) else None
+        if is_home(a) or is_home(b) or km(a.get("place"), b.get("place")) < BETWEEN_TOWNS_KM:
             continue
         start = start or coords(a.get("place"))
         end = end or coords(b.get("place"))
         if start and end:
-            glyph = GLYPHS.get(shown_mode(t), "➜")
+            glyph = GLYPHS.get(mode, "➜")
             when = " · ".join(x for x in [day_label(t["date"]), "–".join(x for x in [t.get("depart"), t.get("arrive")] if x)] if x)
             marks.append(placemark(f"{glyph} {a['name']} → {b['name']}", [when, t.get("details")],
                                    f"<LineString><tessellate>1</tessellate><coordinates>{start} {end}</coordinates></LineString>",
