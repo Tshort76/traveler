@@ -110,6 +110,8 @@ import dev.tlong.traveler.domain.workHoursOn
 import dev.tlong.traveler.domain.zone
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Commitment
+import dev.tlong.traveler.domain.MapsLinks
+import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.model.Day
 import dev.tlong.traveler.model.DayKind
 import dev.tlong.traveler.model.ItemStatus
@@ -323,6 +325,17 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
         }
         val bookings = remember(trip, date) { trip.bookablesOn(date) }
         val (entries, range) = remember(trip, day, blocks) { calendarOf(trip, day, blocks) }
+        // The day's route: what is still to do, in the calendar's order, from the stay's lodging.
+        val stops = remember(entries) {
+            entries.sortedBy { it.span.start }.mapNotNull { e ->
+                when (e.kind) {
+                    EntryKind.ACTIVITY -> day.plan.getOrNull(e.tag as Int)?.takeIf { ItemStatus.of(it.status) == ItemStatus.PROPOSED }
+                        ?.let { trip.activity(it.activityId) }?.let { MapsLinks.stop(it.place, it.name, stay?.name) }
+                    EntryKind.BOOKING -> (e.tag as Commitment).let { c -> c.place?.let { MapsLinks.stop(it, c.title, stay?.name) } }
+                    else -> null
+                }
+            }
+        }
         val now = stay?.zone?.let { z -> java.time.ZonedDateTime.now(z).takeIf { it.toLocalDate() == local }?.let { it.hour * 60 + it.minute } }
 
         Column(
@@ -353,6 +366,15 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                         modifier = Modifier.semantics { contentDescription = "Times are ${shortZone(it, local)}" })
                 }
                 Spacer(Modifier.weight(1f))
+                if (stops.isNotEmpty()) IconButton(onClick = {
+                    val lodging = stay?.lodging?.place?.let { MapsLinks.stop(it, stay.lodging.name ?: "", stay.name) }
+                    scope.launch {
+                        when {
+                            !openUrl(context, MapsLinks.route(lodging, stops)!!) -> snackbar.showSnackbar("No app can open Google Maps")
+                            stops.size > MapsLinks.MAX_STOPS -> snackbar.showSnackbar("Directions cover the first ${MapsLinks.MAX_STOPS} stops")
+                        }
+                    }
+                }) { Text("🧭", style = MaterialTheme.typography.titleLarge) }
                 IconButton(onClick = { navigator.tripCalendar(trip.id) }) { Icon(Icons.Default.DateRange, "Trip calendar") }
                 Box {
                     IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add to this day") }
