@@ -602,6 +602,12 @@
         "details": {
           "type": "string"
         },
+        "fromPlace": {
+          "$ref": "#/$defs/place"
+        },
+        "toPlace": {
+          "$ref": "#/$defs/place"
+        },
         "booking": {
           "$ref": "#/$defs/booking"
         }

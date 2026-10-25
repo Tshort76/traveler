@@ -152,4 +152,11 @@ class TripReaderTest {
         val trip = Fixtures.iguazu
         assertEquals(trip, TripJson.decode(TripJson.encode(trip)))
     }
+
+    @Test
+    fun `a flight's airports survive the writer`() {
+        val written = TripJson.decode(TripJson.encode(TripReader.read(Fixtures.text("demo.trip.json")).trip!!))
+        val leg = written.transfers.single { it.id == "fly-south" }
+        assertEquals("Aeroparque Jorge Newbery (AEP)" to "Trelew Airport (REL)", leg.fromPlace?.name to leg.toPlace?.name)
+    }
 }

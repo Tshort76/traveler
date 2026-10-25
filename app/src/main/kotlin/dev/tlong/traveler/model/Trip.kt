@@ -174,6 +174,9 @@ data class Transfer(
     val depart: String? = null,
     val arrive: String? = null,
     val details: String? = null,
+    /** Where it leaves from and arrives at, when that is not the stay itself: a flight's airports. */
+    val fromPlace: Place? = null,
+    val toPlace: Place? = null,
     val booking: Booking? = null,
 ) {
     /** The mode to show: the stated one, or for "other" the first vehicle the details name ("Park bus to Pudeto, then boat" is a bus). */

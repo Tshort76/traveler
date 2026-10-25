@@ -291,6 +291,18 @@
       "depart": "21:40",
       "arrive": "13:05",
       "details": "Overnight via Dallas; lands at Ezeiza next day.",
+      "fromPlace": {
+        "name": "Los Angeles International Airport (LAX)",
+        "query": "LAX",
+        "lat": 33.9416,
+        "lng": -118.4085
+      },
+      "toPlace": {
+        "name": "Ezeiza International Airport (EZE)",
+        "query": "Ezeiza International Airport",
+        "lat": -34.8222,
+        "lng": -58.5358
+      },
       "booking": {
         "status": "booked",
         "ref": "QK7Z2M",
@@ -319,6 +331,18 @@
       "depart": "08:10",
       "arrive": "10:20",
       "details": "Aeroparque to Trelew, then the airport shuttle to Puerto Madryn (1 hour).",
+      "fromPlace": {
+        "name": "Aeroparque Jorge Newbery (AEP)",
+        "query": "Aeroparque Jorge Newbery",
+        "lat": -34.5592,
+        "lng": -58.4156
+      },
+      "toPlace": {
+        "name": "Trelew Airport (REL)",
+        "query": "Aeropuerto Almirante Zar, Trelew",
+        "lat": -43.2105,
+        "lng": -65.2703
+      },
       "booking": {
         "status": "needed",
         "bookDaysBefore": 21,
@@ -341,6 +365,18 @@
       "mode": "flight",
       "depart": "11:30",
       "details": "Trelew to Aeroparque, then the evening flight home from Ezeiza (covered by the round trip).",
+      "fromPlace": {
+        "name": "Trelew Airport (REL)",
+        "query": "Aeropuerto Almirante Zar, Trelew",
+        "lat": -43.2105,
+        "lng": -65.2703
+      },
+      "toPlace": {
+        "name": "Los Angeles International Airport (LAX)",
+        "query": "LAX",
+        "lat": 33.9416,
+        "lng": -118.4085
+      },
       "booking": {
         "status": "needed",
         "bookDaysBefore": 60,
@@ -1331,6 +1367,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "944507f6cdaf9ecf"
+    "hash": "65d09cf4a5b221f0"
   }
 }
