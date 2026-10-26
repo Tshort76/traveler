@@ -7,14 +7,11 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,12 +21,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,15 +50,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.activity
@@ -85,9 +75,6 @@ import dev.tlong.traveler.domain.workHoursOn
 import dev.tlong.traveler.domain.WorkPlan
 import dev.tlong.traveler.ui.common.modeEmoji
 import dev.tlong.traveler.ui.common.modeLabel
-import dev.tlong.traveler.ui.map.AreaMap
-import dev.tlong.traveler.ui.map.MapPoint
-import dev.tlong.traveler.ui.theme.LocalMapColors
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.DayKind
 import dev.tlong.traveler.model.ItemStatus
@@ -264,10 +251,6 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     var conditions by rememberSaveable { mutableStateOf(setOf<String>()) }
     var tags by rememberSaveable { mutableStateOf(setOf<String>()) }
     val scheduled = remember(trip) { trip.days.flatMap { d -> d.plan.map { it.activityId to d.date } }.groupBy({ it.first }, { it.second }) }
-    // Numbered in recommendation order over the whole list, so a number stays put while filtering.
-    val numbers = remember(pool) {
-        pool.sortedWith(byRecommendation).filter { it.place?.hasCoordinates == true }.mapIndexed { i, a -> a.id to i + 1 }.toMap()
-    }
     // Only the options this stay's activities actually have.
     val fitOptions = remember(pool) { FITS.filter { (k, _) -> pool.any { it.fit == k } } }
     val effortOptions = remember(pool) { EFFORTS.filter { (k, _) -> pool.any { it.effort == k } } }
@@ -283,7 +266,6 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     var advanced by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp)) {
-        if (numbers.isNotEmpty()) item("map") { StayMap(stay, list, numbers) }
         item("filters") {
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +294,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         items(list, key = { it.id }) { a ->
             val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
             // The work block has no details until it is first placed.
-            PoolRow(a, numbers[a.id], scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = add)
+            PoolRow(a, scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = add)
         }
     }
 }
@@ -337,13 +319,12 @@ private fun Toggle(label: String, description: String, on: Boolean, onClick: () 
 }
 
 @Composable
-private fun PoolRow(a: Activity, number: Int?, plannedOn: List<String>, booked: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
+private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
     // A list row, not a card: the details line says where it is planned, then the facts.
     val planned = plannedOn.mapNotNull { it.toDate()?.let { d -> "${d.weekdayShort()} ${d.dayOfMonth}" } }
     val details = listOfNotNull(planned.takeIf { it.isNotEmpty() }?.let { "🗓️ " + it.joinToString(", ") }, a.factsLine().ifEmpty { null }, "Yours".takeIf { a.isCustom })
     Column {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            MapNumber(number, Modifier.padding(end = 12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 Text(listOfNotNull(a.tag, a.marked(booked)).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(booked))
                 a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
@@ -357,32 +338,3 @@ private fun PoolRow(a: Activity, number: Int?, plannedOn: List<String>, booked: 
     }
 }
 
-/** The activities shown in the list, numbered as on the map, with the lodging as ⌂: what is near what. */
-@Composable
-private fun StayMap(stay: Stay, shown: List<Activity>, numbers: Map<String, Int>) {
-    var full by remember { mutableStateOf(false) }
-    val points = remember(stay, shown, numbers) {
-        val home = stay.lodging?.place?.takeIf { it.hasCoordinates }?.let { MapPoint(it.lat!!, it.lng!!, "⌂", stay.lodging.name ?: "Lodging") }
-        listOfNotNull(home) + shown.mapNotNull { a -> numbers[a.id]?.let { MapPoint(a.place!!.lat!!, a.place.lng!!, "$it", a.name) } }.sortedBy { it.badge.toInt() }
-    }
-    if (points.isEmpty()) return
-    val description = "Map of ${points.size} places in ${stay.name}"
-    Card {
-        AreaMap(points, Modifier.fillMaxWidth().height(220.dp).clip(RoundedCornerShape(12.dp)), description, onClick = { full = true })
-    }
-    if (full) Dialog(onDismissRequest = { full = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(Modifier.fillMaxSize()) {
-            AreaMap(points, Modifier.fillMaxSize(), description)
-            Button(onClick = { full = false }, modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp)) { Text("Close map") }
-        }
-    }
-}
-
-/** The activity's number on the stay map, drawn like its marker; a blank of the same width when it has no place. */
-@Composable
-private fun MapNumber(number: Int?, modifier: Modifier = Modifier) {
-    val colors = LocalMapColors.current
-    Box(modifier.size(24.dp).then(if (number != null) Modifier.background(colors.marker, CircleShape) else Modifier), contentAlignment = Alignment.Center) {
-        if (number != null) Text("$number", color = colors.onMarker, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-    }
-}

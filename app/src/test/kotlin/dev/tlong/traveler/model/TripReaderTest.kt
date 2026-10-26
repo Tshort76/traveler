@@ -116,7 +116,7 @@ class TripReaderTest {
     }
 
     @Test
-    fun `an activity placed only by a search phrase goes back to the assistant, since the stay map needs coordinates`() {
+    fun `an activity placed only by a search phrase goes back to the assistant, since the trip map needs coordinates`() {
         val trip = Fixtures.iguazu
         val first = trip.activities[0]
         val text = TripJson.encode(trip.copy(activities = listOf(first.copy(place = Place(query = "Somewhere, Puerto Iguazú"))) + trip.activities.drop(1)))

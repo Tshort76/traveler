@@ -286,9 +286,7 @@ Both tables are in `traveler.db`, defined at `data/Database.kt:27` and `data/Dat
 |---|---|---|
 | `trips` | `TripStore` on import, every edit, revision, restore, archive, delete | the trip list, every session, the import router, backup |
 | `snapshots` | `TripStore` before any replacement | History |
-| `filesDir/trip-maps` | `TripBackdrops.save` | the trip map |
 | `filesDir/images` | `cachedBitmap` in `ui/common/Files.kt` | the overview's trip image |
-| MapLibre's database | MapLibre: tiles you viewed, and saved regions | the terrain map, offline |
 | `cacheDir/exports` | `shareTextFile` in `ui/common/Files.kt` | the share sheet |
 
 ### Migrations
@@ -305,7 +303,7 @@ Both tables are in `traveler.db`, defined at `data/Database.kt:27` and `data/Dat
 | Only the newest pending plan is written | `data/TripSession.kt:44` | A burst of edits costs one write, never an out-of-order one |
 | A trip is snapshotted before a revision, restore or backup replaces it | `data/TripStore.kt:72` | Every import can be undone from History |
 | At most 20 snapshots are kept per trip | `data/TripStore.kt:146` | History stays bounded |
-| A deleted trip is purged 30 days after deletion, with its snapshots and saved maps | `data/TripStore.kt:113`, `AppContainer.kt:100` | Recently deleted is a real undo, and nothing lingers after it |
+| A deleted trip is purged 30 days after deletion, with its snapshots | `data/TripStore.kt:128`, `AppContainer.kt:116` | Recently deleted is a real undo, and nothing lingers after it |
 | Opening the same content twice makes no duplicate | `data/ImportRouter.kt:48` | Sharing a file twice is harmless |
 | `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:212` | Your entries and notes survive a revision |
 | Content identity ignores `exportedFrom` | `domain/Export.kt:37` | An exported file reopened is recognised as the same trip |

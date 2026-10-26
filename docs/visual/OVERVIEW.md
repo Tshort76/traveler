@@ -12,34 +12,31 @@ The dashed boxes are the two places code runs: the app on the phone, and the bui
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="diagrams/overview-dark.svg">
-  <img alt="The traveler asks an assistant, using the prompt, for a trip file; the file goes to the Android app, whose screens call the reader, the rules and merge, and the sessions and store that write traveler.db, and which also fetch map tiles from OpenFreeMap, open Google Maps links and export the edited file back to the assistant. The trip format in schema/ feeds both the app's reader and the validator; the fixture builder writes examples into it; the assistant reads the prompts from GitHub and has the validator uploaded to it." src="diagrams/overview-light.svg">
+  <img alt="The traveler asks an assistant, using the prompt, for a trip file; the file goes to the Android app, whose screens call the reader, the rules and merge, and the sessions and store that write traveler.db, and which also open Google Maps links and export the edited file back to the assistant. The trip format in schema/ feeds both the app's reader and the validator; the fixture builder writes examples into it; the map builder turns a trip into a file for Google My Maps; the assistant reads the prompts from GitHub and has the validator uploaded to it." src="diagrams/overview-light.svg">
 </picture>
 
 | Container | Paths | What it does |
 |---|---|---|
-| Android app | `app/` | Receives a file you open or share, reads and checks it, shows a preview, imports it or merges it with your edits, saves every edit at once with undo, plans days and slots, tracks bookings, draws the trip and stay maps, exports the plan and backs up all trips |
+| Android app | `app/` | Receives a file you open or share, reads and checks it, shows a preview, imports it or merges it with your edits, saves every edit at once with undo, plans days and slots, tracks bookings, opens places and a day's route in Google Maps, exports the plan and backs up all trips |
 | Trip format | `schema/` | Defines the trip file as JSON Schema, holds the example trips the app ships, and holds the broken files both readers are tested against |
 | Validator | `tools/validate_trip.py` | Loads the schema, checks structure, then cross-checks ids, dates and time zones, optionally requires stars, prices and booking lead times, prints OK or each ERROR and WARNING, and exits 1 on any error |
 | Fixture builder | `tools/make_fixtures.py` | Reads the hand-written Iguazú trip and writes its second revision and a 14-stay synthetic trip, byte-identical on every run |
-| Basemap builder | `tools/make_basemap.py` | Downloads Natural Earth country outlines once, rounds them to 0.02°, and writes the offline country map the app draws first |
+| Map builder | `tools/make_map.py` | Turns an exported trip into one KMZ for Google My Maps: an Overview layer of stays, lodging, stations and the legs between towns, then one layer per stay with its activities |
 | Emulator driver | `tools/emu/ui.py` | Dumps the screen's element tree through adb, taps by visible text, drags, and takes screenshots |
 
-**The Makefile declares the first four, not the last two.** `make debug`, `install` and `test` build the app; `validate` and `tools-test` run the validator; `fixtures` runs its builder. The basemap and emulator scripts have no target; they are run by hand and appear here because each has its own entry point.
+**The Makefile declares the first four, not the last two.** `make debug`, `install` and `test` build the app; `validate` and `tools-test` run the validator; `fixtures` runs its builder. The map builder and the emulator driver have no target of their own: the local `/build-map` skill runs the first, `tools-test` runs its tests, and the second is run by hand. Both appear here because each has its own entry point.
 
 **The assistant is drawn outside the system.** Nothing in the repository calls it: you carry the file to it and back. The prompts, read from GitHub, and the uploaded scripts are what the repository gives it.
 
 <details>
-<summary>Component view: the Android app (8 packages)</summary>
+<summary>Component view: the Android app (7 packages)</summary>
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontSize": "14px", "lineColor": "#0B3C5D", "primaryColor": "#1F6F8B", "primaryTextColor": "#FFFFFF", "primaryBorderColor": "#0B3C5D", "clusterBkg": "transparent", "clusterBorder": "#7A8B99", "edgeLabelBackground": "transparent", "actorBkg": "#E06D14", "actorTextColor": "#1A1A1A", "actorBorder": "#A64F0E", "signalColor": "#0B3C5D", "signalTextColor": "#0B3C5D", "labelBoxBkgColor": "#1F6F8B", "labelTextColor": "#FFFFFF"}, "flowchart": {"curve": "basis", "padding": 12}} }%%
 flowchart TB
   ACT["Entry · MainActivity.kt"]
-  subgraph screens["Screens"]
-    NAV["Navigation · ui/Nav.kt"]
-    UI["Screens · ui/"]
-    MAP["Maps · ui/map/"]
-  end
+  NAV["Navigation · ui/Nav.kt"]
+  UI["Screens · ui/"]
   CON["Wiring · AppContainer.kt"]
   DATA["Store and sessions · data/"]
   DOM["Rules · domain/"]
@@ -47,7 +44,6 @@ flowchart TB
   DB[("traveler.db")]
   ACT --> CON
   ACT --> NAV --> UI
-  UI --> MAP
   UI --> CON
   CON --> DATA --> DB
   UI --> DOM --> MOD
@@ -57,7 +53,7 @@ flowchart TB
   classDef store fill:#387B5B,stroke:#255740,stroke-width:2px,color:#ffffff
   classDef focus fill:#5C3D67,stroke:#3D2845,stroke-width:2px,color:#ffffff
   class ACT entry
-  class NAV,UI,MAP,DATA,DOM,MOD stage
+  class NAV,UI,DATA,DOM,MOD stage
   class CON focus
   class DB store
 ```
@@ -67,10 +63,9 @@ flowchart TB
 | Entry | `MainActivity.kt`, `App.kt` | The one activity, and the application that builds the container and starts the purge |
 | Wiring | `AppContainer.kt` | One database, one store, one session per open trip, the pending import |
 | Store and sessions | `data/` | Room tables, the store, the open-trip session, the import router |
-| Rules | `domain/` | Dates and time zones, edits, placement checks, bookings, merge, export, map areas |
+| Rules | `domain/` | Dates and time zones, edits, placement checks, bookings, merge, export, Google Maps links |
 | Format | `model/` | The trip types, the lenient JSON reader and writer, plain-language errors |
 | Screens | `ui/` | Trips, import preview, overview, stay, day, bookings, history, settings |
-| Maps | `ui/map/` | The trip map, the stay terrain map, saved offline maps and trip pictures |
 
 Each package's internals are drawn in [architecture.md](./architecture.md).
 
@@ -155,20 +150,16 @@ docs/           the hand-written design account, build guide and format; these m
 integrations/   the ChatGPT Project's instructions and how-to
 prompts/        the two assistant prompts; also shipped inside the app
 schema/         the JSON Schema, example trips and broken-file fixtures
-tools/          validator, stay brief, fixture and basemap builders, emulator driver
+tools/          validator, stay brief, fixture and map builders, emulator driver
 Makefile        every build, test and device command
 ```
-
-## Attribution
-
-The stay maps draw OpenStreetMap data served by OpenFreeMap, with Natural Earth relief; the app shows the credit in the map's ⓘ button. The offline country outlines are Natural Earth, public domain. Details are in [sources.md](./sources.md).
 
 ## Deeper
 
 - [README](../../README.md): what the app is and the loop
 - [architecture.md](./architecture.md): each package's internals
 - [data.md](./data.md): the file, the tables, the invariants
-- [workflows.md](./workflows.md): import, edit, revise, export, save maps
+- [workflows.md](./workflows.md): import, edit, revise, export, validate
 - [configuration.md](./configuration.md): every knob and fixed constant
 - [sources.md](./sources.md): everything off the phone
 - [ARCHITECTURE.md](../ARCHITECTURE.md), [BUILD.md](../BUILD.md), [trip-format.md](../trip-format.md): the hand-written documents

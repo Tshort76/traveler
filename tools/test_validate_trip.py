@@ -146,7 +146,7 @@ class Behaviour(unittest.TestCase):
     def test_missing_coordinates_warn(self):
         del self.trip["stays"][0]["place"]
         rep, _ = v.validate(self.trip)
-        self.assertTrue(any("overview map" in w for w in rep.warnings))
+        self.assertTrue(any("trip map" in w for w in rep.warnings))
 
     def test_fenced_paste_is_accepted(self):
         text = "Here you go:\n```json\n" + json.dumps(self.trip) + "\n```\n"

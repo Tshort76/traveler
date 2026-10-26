@@ -116,7 +116,7 @@ object TripReader {
                 time(w.start, "$where.workRhythm.start", errors); time(w.end, "$where.workRhythm.end", errors)
                 w.days.forEach { enum(it, Vocab.weekdays, "$where.workRhythm.days", errors) }
             }
-            if (s.place?.hasCoordinates != true) warnings += "$where: no coordinates — not shown on the overview map"
+            if (s.place?.hasCoordinates != true) warnings += "$where: no coordinates — not shown on the trip map"
             s.lodging?.status?.let { enum(it, Vocab.lodgingStatuses, "$where.lodging.status", errors) }
             price(s.lodging?.price, "$where.lodging.price", errors, lodging = true)
             s.lodging?.priority?.let { priority(it, "$where.lodging.priority", errors) }

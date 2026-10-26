@@ -1,12 +1,10 @@
 package dev.tlong.traveler.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
@@ -44,18 +42,6 @@ private val Dark = darkColorScheme(
     inversePrimary = Color(0xFF2F5D50),
 )
 
-/** Colours the map draws with; they follow the theme so the map works in dark mode too. */
-@Immutable
-data class MapColors(val water: Color, val land: Color, val border: Color, val route: Color, val marker: Color, val onMarker: Color, val label: Color)
-
-val LocalMapColors = staticCompositionLocalOf { mapColors(Light, false) }
-
-private fun mapColors(s: ColorScheme, dark: Boolean) = if (dark) {
-    MapColors(Color(0xFF16232A), Color(0xFF263330), Color(0xFF45524E), s.tertiary, s.primary, s.onPrimary, s.onSurface)
-} else {
-    MapColors(Color(0xFFDCE8EE), Color(0xFFF7F4EC), Color(0xFFC9C1B2), s.tertiary, s.primary, s.onPrimary, s.onSurface)
-}
-
 /** The text colour of something booked, beside its ✓: green enough to read at a glance, 4.5:1 on surface and primaryContainer. */
 val LocalBookedColor = staticCompositionLocalOf { Color(0xFF1B6E20) }
 
@@ -72,7 +58,7 @@ private val darkStays = listOf(
 @Composable
 fun TravelerTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val scheme = if (dark) Dark else Light
-    androidx.compose.runtime.CompositionLocalProvider(LocalMapColors provides mapColors(scheme, dark), LocalBookedColor provides if (dark) Color(0xFF81C784) else Color(0xFF1B6E20), LocalStayColors provides if (dark) darkStays else lightStays) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalBookedColor provides if (dark) Color(0xFF81C784) else Color(0xFF1B6E20), LocalStayColors provides if (dark) darkStays else lightStays) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
 }

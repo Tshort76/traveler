@@ -37,7 +37,7 @@ In Claude Code in this repository, `/build-map <exported trip file>` writes one 
 | `schema/examples/` | Example trips; they also ship inside the app ("Try the example trip", and the full-feature demo under **Settings → Load the demo trip**) |
 | `prompts/itinerary-instructions.md` | The assistant prompt for trip files |
 | `integrations/skill/` | The assistant's instructions, read by a ChatGPT Project |
-| `tools/` | Validator, stay brief, My Maps and fixture and basemap generators, emulator helper |
+| `tools/` | Validator, stay brief, My Maps and fixture generators, emulator helper |
 | `app/` | The Android app (Kotlin, Jetpack Compose, Room) |
 | `docs/ARCHITECTURE.md` | How the app is put together |
 | `docs/BUILD.md` | Toolchain, emulator, installing on a phone, release signing |

@@ -22,16 +22,15 @@ phone: "Android app · app/" {
   domain: "Rules and merge\ndomain/" { class: stage }
   data: "Sessions and store\ndata/" { class: stage }
   db: "traveler.db" { class: store; shape: cylinder }
-  maps: "Map tiles and pictures" { class: store; shape: cylinder }
 }
 
 tools: "Repo tools · tools/" {
   style: { fill: transparent; stroke: "#7A8B99"; stroke-dash: 4 }
   validator: "Validator\nvalidate_trip.py" { class: stage }
   fixtures: "Fixture builder\nmake_fixtures.py" { class: stage }
+  mapper: "Map builder\nmake_map.py" { class: stage }
 }
 
-tiles: "OpenFreeMap" { class: ext }
 gmaps: "Google Maps" { class: ext }
 
 you -> assistant: "asks, with the prompt" { class: cross }
@@ -41,13 +40,12 @@ phone.ui -> phone.model: "import" { class: edge }
 phone.ui -> phone.domain: "edit" { class: edge }
 phone.ui -> phone.data: "save" { class: edge }
 phone.data -> phone.db { class: edge }
-phone.ui -> phone.maps { class: edge }
-phone.ui -> tiles: "tiles" { class: cross }
 phone.ui -> gmaps: "links" { class: cross }
 phone.ui -> assistant: "exported file" { class: cross }
 contract -> phone.model: "same rules" { class: edge }
 contract -> tools.validator: "same rules" { class: edge }
 tools.fixtures -> contract: "examples" { class: edge }
+tools.mapper -> gmaps: "KMZ for My Maps" { class: cross }
 prompts -> assistant: "read from GitHub" { class: cross }
 tools.validator -> assistant: "uploaded" { class: cross }
 prompts -> phone.ui: "Copy instructions" { class: edge }

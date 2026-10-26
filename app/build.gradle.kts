@@ -26,8 +26,6 @@ android {
         versionCode = 1
         versionName = "0.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        // MapLibre ships native code per ABI; phones and the Apple-silicon emulator are arm64.
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     signingConfigs {
@@ -107,7 +105,6 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.maplibre)
     implementation(libs.kotlinx.coroutines.android)
 
     testImplementation(libs.junit)

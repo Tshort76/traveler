@@ -127,34 +127,6 @@ sequenceDiagram
 
 Save trip file and Copy JSON in the same menu differ only in where the text goes.
 
-## Save maps for offline
-
-**In plain language:** from the trip menu you save the terrain around each stay, so the stay maps work with no signal.
-
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px", "lineColor": "#0B3C5D", "primaryColor": "#1F6F8B", "primaryTextColor": "#FFFFFF", "primaryBorderColor": "#0B3C5D", "clusterBkg": "transparent", "clusterBorder": "#7A8B99", "edgeLabelBackground": "transparent", "actorBkg": "#E06D14", "actorTextColor": "#1A1A1A", "actorBorder": "#A64F0E", "signalColor": "#0B3C5D", "signalTextColor": "#0B3C5D", "labelBoxBkgColor": "#1F6F8B", "labelTextColor": "#FFFFFF"}, "flowchart": {"curve": "basis", "padding": 12}} }%%
-sequenceDiagram
-  actor You
-  participant DL as OfflineMapsDialog.kt
-  participant OM as OfflineMaps.kt
-  participant MA as MapAreas.kt
-  participant ML as MapLibre
-  participant OFM as OpenFreeMap
-  You->>DL: Save
-  DL->>OM: save(context, trip)
-  OM->>ML: delete the trip's old regions
-  OM->>MA: mapAreas()
-  MA-->>OM: one box per stay
-  OM->>ML: putResourceWithUrl(style)
-  OM->>ML: createOfflineRegion, per stay
-  ML->>OFM: tiles, zoom 8 to 13
-  OM-->>DL: Saving, then Saved with size
-```
-
-- **Each stay's box is its places plus 2 km.** `Trip.mapAreas` (`domain/MapAreas.kt:10`) covers the stay, its lodging and its activities with coordinates.
-- **The style is planted before the download.** MapLibre's downloader fetches only over HTTP, so `ui/map/OfflineMaps.kt:67` stores the style under a placeholder address it then finds locally.
-- **Regions are tagged with the trip.** Each region's metadata is `tripId/stayId` (`ui/map/OfflineMaps.kt:74`), which is how remove and the start-up prune find them.
-
 ## Validate a trip file
 
 **In plain language:** before importing, you or the assistant can check a file on a computer and get the same errors and warnings the app's preview shows.
@@ -185,7 +157,7 @@ sequenceDiagram
 | Mark something booked | `ui/bookings/BookingsScreen.kt` | The plan-a-day shape with `Edits.markBooked` in place of `setPlan` |
 | Delete, undelete, archive | `ui/trips/TripsScreen.kt` | Single column updates |
 | Copy instructions, load the demo trip | `ui/settings/SettingsScreen.kt` | Read an asset; the demo then follows the import trace |
-| Open in Google Maps, search, booking links | `domain/MapsLinks.kt`, `ui/common/Common.kt` | Hand a URL to the phone; nothing is stored |
-| Build the skill, regenerate fixtures or basemap | `tools/` | Developer scripts with no runtime path; their steps are in the overview's container table |
+| Open in Google Maps, a day's 🧭 directions, search, booking links | `domain/MapsLinks.kt`, `ui/common/Common.kt` | Hand a URL to the phone; nothing is stored |
+| Regenerate fixtures, build a trip's My Maps file | `tools/` | Developer scripts with no runtime path; their steps are in the overview's container table |
 
 *Generated from 72c887b on 2026-10-05.*

@@ -1,6 +1,6 @@
 # Architecture — component views
 
-[OVERVIEW.md](./OVERVIEW.md) already folds the app's eight packages into one view. This page draws the three with internal structure worth a picture: the store and sessions in `data/`, the import and merge path through `domain/`, and the maps in `ui/map/`. The screens in `ui/` are one Compose screen per route with no structure between them beyond `ui/Nav.kt`; `model/` is the format's types plus one reader and one writer. The repository tools are single scripts and have no components.
+[OVERVIEW.md](./OVERVIEW.md) already folds the app's seven packages into one view. This page draws the two with internal structure worth a picture: the store and sessions in `data/`, and the import and merge path through `domain/`. A short note on maps follows them. The screens in `ui/` are one Compose screen per route with no structure between them beyond `ui/Nav.kt`; `model/` is the format's types plus one reader and one writer. The repository tools are single scripts and have no components.
 
 Why it is built this way is in the hand-written [ARCHITECTURE.md](../ARCHITECTURE.md); this page shows what exists.
 
@@ -98,51 +98,14 @@ flowchart LR
 
 **`domain/` and `model/` have no Android imports.** Their tests run as plain JVM tests; only the store and the screens need Robolectric.
 
-## Maps — `ui/map/`
+## Maps
 
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"fontSize": "14px", "lineColor": "#0B3C5D", "primaryColor": "#1F6F8B", "primaryTextColor": "#FFFFFF", "primaryBorderColor": "#0B3C5D", "clusterBkg": "transparent", "clusterBorder": "#7A8B99", "edgeLabelBackground": "transparent", "actorBkg": "#E06D14", "actorTextColor": "#1A1A1A", "actorBorder": "#A64F0E", "signalColor": "#0B3C5D", "signalTextColor": "#0B3C5D", "labelBoxBkgColor": "#1F6F8B", "labelTextColor": "#FFFFFF"}, "flowchart": {"curve": "basis", "padding": 12}} }%%
-flowchart LR
-  OV["Overview · ui/overview/OverviewScreen.kt"]
-  ST["Stay · ui/stay/StayScreen.kt"]
-  BACK["Trip picture · TripBackdrop.kt"]
-  CANVAS["Trip map · TripMap.kt"]
-  AREA["Terrain map · AreaMap.kt"]
-  OFF["Saved maps · OfflineMaps.kt"]
-  DLG["Save dialog · OfflineMapsDialog.kt"]
-  PICS[("filesDir/trip-maps")]
-  ML[("MapLibre cache")]
-  OFM{{"OpenFreeMap"}}
-  OV --> BACK --> CANVAS
-  OV --> DLG --> OFF
-  ST --> AREA
-  BACK --> PICS
-  AREA --> ML
-  OFF --> ML
-  BACK -. "snapshot" .-> OFM
-  AREA -. "tiles" .-> OFM
-  OFF -. "download" .-> OFM
-  classDef stage fill:#1F6F8B,stroke:#0B3C5D,stroke-width:2px,color:#ffffff
-  classDef store fill:#387B5B,stroke:#255740,stroke-width:2px,color:#ffffff
-  classDef ext fill:#D9381E,stroke:#9E2815,stroke-width:2px,color:#ffffff
-  classDef entry fill:#E06D14,stroke:#A64F0E,stroke-width:2px,color:#1A1A1A
-  class OV,ST entry
-  class BACK,CANVAS,AREA,OFF,DLG stage
-  class PICS,ML store
-  class OFM ext
-```
+The app draws no map of its own and fetches no map tiles. Two things stand in for the maps it used to draw.
 
-| Component | Path | What it does |
-|---|---|---|
-| Trip picture | `ui/map/TripBackdrop.kt` | Looks for a saved picture for this trip, size and set of stays; if none and online, renders one with MapLibre's snapshotter, shows it, and saves it as WebP |
-| Trip map | `ui/map/TripMap.kt` | Projects stays to Web Mercator, draws the picture or the offline country outlines, numbered stay markers clustered on screen with halos sized by nights beyond the shortest stop, dashed transfer arcs, and a scale bar |
-| Terrain map | `ui/map/AreaMap.kt` | Starts MapLibre with a 100 MB tile cache, builds the terrain-only style, fits the pins, draws numbered pin bitmaps, re-clusters them when the camera settles, caps zoom at 13 |
-| Saved maps | `ui/map/OfflineMaps.kt` | Deletes the trip's old regions, stores the style under a placeholder URL, creates one region per stay, downloads them one by one with progress, sizes them, prunes regions of deleted trips |
-| Save dialog | `ui/map/OfflineMapsDialog.kt` | Shows what is saved and its size, warns on a metered or missing connection, and offers save, update, stop or remove |
+- **A trip map in Google My Maps.** `tools/make_map.py` turns an exported trip into one KMZ file, `~/Downloads/<trip-id>-map.kmz`, which the local `/build-map` skill runs. My Maps imports each top-level folder as a layer: "Overview" holds the stays, lodging, airports and stations, with the transfers between towns at least 20 km apart drawn as lines, and leaves out the home airport; then one folder per stay holds every activity. The points are hollow ring images packed into the KMZ. The script uses only the standard library and is tested by `tools/test_make_map.py` under `make tools-test`.
+- **Directions for a day.** The day screen's 🧭 button (`ui/day/DayScreen.kt:377`) opens Google Maps with a route from the stay's lodging through the day's planned stops in time order, by coordinates when the place has them. `MapsLinks.route` (`domain/MapsLinks.kt:35`) builds the URL and keeps at most 10 stops.
 
-**The trip map never needs the network.** Without a saved picture, `ui/map/TripMap.kt` draws `app/src/main/assets/basemap/countries.txt`; the picture is taken once while online and reused until the stays move or the size changes.
-
-**The terrain map draws no streets and no text.** The style from `terrainStyle` (`ui/map/AreaMap.kt:66`) has land, built-up areas, parks, sand, rivers, water and borders only, so it needs no font downloads and stays small enough to save a city in a few megabytes.
+The overview's Trip info card shows the stay calendar, the stay key and, when the file names `tripMap.imageUrl`, that image. At start-up, `purgeExpiredLater` (`AppContainer.kt:116`) deletes the files the old in-app maps left behind.
 
 ## Conventions that hold across the app
 

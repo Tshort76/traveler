@@ -84,30 +84,23 @@ Each is a value in the source. Changing one means editing that line and rebuildi
 </details>
 
 <details>
-<summary>Maps (8)</summary>
+<summary>Maps (2)</summary>
 
 | Constant | Value | Where |
 |---|---|---|
-| Tile server | OpenFreeMap's `planet` tiles | `ui/map/AreaMap.kt:55` |
-| Deepest zoom on stay maps | 13, about a quarter mile per pin | `ui/map/AreaMap.kt:58` |
-| Shallowest zoom saved offline | 8 | `ui/map/OfflineMaps.kt:31` |
-| Margin around a stay's places when saving | 2 km | `domain/MapAreas.kt:10` |
-| Cache for tiles you have viewed | 100 MB | `ui/map/AreaMap.kt:105` |
-| Distance at which pins merge | 30 dp | `ui/map/AreaMap.kt:192` |
-| Trip picture quality | WebP at 80 | `ui/map/TripBackdrop.kt:96` |
-| Country outline precision | 0.02°, about 2 km | `tools/make_basemap.py:20` |
+| Most stops in one day's 🧭 directions | 10, Google Maps' limit for one URL | `domain/MapsLinks.kt:29` |
+| Shortest transfer drawn as a line on the My Maps overview | 20 km, stay to stay | `tools/make_map.py:30` |
 
 </details>
 
 <details>
-<summary>Network and build (5)</summary>
+<summary>Network and build (4)</summary>
 
 | Constant | Value | Where |
 |---|---|---|
 | Trip image download timeouts | 8 s to connect, 15 s to read | `ui/common/Files.kt:72` |
 | Oldest Android supported | API 29, Android 10 | `app/build.gradle.kts:24` |
-| CPU types built | arm64-v8a and x86_64 | `app/build.gradle.kts:30` |
-| Code shrinking in release | off | `app/build.gradle.kts:47` |
+| Code shrinking in release | off | `app/build.gradle.kts:45` |
 | Folders shipped as app assets | `schema/examples`, `prompts` | `app/build.gradle.kts` |
 
 </details>

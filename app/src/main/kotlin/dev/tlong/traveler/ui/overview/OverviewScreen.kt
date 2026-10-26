@@ -37,7 +37,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -67,8 +66,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
@@ -105,19 +102,12 @@ import dev.tlong.traveler.ui.common.modeEmoji
 import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rememberCachedImage
-import dev.tlong.traveler.ui.common.rememberOnline
 import dev.tlong.traveler.ui.common.rememberSession
 import dev.tlong.traveler.ui.common.shareTextFile
 import dev.tlong.traveler.ui.common.writeToUri
-import dev.tlong.traveler.ui.map.MapPoint
-import dev.tlong.traveler.ui.map.MapSegment
-import dev.tlong.traveler.ui.map.OfflineMapsDialog
-import dev.tlong.traveler.ui.map.TripMap
-import dev.tlong.traveler.ui.map.distanceKm
 import dev.tlong.traveler.ui.trips.RenameDialog
 import dev.tlong.traveler.ui.trips.TRIP_MIME_TYPES
 import java.time.LocalDate
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -139,27 +129,6 @@ fun BackButton(navigator: Navigator) {
     IconButton(onClick = navigator::back) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
 }
 
-/** Points and transfer segments for the overview map, numbered in visit order; home is left off. */
-fun Trip.mapModel(): Pair<List<MapPoint>, List<MapSegment>> {
-    val stays = destinations
-    val withCoords = stays.withIndex().filter { it.value.place?.hasCoordinates == true }
-    val points = withCoords.map { (i, s) -> MapPoint(s.place!!.lat!!, s.place.lng!!, "${i + 1}", s.name, s.nights) }
-    val index = withCoords.mapIndexed { pi, iv -> iv.value.id to pi }.toMap()
-    val segments = stays.zipWithNext().mapNotNull { (a, b) ->
-        val from = index[a.id] ?: return@mapNotNull null
-        val to = index[b.id] ?: return@mapNotNull null
-        MapSegment(from, to)
-    }
-    return points to segments
-}
-
-fun mapDescription(trip: Trip, points: List<MapPoint>): String {
-    if (points.isEmpty()) return "No destinations have coordinates, so there is no map."
-    val legs = points.zipWithNext().joinToString("; ") { (a, b) -> "${a.name} to ${b.name}, about ${distanceKm(a, b).roundToInt()} km" }
-    return "Map of ${trip.destinations.size} destinations in visit order: " + points.joinToString(", ") { "${it.badge} ${it.name}" } +
-        if (legs.isNotEmpty()) ". Legs: $legs." else "."
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int) {
@@ -170,22 +139,18 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
     val trip by session.trip.collectAsStateWithLifecycle()
     val base by session.base.collectAsStateWithLifecycle()
     val saveState by session.saveState.collectAsStateWithLifecycle()
-    val online by rememberOnline()
     var menu by remember { mutableStateOf(false) }
     var exportMenu by remember { mutableStateOf(false) }
     var renaming by remember { mutableStateOf(false) }
     val checklist by session.checklist.collectAsStateWithLifecycle()
     var editingLink by remember { mutableStateOf<LinkTarget?>(null) }
     var showLinks by remember { mutableStateOf(false) }
-    var offlineMaps by remember { mutableStateOf(false) }
-    var fullMap by remember { mutableStateOf(false) }
     var showPastStays by rememberSaveable { mutableStateOf(false) }
     var tab by rememberSaveable { mutableIntStateOf(initialTab) }
     // A stay card's 🧳 tally opens the Bookings tab filtered to that stay.
     var focusStay by rememberSaveable { mutableStateOf<String?>(null) }
     val due = remember(trip) { trip.dueToBook().any { it.group == Bookable.Group.LOGISTICS } }
     val today = LocalDate.now()
-    val (points, segments) = remember(trip.stays) { trip.mapModel() }
     val changes = remember(trip, base) { session.localChangeCount() }
 
     val openRevision = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -229,7 +194,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                             DropdownMenuItem(text = { Text("Import a revision…") }, onClick = { menu = false; openRevision.launch(TRIP_MIME_TYPES) })
                             DropdownMenuItem(text = { Text("History and undo import") }, onClick = { menu = false; navigator.history(trip.id) })
                             DropdownMenuItem(text = { Text("Trip links (${trip.links.size})…") }, onClick = { menu = false; showLinks = true })
-                            DropdownMenuItem(text = { Text("Offline maps…") }, onClick = { menu = false; offlineMaps = true })
                             DropdownMenuItem(text = { Text("Rename") }, onClick = { menu = false; renaming = true })
                         }
                     }
@@ -267,7 +231,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                     onNotes = { navigator.notes(trip.id) },
                 )
             }
-            item("map") { MapCard(trip, points, segments, online, today, onExpand = { fullMap = true }) { navigator.day(trip.id, it.toString()) } }
+            item("calendar") { TripInfoCard(trip, today) { navigator.day(trip.id, it.toString()) } }
           } else {
             if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
                 val stay = trip.stayFor(today)
@@ -318,15 +282,6 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
         }
     }
 
-    if (fullMap) {
-        Dialog(onDismissRequest = { fullMap = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-            Box(Modifier.fillMaxSize()) {
-                TripMap(trip.id, points, segments, online, mapDescription(trip, points), Modifier.fillMaxSize(), interactive = true)
-                Button(onClick = { fullMap = false }, modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp)) { Text("Close map") }
-            }
-        }
-    }
-    if (offlineMaps) OfflineMapsDialog(trip, online) { offlineMaps = false }
     if (renaming) RenameDialog(trip.title, onDismiss = { renaming = false }) { name ->
         renaming = false
         session.edit("Rename trip") { Edits.rename(it, name) }
@@ -400,23 +355,13 @@ private fun LinkDialog(current: Link?, onDismiss: () -> Unit, onSave: (Link?) ->
 }
 
 @Composable
-private fun MapCard(
-    trip: Trip, points: List<MapPoint>, segments: List<MapSegment>, online: Boolean, today: LocalDate,
-    onExpand: () -> Unit, onDay: (LocalDate) -> Unit,
-) {
+private fun TripInfoCard(trip: Trip, today: LocalDate, onDay: (LocalDate) -> Unit) {
     val image by rememberCachedImage(trip.tripMap?.imageUrl)
     val tint = rememberStayTints(trip)
     Card {
         Column {
-            if (points.isNotEmpty()) {
-                TripMap(
-                    trip.id, points, segments, online, mapDescription(trip, points),
-                    Modifier.fillMaxWidth().height(230.dp).clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)).clickable(onClickLabel = "Open the map full screen", onClick = onExpand),
-                )
-            }
             Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 StayCalendar(trip, tint, today, onDay = onDay)
-                // The map leaves out any name it cannot place clear of the others, so the key spells out every stay.
                 StayKey(trip, tint)
                 image?.let { bmp ->
                     Image(bmp, "Supplied overview image of the trip", Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)

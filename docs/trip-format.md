@@ -52,9 +52,9 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 
 **Link** — `{ "label": "Planning sheet", "url": "https://…", "kind": "spreadsheet" | "chat" | "map" | "doc" | "booking" | "other" }`
 
-**TripMap** — `{ "url"?, "imageUrl"?, "attribution"?, "note"? }`. `imageUrl` is a small overview picture showing the destinations, with `attribution` kept beside it. `url` (a custom Google map) is still read but no longer shown. The app draws its own overview map from stay coordinates either way.
+**TripMap** — `{ "url"?, "imageUrl"?, "attribution"?, "note"? }`. `imageUrl` is a small overview picture showing the destinations, with `attribution` kept beside it. `url` (a custom Google map) is kept but not shown.
 
-**Place** — `{ "name"?, "query"?, "address"?, "lat"?, "lng"?, "placeId"?, "mapsUrl"? }`. Any one is enough. For "Open in Google Maps" the app prefers `mapsUrl`, then `placeId`, then `query`, then `lat`/`lng`, then `name` plus the stay's name. `query` is what you would type into Google Maps (`"Jardín de los Picaflores, Puerto Iguazú"`). Coordinates are what put a place on a map, so give them for every stay (the overview map) and every activity (the stay map, which numbers them so the traveler can see what is near what).
+**Place** — `{ "name"?, "query"?, "address"?, "lat"?, "lng"?, "placeId"?, "mapsUrl"? }`. Any one is enough. For "Open in Google Maps" the app prefers `mapsUrl`, then `placeId`, then `query`, then `lat`/`lng`, then `name` plus the stay's name. `query` is what you would type into Google Maps (`"Jardín de los Picaflores, Puerto Iguazú"`). Coordinates are what put a place on the trip's Google My Maps map and in the day's directions, so give them for every stay and every activity.
 
 ## Stay
 
@@ -97,9 +97,9 @@ A stay is a period based in one location. A return to the same city is a **separ
 
 `mode` is the main vehicle; the app shows it as an icon. For `"other"`, the app shows the first vehicle the `details` name.
 
-`fromPlace` and `toPlace` are where it leaves from and arrives at when that isn't the stay itself: a flight's airports (`{ "name": "Aeroparque Jorge Newbery (AEP)", "query", "lat", "lng" }`), or the stations or ports of a long bus, train or ferry ride between towns. The trip map pins them and draws the leg between them.
+`fromPlace` and `toPlace` are where it leaves from and arrives at when that isn't the stay itself: a flight's airports (`{ "name": "Aeroparque Jorge Newbery (AEP)", "query", "lat", "lng" }`), or the stations or ports of a long bus, train or ferry ride between towns. The trip map marks them and draws the leg between them.
 
-Times are local to the place they happen. The overview map draws transfers as straight dashed lines labelled by mode — never as driving routes.
+Times are local to the place they happen.
 
 ## Activity
 

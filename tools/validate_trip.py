@@ -251,7 +251,7 @@ def check_references(trip, rep):
                 rep.warn(f"{where}.workRhythm", "end is not after start")
         place = s.get("place")
         if not (isinstance(place, dict) and "lat" in place and "lng" in place):
-            rep.warn(where, "no place.lat/lng — this stay cannot appear on the overview map")
+            rep.warn(where, "no place.lat/lng — this stay cannot appear on the trip map")
 
     for i, t in enumerate(transfers):
         for k in ("from", "to"):
@@ -399,7 +399,7 @@ def check_complete(trip, rep):
         rep.error("activities", f"{len(no_stars)} have no stars (1–3): {_names(no_stars)}")
     unplaced = [a.get("id", "?") for a in acts if not {"lat", "lng"} <= set(a.get("place") or {})]
     if unplaced:
-        rep.error("activities", f"{len(unplaced)} have no place.lat/lng, so the stay map can't show them: {_names(unplaced)}. "
+        rep.error("activities", f"{len(unplaced)} have no place.lat/lng, so the trip map can't show them: {_names(unplaced)}. "
                                 "Give every activity's coordinates")
     loose = [a.get("id", "?") for a in acts if (a.get("practical") or {}).get("booking") and "booking" not in a]
     if loose:

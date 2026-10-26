@@ -1,5 +1,6 @@
 package dev.tlong.traveler
 
+import java.io.File
 import dev.tlong.traveler.data.DeviceCalendar
 import android.content.Context
 import android.net.Uri
@@ -15,8 +16,6 @@ import dev.tlong.traveler.domain.ChecklistTemplate
 import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.model.Trip
-import dev.tlong.traveler.ui.map.OfflineMaps
-import dev.tlong.traveler.ui.map.TripBackdrops
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -105,7 +104,6 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
         refreshSession(tripId)
     }
 
-    /** Empties the recently-deleted list past its keep time, and the saved maps of trips now gone. */
     /** Offers the starter templates once, on the first launch that has checklists; deleting them all keeps them gone. */
     fun seedTemplatesLater() = scope.launch {
         val prefs = context.getSharedPreferences("traveler", Context.MODE_PRIVATE)
@@ -114,11 +112,12 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
         prefs.edit().putBoolean(SEEDED_TEMPLATES, true).apply()
     }
 
+    /** Empties the recently-deleted list past its keep time, and the files the old in-app maps left behind. */
     fun purgeExpiredLater() = scope.launch {
         store.purgeExpired()
-        val ids = store.summaries.first().map { it.id }.toSet()
-        TripBackdrops.prune(context, ids)
-        OfflineMaps.prune(context, ids)
+        File(context.filesDir, "trip-maps").deleteRecursively()
+        File(context.filesDir, "terrain-style.json").delete()
+        context.filesDir.listFiles { f -> f.name.startsWith("mbgl-") }?.forEach { it.deleteRecursively() }
     }
 
     private fun displayName(uri: Uri): String? = runCatching {

@@ -5,13 +5,7 @@
     "traveler.db",
     "keystore.properties",
     "local.properties",
-    "filesDir/trip-maps",
     "filesDir/images",
-    "cacheDir/exports",
-    "tools/cache"
-  ],
-  "not_paths": [
-    "tiles.openfreemap.org/planet",
-    "tripId/stayId"
+    "cacheDir/exports"
   ]
 }
