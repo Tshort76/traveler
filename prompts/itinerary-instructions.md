@@ -22,7 +22,8 @@ That file is an export from the app, and it contains the traveler's own changes.
 
 - **Keep every `id`.** Mint new ids only for new things. The trip `id` never changes.
 - **Increase `revision` by 1** and set `generatedAt` to now.
-- **Leave app-written fields alone:** `origin`, `userEdited`, `userNote`, `exportedFrom`.
+- **Leave app-written fields alone:** `origin`, `userEdited`, `userNote`, `userStatus`, `exportedFrom`.
+  - An activity with `"userStatus": "wontdo"` doesn't interest the traveler: keep it, but never plan it, and don't suggest anything like it in its place. `"userStatus": "done"` means they already did it.
   - An item with `"origin": "user"` is the traveler's own entry. Keep it and keep its wording.
   - A commitment with `"origin": "user"` is a booking the traveler made. It is fixed: keep its date and times, keep its linked activity at that time, and plan the rest of that day around it.
   - Keep every entry in `links`. They are trip-wide documents the traveler adds, such as a planning sheet or a map. A link for one place, tour or restaurant goes in that activity's `url` (or its `booking.url`), never in `links`. Never create a sheet or document on the traveler's behalf.

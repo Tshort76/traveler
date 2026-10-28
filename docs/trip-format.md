@@ -21,7 +21,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 1. **Every `id` is stable.** When revising a trip, keep every id you were given and mint new ids only for new things. Ids are lower-case slugs (`garganta-del-diablo`, `bsas-2`), unique within their list.
 2. **The trip `id` never changes** across revisions. A new trip gets a new id.
 3. **`revision` goes up by one** each time you produce a new version of the trip.
-4. **Fields named `origin`, `userEdited` and `userNote` are written by the app.** Keep them exactly as given. An item with `"origin": "user"` is the traveler's own entry: never delete or reword it. A field listed in `userEdited` holds the traveler's wording: do not overwrite it — propose changes in your reply instead.
+4. **Fields named `origin`, `userEdited`, `userNote` and `userStatus` are written by the app.** Keep them exactly as given. An item with `"origin": "user"` is the traveler's own entry: never delete or reword it. A field listed in `userEdited` holds the traveler's wording: do not overwrite it — propose changes in your reply instead.
 5. **Never invent facts.** Leave out hours, prices, bookings and availability you have not verified, or mark the activity `"confidence": "check"`.
 
 ## Trip (top level)
@@ -126,6 +126,7 @@ Times are local to the place they happen.
 | `checkedOn` | | ISO date | When details were last verified. |
 | `url`, `sources` | | URL, URL[] | Official site; where the facts came from. |
 | `origin`, `userEdited`, `userNote` | | | **App-written.** See the rules above. |
+| `userStatus` | | enum | **App-written.** `"done"`: the traveler did it. `"wontdo"`: not interested; don't plan it or suggest it again. |
 
 Category tags: 🏛️ architecture · 🌿 nature · ☕ coffee · 🍽️ food · 🎨 art · 🛍️ shopping · 📸 viewpoint · 🏃 run/hike · 🧗 climbing · 🚶 walk · 🏡 neighborhood · 💻 work · 🚗 driving · 🎭 culture · 🌊 water · 🌲 forest · 🏔️ mountains · 📚 books · 🎵 music · 🍸 bar · 💃 dance · 🏊 swimming
 
@@ -157,4 +158,4 @@ Something fixed on a date that the plan must work around.
 - **Known trip id, same content** → "already imported", nothing changes.
 - **Known trip id, new content** → a revision: the app compares the incoming file with the version it last imported and with the traveler's current plan, lists what changed, keeps the traveler's edits, asks about anything both sides changed, and keeps a snapshot so the import can be undone.
 - **Lower `revision` or older `generatedAt` than the copy in use** → a warning before anything happens.
-- **Export** writes the current plan — the traveler's edits included — in this same format, with `origin`, `userEdited` and `userNote` filled in, so an assistant can revise it and the app can merge the result.
+- **Export** writes the current plan — the traveler's edits included — in this same format, with `origin`, `userEdited`, `userNote` and `userStatus` filled in, so an assistant can revise it and the app can merge the result.

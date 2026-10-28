@@ -137,7 +137,7 @@ Defined at `model/Trip.kt:178`.
 | `place`, `duration`, `availability`, `hours` | various | What the placement checks read |
 | `booking` | `Booking` | Status, priority 1–3, price, link and how to book |
 | `origin` | string | `user` for an entry you added |
-| `userEdited`, `userNote` | list, string | Your changes and your note; never taken from a file |
+| `userEdited`, `userNote`, `userStatus` | list, string, enum | Your changes, your note, and done or won't do; never taken from a file |
 
 <details>
 <summary>Example: the Teatro Colón tour, which needs booking</summary>
@@ -305,7 +305,7 @@ Both tables are in `traveler.db`, defined at `data/Database.kt:27` and `data/Dat
 | At most 20 snapshots are kept per trip | `data/TripStore.kt:146` | History stays bounded |
 | A deleted trip is purged 30 days after deletion, with its snapshots | `data/TripStore.kt:128`, `AppContainer.kt:116` | Recently deleted is a real undo, and nothing lingers after it |
 | Opening the same content twice makes no duplicate | `data/ImportRouter.kt:48` | Sharing a file twice is harmless |
-| `origin`, `userEdited` and `userNote` always keep the phone's value in a merge | `model/Trip.kt:212` | Your entries and notes survive a revision |
+| `origin`, `userEdited`, `userNote` and `userStatus` always keep the phone's value in a merge | `model/Trip.kt:252` | Your entries and notes survive a revision |
 | Content identity ignores `exportedFrom` | `domain/Export.kt:37` | An exported file reopened is recognised as the same trip |
 
 *Generated from 72c887b on 2026-10-05.*

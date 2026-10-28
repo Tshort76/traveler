@@ -789,6 +789,13 @@
         "userNote": {
           "type": "string",
           "description": "App-written: the traveler's own note."
+        },
+        "userStatus": {
+          "enum": [
+            "done",
+            "wontdo"
+          ],
+          "description": "App-written: the traveler did it, or isn't interested."
         }
       }
     },

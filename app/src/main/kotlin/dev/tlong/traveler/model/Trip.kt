@@ -241,12 +241,18 @@ data class Activity(
     val origin: String? = null,
     val userEdited: List<String> = emptyList(),
     val userNote: String? = null,
+    /** The traveler's verdict: [USER_DONE] or [USER_WONT_DO]. */
+    val userStatus: String? = null,
 ) {
     val isCustom get() = origin == ORIGIN_USER
+    val isWontDo get() = userStatus == USER_WONT_DO
 }
 
 /** Fields the app writes; an import never overwrites them and they are not the traveler's edits. */
-val APP_FIELDS = setOf("origin", "userEdited", "userNote")
+val APP_FIELDS = setOf("origin", "userEdited", "userNote", "userStatus")
+
+const val USER_DONE = "done"
+const val USER_WONT_DO = "wontdo"
 
 const val ORIGIN_USER = "user"
 

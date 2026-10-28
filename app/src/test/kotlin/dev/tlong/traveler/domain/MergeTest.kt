@@ -30,6 +30,7 @@ class MergeTest {
         t = Edits.place(t, "isla-san-martin", "2026-11-12", Slot.MORNING)          // r2 drops it; I scheduled it
         t = Edits.deleteActivity(t, "la-aripuca")                                   // r2 leaves it unchanged
         t = Edits.setUserNote(t, "feirinha", "Try the provoleta")
+        t = Edits.setUserStatus(t, "feirinha", "wontdo")
         check(id == customId)
         t
     }
@@ -66,6 +67,7 @@ class MergeTest {
         assertNotNull(merged.activity("isla-san-martin"))
         assertNull(merged.activity("la-aripuca"))
         assertEquals("Try the provoleta", merged.activity("feirinha")!!.userNote)
+        assertTrue(merged.activity("feirinha")!!.isWontDo)
         assertEquals("10:30", merged.commitments.first { it.id == "boat-gran-aventura" }.start)
         assertNotNull(merged.activity("itaipu-dam"))
         assertEquals(2, merged.revision)

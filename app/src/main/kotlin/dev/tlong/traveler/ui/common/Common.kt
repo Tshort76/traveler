@@ -322,13 +322,17 @@ fun modeEmoji(mode: String?) = when (mode) {
     else -> "➜"
 }
 
-/** "Name · ✨ 🎟️": ✨ a standout, ⭐ one the traveler will likely enjoy, 🎟️ needs a ticket or reservation, ✓ booked. */
-fun marked(name: String, stars: Int?, ticket: Boolean, booked: Boolean): String {
-    val marks = listOfNotNull(when (stars) { 3 -> "✨"; 2 -> "⭐"; else -> null }, if (booked) "✓" else "🎟️".takeIf { ticket })
+/**
+ * "Name · ✨ 🎟️": ✨ a standout, ⭐ one the traveler will likely enjoy, 👎 one they won't do (in the
+ * stars' place), 🎟️ needs a ticket or reservation, ✓ booked, ✅ done.
+ */
+fun marked(name: String, stars: Int?, ticket: Boolean, booked: Boolean, wontDo: Boolean = false, done: Boolean = false): String {
+    val rating = if (wontDo) "👎" else when (stars) { 3 -> "✨"; 2 -> "⭐"; else -> null }
+    val marks = listOfNotNull(rating, when { done -> "✅"; booked -> "✓"; else -> "🎟️".takeIf { ticket && !wontDo } })
     return if (marks.isEmpty()) name else "$name · ${marks.joinToString(" ")}"
 }
 
-fun Activity.marked(booked: Boolean) = marked(name, stars, booking != null && !booking.isOnSite, booked)
+fun Activity.marked(booked: Boolean, done: Boolean = false) = marked(name, stars, booking != null && !booking.isOnSite, booked, isWontDo, done)
 
 /** Green for a booked item's name, otherwise [otherwise]. */
 @Composable

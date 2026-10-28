@@ -84,6 +84,8 @@ import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.DayKind
 import dev.tlong.traveler.model.ItemStatus
+import dev.tlong.traveler.model.USER_DONE
+import androidx.compose.ui.graphics.Color
 import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Stay
 import dev.tlong.traveler.model.Trip
@@ -209,7 +211,7 @@ private fun DayCard(trip: Trip, stay: Stay, workPlan: WorkPlan, date: LocalDate,
     val rows = buildList {
         plan.forEach { item ->
             val a = trip.activities.firstOrNull { it.id == item.activityId } ?: return@forEach
-            val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✓ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
+            val status = when (ItemStatus.of(item.status)) { ItemStatus.DONE -> "✅ "; ItemStatus.SKIPPED -> "⨯ "; else -> "" }
             add(ItineraryRow(minuteOf(item.time) ?: Slot.of(item.slot).minute, "$status${item.time ?: Slot.of(item.slot).label}  ${a.tag ?: "•"} ${a.marked(trip.isBooked(a))}", trip.isBooked(a)) { onActivity(a.id) })
         }
         // Flights and other transfers leaving today; on the stay's first day, also one that left the day before (an overnight flight in).
@@ -257,8 +259,11 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     var conditions by rememberSaveable { mutableStateOf(setOf<String>()) }
     var tags by rememberSaveable { mutableStateOf(setOf<String>()) }
     val scheduled = remember(trip) { trip.days.flatMap { d -> d.plan.map { it.activityId to d.date } }.groupBy({ it.first }, { it.second }) }
-    val done = remember(trip) { trip.days.flatMap { d -> d.plan.filter { ItemStatus.of(it.status) == ItemStatus.DONE }.map { it.activityId } }.toSet() }
-    var order by rememberSaveable { mutableStateOf(PoolOrder.BEST) }
+    val done = remember(trip) {
+        trip.days.flatMap { d -> d.plan.filter { ItemStatus.of(it.status) == ItemStatus.DONE }.map { it.activityId } }.toSet() +
+            trip.activities.filter { it.userStatus == USER_DONE }.map { it.id }
+    }
+    var order by rememberSaveable { mutableStateOf(PoolOrder.TYPE) }
     // Only the options this stay's activities actually have.
     val fitOptions = remember(pool) { FITS.filter { (k, _) -> pool.any { it.fit == k } } }
     val effortOptions = remember(pool) { EFFORTS.filter { (k, _) -> pool.any { it.effort == k } } }
@@ -269,7 +274,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         (!standouts || a.stars == 3) && (planned == null || (a.id in scheduled) == planned) &&
             (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
             (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
-    }.sortedWith(byRecommendation)
+    }.sortedWith(compareBy<Activity> { it.isWontDo }.then(byRecommendation))
     // By type: the types in the order of their best activity, untagged last.
     val groups = when (order) {
         PoolOrder.BEST -> listOf(null to list)
@@ -359,15 +364,17 @@ private fun Toggle(label: String, description: String, on: Boolean, onClick: () 
 
 @Composable
 private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, done: Boolean, showTag: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
-    // A list row, not a card: the details line says where it is planned, then the facts.
+    // A list row, not a card: the details line says where it is planned, then the facts. One you won't do is dimmed.
     val planned = plannedOn.mapNotNull { it.toDate()?.let { d -> "${d.weekdayShort()} ${d.dayOfMonth}" } }
     val details = listOfNotNull(planned.takeIf { it.isNotEmpty() }?.let { "🗓️ " + it.joinToString(", ") }, a.factsLine().ifEmpty { null }, "Yours".takeIf { a.isCustom })
     Column {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 // Done reads like booked: a ✓ and green.
-                Text(listOfNotNull(a.tag.takeIf { showTag }, a.marked(booked || done)).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(booked || done))
-                a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                val muted = MaterialTheme.colorScheme.onSurfaceVariant
+                Text(listOfNotNull(a.tag.takeIf { showTag }, a.marked(booked, done)).joinToString("  "), style = MaterialTheme.typography.titleSmall,
+                    color = if (a.isWontDo) muted else bookedColor(booked || done))
+                a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (a.isWontDo) muted else Color.Unspecified) }
                 if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             IconButton(onClick = onAdd, modifier = Modifier.semantics { contentDescription = "Add ${a.name} to a day" }) {

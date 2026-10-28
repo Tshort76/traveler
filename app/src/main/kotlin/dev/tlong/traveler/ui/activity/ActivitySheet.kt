@@ -57,6 +57,8 @@ import dev.tlong.traveler.model.Place
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Trip
+import dev.tlong.traveler.model.USER_DONE
+import dev.tlong.traveler.model.USER_WONT_DO
 import dev.tlong.traveler.ui.common.starLabel
 import dev.tlong.traveler.ui.overview.UrlDialog
 import dev.tlong.traveler.ui.common.LabeledText
@@ -117,6 +119,13 @@ fun ActivitySheet(
                     DropdownMenu(more, onDismissRequest = { more = false }) {
                         DropdownMenuItem(text = { Text("Edit") }, onClick = { more = false; onEdit(a) })
                         DropdownMenuItem(text = { Text("I booked this…") }, onClick = { more = false; onBook(a, null) })
+                        listOf(USER_DONE to "Done", USER_WONT_DO to "Won't do").forEach { (status, label) ->
+                            val on = a.userStatus == status
+                            DropdownMenuItem(text = { Text(if (on) "Not “${label.lowercase()}”" else "Mark “${label.lowercase()}”") }, onClick = {
+                                more = false
+                                session.edit(if (on) "Clear $label" else label) { Edits.setUserStatus(it, a.id, status.takeUnless { on }) }
+                            })
+                        }
                         if (!trip.isBooked(a)) {
                             val reserve = a.booking == null || a.booking.isOnSite
                             DropdownMenuItem(text = { Text(if (reserve) "Needs a reservation" else "No reservation needed") }, onClick = {
@@ -132,7 +141,11 @@ fun ActivitySheet(
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 if (a.isCustom) Pill("Your entry")
-                starLabel(a.stars)?.let { Pill(it) }
+                when (a.userStatus) {
+                    USER_DONE -> Pill("✅ Done")
+                    USER_WONT_DO -> Pill("👎 Won't do")
+                    else -> starLabel(a.stars)?.let { Pill(it) }
+                }
                 a.booking?.let { b ->
                     val what = when { trip.isBooked(a) -> "✓ Booked"; b.isOnSite -> "Pay at the door"; else -> "🎟️ Reserve ahead" }
                     Pill(listOfNotNull(what, b.price?.let { it.rateLabel() ?: it.label() }).joinToString(" · "))

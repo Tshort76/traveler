@@ -190,7 +190,7 @@ private fun calendarOf(trip: Trip, day: Day, blocks: List<WorkBlock>): Pair<List
         val a = trip.activity(item.activityId)
         val minutes = (a?.duration?.minutes ?: 60).coerceAtLeast(30)
         val status = ItemStatus.of(item.status)
-        val pill = when (status) { ItemStatus.DONE -> "✓ Done"; ItemStatus.SKIPPED -> "Skipped"; else -> null }
+        val pill = when (status) { ItemStatus.DONE -> "✅ Done"; ItemStatus.SKIPPED -> "Skipped"; else -> null }
         val booked = a != null && trip.isBooked(a)
         val title = listOfNotNull(a?.tag, a?.marked(booked) ?: "(removed activity)").joinToString(" ")
         val c = linked[item.activityId]

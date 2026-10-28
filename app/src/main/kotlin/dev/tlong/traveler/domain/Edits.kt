@@ -211,6 +211,10 @@ object Edits {
         trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userNote = note.ifBlank { null }) else it })
 
     /** Deletes the activity itself — every placement of it goes too. Distinct from returning it to the pool. */
+    /** [status] is USER_DONE, USER_WONT_DO or null to clear it. */
+    fun setUserStatus(trip: Trip, id: String, status: String?): Trip =
+        trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userStatus = status) else it })
+
     fun deleteActivity(trip: Trip, id: String): Trip = trip.copy(
         activities = trip.activities.filterNot { it.id == id },
         days = trip.days.map { d -> if (d.plan.any { it.activityId == id }) d.withPlan(d.plan.filterNot { it.activityId == id }) else d },

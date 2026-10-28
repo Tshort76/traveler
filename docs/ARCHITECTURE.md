@@ -13,7 +13,7 @@ A `SnapshotRow` copy of both is taken before anything replaces them (a revision 
 
 Some of the traveler's things live beside the trip file, never in it, so no export carries them and no revision changes them: `TripRow.notes` (free text; the Notes page shows the trip file's `warnings` and `notes` read-only beneath it, so a revision replaces those and never the text), `TripRow.checklist` (a `Checklist` document of to-dos and packing items, `domain/Checklist.kt`) and `TripRow.work` (a `WorkPlan`, `domain/WorkBlocks.kt`: the days whose work blocks were moved or cancelled; any other work day follows the stay's `workRhythm` cut into 2-hour blocks). Checklist templates are their own `TemplateRow` documents; applying one copies its items into the trip, skipping any already there. Backups carry all of them.
 
-Everything the app adds to the file format is a field the format already allows: `origin: "user"` on the traveler's own activities, `userNote`, and `userEdited` (the list of fields the traveler changed). That is what lets an exported file go back to an assistant and come back merged.
+Everything the app adds to the file format is a field the format already allows: `origin: "user"` on the traveler's own activities, `userNote`, `userStatus` (done, or won't do), and `userEdited` (the list of fields the traveler changed). That is what lets an exported file go back to an assistant and come back merged.
 
 ## Layers
 
@@ -29,7 +29,7 @@ Everything the app adds to the file format is a field the format already allows:
 `Merge.plan(base, local, incoming)` compares entities by id (days by date), field by field.
 
 - Changed only in the file: taken. Changed only by the traveler: kept. Changed on both sides to different values: a conflict, defaulting to "keep mine".
-- App fields (`origin`, `userEdited`, `userNote`) always keep the local value. A day's plan is merged as one value.
+- App fields (`origin`, `userEdited`, `userNote`, `userStatus`) always keep the local value. A day's plan is merged as one value.
 - An entity the file drops becomes a removal decision. It defaults to remove, unless it is scheduled or the traveler edited it.
 - An entity the traveler deleted but the file changed is offered back ("restorables").
 - `freshness` warns when the incoming revision is older or the same as the base.

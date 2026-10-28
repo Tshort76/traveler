@@ -525,7 +525,8 @@
         "short-morning"
       ],
       "confidence": "check",
-      "stars": 1
+      "stars": 1,
+      "userStatus": "wontdo"
     },
     {
       "id": "plaza-de-mayo",
@@ -691,7 +692,8 @@
       ],
       "effort": "easy",
       "confidence": "check",
-      "stars": 2
+      "stars": 2,
+      "userStatus": "done"
     },
     {
       "id": "don-julio",
@@ -1367,6 +1369,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "65d09cf4a5b221f0"
+    "hash": "d217aa3091515bfc"
   }
 }
