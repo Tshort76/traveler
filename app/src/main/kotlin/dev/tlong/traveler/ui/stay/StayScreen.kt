@@ -9,6 +9,12 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import dev.tlong.traveler.ui.activity.TAGS
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -251,6 +257,8 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     var conditions by rememberSaveable { mutableStateOf(setOf<String>()) }
     var tags by rememberSaveable { mutableStateOf(setOf<String>()) }
     val scheduled = remember(trip) { trip.days.flatMap { d -> d.plan.map { it.activityId to d.date } }.groupBy({ it.first }, { it.second }) }
+    val done = remember(trip) { trip.days.flatMap { d -> d.plan.filter { ItemStatus.of(it.status) == ItemStatus.DONE }.map { it.activityId } }.toSet() }
+    var order by rememberSaveable { mutableStateOf(PoolOrder.BEST) }
     // Only the options this stay's activities actually have.
     val fitOptions = remember(pool) { FITS.filter { (k, _) -> pool.any { it.fit == k } } }
     val effortOptions = remember(pool) { EFFORTS.filter { (k, _) -> pool.any { it.effort == k } } }
@@ -262,6 +270,12 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
             (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
     }.sortedWith(byRecommendation)
+    // By type: the types in the order of their best activity, untagged last.
+    val groups = when (order) {
+        PoolOrder.BEST -> listOf(null to list)
+        PoolOrder.TYPE -> list.groupBy { it.tag }.toList().sortedBy { it.first == null }
+            .map { (tag, l) -> (tag?.let { "$it ${TAGS[it] ?: ""}".trim() } ?: "Other") to l }
+    }
     val more = fits.size + efforts.size + conditions.size + tags.size
     var advanced by rememberSaveable { mutableStateOf(false) }
 
@@ -269,6 +283,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         item("filters") {
             // Quick toggles up front; the rarely needed ones fold away behind the filter icon.
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                OrderMenu(order) { order = it }
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
                 TriStateFilter(planned, { when (it) { null -> "Showing planned and unplanned"; true -> "Showing planned only"; false -> "Showing unplanned only" } }) { planned = it }
                 Spacer(Modifier.weight(1f))
@@ -291,10 +306,34 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             }
         }
         if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }
-        items(list, key = { it.id }) { a ->
-            val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
-            // The work block has no details until it is first placed.
-            PoolRow(a, scheduled[a.id].orEmpty(), trip.isBooked(a), onOpen = { overlays.detail = a.id }, onAdd = add)
+        groups.forEach { (title, members) ->
+            title?.let { item("h-$it") { SectionTitle(it, Modifier.padding(top = 12.dp)) } }
+            items(members, key = { it.id }) { a ->
+                val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
+                PoolRow(a, scheduled[a.id].orEmpty(), trip.isBooked(a), a.id in done, showTag = title == null, onOpen = { overlays.detail = a.id }, onAdd = add)
+            }
+        }
+    }
+}
+
+private enum class PoolOrder(val label: String) { BEST("Best first"), TYPE("By type") }
+
+/** The order as a menu, like the Bookings list's. */
+@Composable
+private fun OrderMenu(order: PoolOrder, onChange: (PoolOrder) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        TextButton(onClick = { open = true }, contentPadding = PaddingValues(start = 0.dp, end = 4.dp)) {
+            Text(order.label)
+            Icon(Icons.Default.ArrowDropDown, contentDescription = "Change order")
+        }
+        DropdownMenu(open, onDismissRequest = { open = false }) {
+            PoolOrder.entries.forEach { o ->
+                DropdownMenuItem(
+                    text = { Text(o.label) }, onClick = { onChange(o); open = false },
+                    leadingIcon = { if (order == o) Icon(Icons.Default.Check, contentDescription = null) },
+                )
+            }
         }
     }
 }
@@ -319,14 +358,15 @@ private fun Toggle(label: String, description: String, on: Boolean, onClick: () 
 }
 
 @Composable
-private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
+private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, done: Boolean, showTag: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
     // A list row, not a card: the details line says where it is planned, then the facts.
     val planned = plannedOn.mapNotNull { it.toDate()?.let { d -> "${d.weekdayShort()} ${d.dayOfMonth}" } }
     val details = listOfNotNull(planned.takeIf { it.isNotEmpty() }?.let { "🗓️ " + it.joinToString(", ") }, a.factsLine().ifEmpty { null }, "Yours".takeIf { a.isCustom })
     Column {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                Text(listOfNotNull(a.tag, a.marked(booked)).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(booked))
+                // Done reads like booked: a ✓ and green.
+                Text(listOfNotNull(a.tag.takeIf { showTag }, a.marked(booked || done)).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(booked || done))
                 a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
