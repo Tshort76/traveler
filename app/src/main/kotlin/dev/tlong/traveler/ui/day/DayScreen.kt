@@ -256,6 +256,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     val stay = day?.let { trip.stayOf(it) }
     var editingNote by remember(date) { mutableStateOf(false) }
     var picker by remember { mutableStateOf<AddAt?>(null) }
+    var again by remember { mutableStateOf<Pair<Activity, AddAt>?>(null) }
     var timeFor by remember { mutableStateOf<Edits.ItemRef?>(null) }
     var workTimeFor by remember { mutableStateOf<Int?>(null) }
     var pendingDrop by remember { mutableStateOf<PendingDrop?>(null) }
@@ -298,6 +299,13 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
         } else emptyList()
         if (a != null && issues.isNotEmpty()) pendingDrop = PendingDrop(next.day(date)!!.plan, a, issues)
         else if (session.edit("Set time") { Edits.setTime(it, ref, time) }) undoable(if (time == null) "“${a?.name}” is anytime" else "“${a?.name}” at $time")
+    }
+
+    /** Adds [a] at [at]; a clash with a booking or work opens the day-and-time sheet instead. */
+    fun add(a: Activity, at: AddAt) {
+        val issues = local?.let { checkPlacement(session.trip.value, a, it, at.slot, at.time?.toTime(), work = blocks) }.orEmpty().filter { it.blocking }
+        if (issues.isNotEmpty()) overlays.place = PlaceRequest(a.id, null, date, at.slot)
+        else if (session.edit("Add ${a.name}") { Edits.place(it, a.id, date, at.slot, at.time) }) undoable("Added “${a.name}”" + (at.time?.let { " at $it" } ?: ""))
     }
 
     fun goTo(offset: Int) { trip.days.getOrNull(dayIndex + offset)?.let { navigator.day(trip.id, it.date, replace = true) } }
@@ -513,13 +521,31 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             overlays.newEntry = NewEntryRequest(stay?.id ?: trip.stays.first().id, date, at.slot)
         }) { a ->
             picker = null
-            val issues = local?.let { checkPlacement(trip, a, it, at.slot, at.time?.toTime(), work = blocks) }.orEmpty().filter { it.blocking }
-            if (issues.isNotEmpty()) {
-                overlays.place = PlaceRequest(a.id, null, date, at.slot)
-            } else if (session.edit("Add ${a.name}") { Edits.place(it, a.id, date, at.slot, at.time) }) {
-                undoable("Added “${a.name}”" + (at.time?.let { " at $it" } ?: ""))
-            }
+            // One already on a day asks whether to move it here or add another.
+            if (trip.placementsOf(a.id).isNotEmpty()) again = a to at else add(a, at)
         }
+    }
+
+    again?.let { (a, at) ->
+        val placed = trip.placementsOf(a.id)
+        val only = placed.singleOrNull()
+        AlertDialog(
+            onDismissRequest = { again = null },
+            title = { Text("“${a.name}” is already planned") },
+            text = { Text(placed.joinToString("\n") { p -> dayName(p.date) + (p.item.time?.let { ", $it" } ?: ", ${Slot.of(p.item.slot).label.lowercase()}") + if (ItemStatus.of(p.item.status) == ItemStatus.DONE) " (done)" else "" }) },
+            confirmButton = {
+                Row {
+                    TextButton(onClick = { again = null; add(a, at) }) { Text("Add another") }
+                    if (only != null) TextButton(onClick = {
+                        again = null
+                        if (session.edit("Move ${a.name}") { Edits.move(it, Edits.ItemRef(only.date, only.index), date, at.slot, at.time) }) {
+                            undoable("Moved “${a.name}”" + (at.time?.let { " to $it" } ?: ""))
+                        }
+                    }) { Text("Move it here") }
+                }
+            },
+            dismissButton = { TextButton(onClick = { again = null }) { Text("Cancel") } },
+        )
     }
 
     timeFor?.let { ref ->
