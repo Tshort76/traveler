@@ -113,6 +113,7 @@ import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.ui.activity.TAGS
 import dev.tlong.traveler.ui.common.SectionTitle
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.PaddingValues
 import dev.tlong.traveler.domain.window
 import dev.tlong.traveler.domain.workHoursOn
 import dev.tlong.traveler.domain.zone
@@ -674,6 +675,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, wor
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Add to ${dayName(date)}" + (whenLabel?.let { ", $it" } ?: ""), style = MaterialTheme.typography.titleLarge)
             at.freeMinutes?.let { m -> Text("Free until ${hhmm((at.time?.let(::minutesOf) ?: 0) + m)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            TextButton(onClick = onNew, contentPadding = PaddingValues(horizontal = 0.dp)) { Text("+ New entry of your own") }
             // Glyph chips for the types here, like the Bookings filters.
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 tags.forEach { t ->
@@ -697,7 +699,6 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, wor
                     }
                     items(list, key = { it.activity.id }) { f -> PickRow(trip, f) { onPick(f.activity) } }
                 }
-                item("new") { TextButton(onClick = onNew, modifier = Modifier.padding(top = 8.dp)) { Text("+ New entry of your own") } }
             }
         }
     }
