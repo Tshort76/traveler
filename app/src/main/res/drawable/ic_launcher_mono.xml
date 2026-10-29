@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The themed (one-colour) icon: the globe's ring, the front ridge and the pin. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#FFFFFF" android:strokeWidth="3.5" android:pathData="M25.75,56a28.25,28.25 0 1,0 56.5,0a28.25,28.25 0 1,0 -56.5,0z" />
+    <group>
+        <clip-path android:pathData="M24,56a30,30 0 1,0 60,0a30,30 0 1,0 -60,0z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M20,74 L40,52 L50,62 L64,44 L92,72 V92 H20z" />
+    </group>
+    <path android:fillColor="#FFFFFF" android:fillType="evenOdd"
+        android:pathData="M64,42 C60,37 57.5,34 57.5,31 a6.5,6.5 0 1,1 13,0 c0,3 -2.5,6 -6.5,11z M61.5,31a2.5,2.5 0 1,0 5,0a2.5,2.5 0 1,0 -5,0z" />
+</vector>
