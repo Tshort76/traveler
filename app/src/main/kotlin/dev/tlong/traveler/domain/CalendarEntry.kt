@@ -1,5 +1,6 @@
 package dev.tlong.traveler.domain
 
+import dev.tlong.traveler.model.PlanItem
 import dev.tlong.traveler.model.Trip
 import java.time.LocalDate
 import java.time.LocalTime
@@ -70,4 +71,15 @@ fun Trip.calendarEntry(b: Bookable): CalendarEntry? {
             )
         }
     }
+}
+
+/** One planned activity on [date]: at its time for its duration, or all day when it has no time. */
+fun Trip.calendarEntry(date: String, item: PlanItem): CalendarEntry? {
+    val d = date.toDate() ?: return null
+    val a = activity(item.activityId) ?: return null
+    val start = item.time?.toTime()
+    return calendarEntry(
+        a.name, d, start, a.duration?.minutes?.let { start?.plusMinutes(it.toLong()) }, stayFor(d)?.zone ?: ZoneId.systemDefault(),
+        location = locationOf(a.place), details = listOf(a.short, a.url),
+    )
 }

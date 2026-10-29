@@ -56,4 +56,14 @@ class CalendarEntryTest {
         assertEquals(utc("2026-11-08T17:00:00Z") to utc("2026-11-08T18:30:00Z"), boat.begin to boat.end)
         assertTrue("Confirmation: Voucher in email" in boat.description!! && "15 minutes early" in boat.description!!)
     }
+
+    @Test
+    fun `a planned activity runs from its time for its duration, at its place`() {
+        val demo = dev.tlong.traveler.model.TripReader.read(Fixtures.text("demo.trip.json")).trip!!
+        val item = demo.days.first { it.date == "2027-10-18" }.plan.first { it.activityId == "don-julio" }
+        val e = demo.calendarEntry("2027-10-18", item)!!
+        assertEquals(Instant.parse("2027-10-19T00:00:00Z").toEpochMilli(), e.begin)
+        assertEquals(2 * 3_600_000L, e.end - e.begin)
+        assertTrue(e.location!!.isNotBlank())
+    }
 }

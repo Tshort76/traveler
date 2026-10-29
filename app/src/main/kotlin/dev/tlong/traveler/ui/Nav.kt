@@ -20,6 +20,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.activity.compose.BackHandler
+import dev.tlong.traveler.domain.day
+import dev.tlong.traveler.domain.destinations
+import dev.tlong.traveler.domain.stayOf
 import dev.tlong.traveler.ui.checklist.ChecklistScreen
 import dev.tlong.traveler.ui.overview.NotesScreen
 import dev.tlong.traveler.ui.checklist.TemplateScreen
@@ -53,7 +59,13 @@ import kotlinx.serialization.Serializable
 
 /** Navigation callbacks the screens share, so none of them holds the controller. */
 class Navigator(private val nav: NavHostController) {
-    fun back() { if (!nav.popBackStack()) nav.navigate(TripsRoute) }
+    /** Back one screen; from a day the app opened on, with nothing under it, up to its trip. */
+    fun back() {
+        if (nav.previousBackStackEntry != null) { nav.popBackStack(); return }
+        val entry = nav.currentBackStackEntry
+        if (entry?.destination?.hasRoute<DayRoute>() == true) nav.navigate(OverviewRoute(entry.toRoute<DayRoute>().tripId)) { popUpTo(nav.graph.id) { inclusive = true } }
+        else trips()
+    }
     /** The list of trips, alone on the stack: the app may have opened on a trip, with nothing under it. */
     fun trips() = nav.navigate(TripsRoute) { popUpTo(nav.graph.id) { inclusive = true } }
     fun overview(tripId: String, replaceStack: Boolean = false) = nav.navigate(OverviewRoute(tripId)) {
@@ -81,11 +93,16 @@ class Navigator(private val nav: NavHostController) {
 @Composable
 fun TravelerNav() {
     val container = LocalContainer.current
-    // Where the app opens: the trip under way, else the list. Decided before anything is drawn, so the list never flashes past.
+    // Where the app opens: today's day of the trip under way, else that trip, else the list. Decided before
+    // anything is drawn, so nothing flashes past. Saved as "", "<trip>" or "<trip> <date>".
     var opening by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
-        if (opening == null) opening = container.store.summaries.first().underWay(LocalDate.now())?.id
-            ?.takeIf { container.pendingImport.value == null }.orEmpty()
+        if (opening != null) return@LaunchedEffect
+        val today = LocalDate.now()
+        val id = container.store.summaries.first().underWay(today)?.id?.takeIf { container.pendingImport.value == null }
+        val trip = id?.let { container.session(it)?.trip?.value }
+        val inStay = trip?.day(today.toString())?.let { trip.stayOf(it) }?.let { s -> trip.destinations.any { it.id == s.id } } == true
+        opening = when { id == null -> ""; inStay -> "$id $today"; else -> id }
     }
     val start = opening ?: return Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
 
@@ -98,7 +115,8 @@ fun TravelerNav() {
         if (pending != null && nav.currentBackStackEntry?.destination?.route?.contains("ImportRoute") != true) nav.navigate(ImportRoute)
     }
 
-    NavHost(nav, startDestination = if (start.isEmpty()) TripsRoute else OverviewRoute(start)) {
+    val startRoute: Any = start.split(" ").let { p -> when { start.isEmpty() -> TripsRoute; p.size == 2 -> DayRoute(p[0], p[1]); else -> OverviewRoute(start) } }
+    NavHost(nav, startDestination = startRoute) {
         composable<TripsRoute> { TripsScreen(navigator) }
         composable<OverviewRoute> { val r = it.toRoute<OverviewRoute>(); OverviewScreen(r.tripId, navigator, r.tab) }
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
@@ -114,4 +132,7 @@ fun TravelerNav() {
         composable<AssistantGuideRoute> { AssistantGuideScreen(navigator) }
         composable<TemplateRoute> { TemplateScreen(it.toRoute<TemplateRoute>().id, navigator) }
     }
+    // Back from a day the app opened on goes up to its trip rather than out of the app.
+    val entry by nav.currentBackStackEntryAsState()
+    BackHandler(enabled = entry?.destination?.hasRoute<DayRoute>() == true && nav.previousBackStackEntry == null) { navigator.back() }
 }

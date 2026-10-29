@@ -106,6 +106,8 @@ import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
 import dev.tlong.traveler.domain.SlotFit
+import dev.tlong.traveler.domain.calendarEntry
+import dev.tlong.traveler.ui.common.addToCalendar
 import dev.tlong.traveler.domain.suggestFor
 import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.ui.activity.TAGS
@@ -464,7 +466,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                             if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
                         }
                         if (status != ItemStatus.DONE) add("Mark done" to { act { if (session.edit("Mark done") { Edits.setStatus(it, ref, ItemStatus.DONE) }) undoable("Marked “${a?.name}” done") } })
-                        if (status != ItemStatus.SKIPPED) add("Mark skipped" to { act { if (session.edit("Mark skipped") { Edits.setStatus(it, ref, ItemStatus.SKIPPED) }) undoable("Marked “${a?.name}” skipped") } })
+                        trip.calendarEntry(date, item)?.let { e -> add("Add to calendar" to { act { addToCalendar(context, e) } }) }
                         if (status != ItemStatus.PROPOSED) add("Back to planned" to { act { session.edit("Mark planned") { Edits.setStatus(it, ref, ItemStatus.PROPOSED) } } })
                         add("Move to another day…" to { act { overlays.place = PlaceRequest(item.activityId, ref, date, Slot.of(item.slot)) } })
                         add("Unschedule" to { act { if (session.edit("Unschedule") { Edits.remove(it, ref) }) undoable("“${a?.name}” is back in the activities list") } })
