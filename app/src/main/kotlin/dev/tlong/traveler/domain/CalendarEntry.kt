@@ -2,6 +2,7 @@ package dev.tlong.traveler.domain
 
 import dev.tlong.traveler.model.PlanItem
 import dev.tlong.traveler.model.Trip
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -73,13 +74,28 @@ fun Trip.calendarEntry(b: Bookable): CalendarEntry? {
     }
 }
 
-/** One planned activity on [date]: at its time for its duration, or all day when it has no time. */
-fun Trip.calendarEntry(date: String, item: PlanItem): CalendarEntry? {
+/**
+ * One planned activity on [date]: at its time for its duration. One with no time goes where the day
+ * calendar [drawn] it (minutes from midnight), or all day.
+ */
+fun Trip.calendarEntry(date: String, item: PlanItem, drawn: Span? = null): CalendarEntry? {
     val d = date.toDate() ?: return null
     val a = activity(item.activityId) ?: return null
-    val start = item.time?.toTime()
+    fun clock(m: Int) = LocalTime.of(m / 60 % 24, m % 60)
+    val start = item.time?.toTime() ?: drawn?.let { clock(it.start) }
+    val end = a.duration?.minutes?.let { start?.plusMinutes(it.toLong()) } ?: drawn?.takeIf { item.time == null }?.let { clock(it.end) }
     return calendarEntry(
-        a.name, d, start, a.duration?.minutes?.let { start?.plusMinutes(it.toLong()) }, stayFor(d)?.zone ?: ZoneId.systemDefault(),
+        a.name, d, start, end, stayFor(d)?.zone ?: ZoneId.systemDefault(),
         location = locationOf(a.place), details = listOf(a.short, a.url),
     )
+}
+
+/**
+ * The begin and end a calendar app's new-event screen expects. It reads an all-day event's dates at
+ * midnight in the phone's [zone], not in UTC, where they would land on the day before west of Greenwich.
+ */
+fun CalendarEntry.insertTimes(zone: ZoneId = ZoneId.systemDefault()): Pair<Long, Long> {
+    if (!allDay) return begin to end
+    fun local(ms: Long) = Instant.ofEpochMilli(ms).atZone(ZoneOffset.UTC).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
+    return local(begin) to local(end)
 }

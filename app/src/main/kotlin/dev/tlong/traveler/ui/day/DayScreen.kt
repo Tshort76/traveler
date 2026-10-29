@@ -277,6 +277,8 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
 
     val hours = remember(stay, local) { if (stay != null && local != null) workHoursOn(stay, local) else null }
     val blocks = work.blocksOn(date, hours)
+    // Where each thing is drawn; an untimed activity goes to the calendar app at the place it is drawn.
+    val calendar = remember(trip, day, blocks) { day?.let { calendarOf(trip, it, blocks).first }.orEmpty() }
 
     /** Work blocks have their own undo: they live beside the trip file, outside the trip's undo stack. */
     fun setBlocks(next: List<WorkBlock>, message: String) {
@@ -475,7 +477,8 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                             if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
                         }
                         if (status != ItemStatus.DONE) add("Mark done" to { act { if (session.edit("Mark done") { Edits.setStatus(it, ref, ItemStatus.DONE) }) undoable("Marked “${a?.name}” done") } })
-                        trip.calendarEntry(date, item)?.let { e -> add("Add to calendar" to { act { addToCalendar(context, e) } }) }
+                        val drawn = calendar.firstOrNull { it.kind == EntryKind.ACTIVITY && it.tag == s.index }?.span
+                        trip.calendarEntry(date, item, drawn)?.let { e -> add("Add to calendar" to { act { addToCalendar(context, e) } }) }
                         if (status != ItemStatus.PROPOSED) add("Back to planned" to { act { session.edit("Mark planned") { Edits.setStatus(it, ref, ItemStatus.PROPOSED) } } })
                         add("Move to another day…" to { act { overlays.place = PlaceRequest(item.activityId, ref, date, Slot.of(item.slot)) } })
                         add("Unschedule" to { act { if (session.edit("Unschedule") { Edits.remove(it, ref) }) undoable("“${a?.name}” is back in the activities list") } })

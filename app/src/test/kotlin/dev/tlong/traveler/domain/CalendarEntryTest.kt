@@ -66,4 +66,20 @@ class CalendarEntryTest {
         assertEquals(2 * 3_600_000L, e.end - e.begin)
         assertTrue(e.location!!.isNotBlank())
     }
+
+    @Test
+    fun `a planned activity with no time goes where the day calendar draws it`() {
+        val demo = dev.tlong.traveler.model.TripReader.read(Fixtures.text("demo.trip.json")).trip!!
+        val item = demo.days.first { it.date == "2027-10-21" }.plan.first { it.activityId == "puerto-madero" }
+        val e = demo.calendarEntry("2027-10-21", item, Span(17 * 60, 18 * 60 + 30))!!
+        assertFalse(e.allDay)
+        assertEquals(Instant.parse("2027-10-21T20:00:00Z").toEpochMilli(), e.begin)
+    }
+
+    @Test
+    fun `an all-day event reaches the calendar app at local midnight, not the UTC one`() {
+        val (begin, end) = calendarEntry("Hotel", day, null, null, bsas).insertTimes(bsas)
+        assertEquals(Instant.parse("2026-11-07T03:00:00Z").toEpochMilli(), begin)
+        assertEquals(Instant.parse("2026-11-08T03:00:00Z").toEpochMilli(), end)
+    }
 }

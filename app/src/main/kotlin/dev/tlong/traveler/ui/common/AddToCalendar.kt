@@ -7,13 +7,15 @@ import android.provider.CalendarContract
 import android.provider.CalendarContract.Events
 import android.widget.Toast
 import dev.tlong.traveler.domain.CalendarEntry
+import dev.tlong.traveler.domain.insertTimes
 
 /** Opens the phone's calendar app (Google Calendar, say) on a new event filled in from [entry]; nothing is saved until the traveler saves it there. */
 fun addToCalendar(context: Context, entry: CalendarEntry) {
+    val (begin, end) = entry.insertTimes()
     val intent = Intent(Intent.ACTION_INSERT, Events.CONTENT_URI)
         .putExtra(Events.TITLE, entry.title)
-        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, entry.begin)
-        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, entry.end)
+        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, begin)
+        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, end)
         .putExtra(CalendarContract.EXTRA_EVENT_ALL_DAY, entry.allDay)
     entry.location?.let { intent.putExtra(Events.EVENT_LOCATION, it) }
     entry.description?.let { intent.putExtra(Events.DESCRIPTION, it) }
