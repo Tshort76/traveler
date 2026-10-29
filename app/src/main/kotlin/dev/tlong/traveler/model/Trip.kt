@@ -310,7 +310,10 @@ data class Day(
     val note: String? = null,
     val plan: List<PlanItem> = emptyList(),
     val userEdited: List<String> = emptyList(),
-)
+) {
+    /** The traveler's own note; one the assistant wrote is never shown. */
+    val ownNote get() = note.takeIf { "note" in userEdited }
+}
 
 @Serializable
 data class PlanItem(

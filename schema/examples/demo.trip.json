@@ -1296,6 +1296,9 @@
           "activityId": "cafe-tortoni",
           "slot": "afternoon"
         }
+      ],
+      "userEdited": [
+        "note"
       ]
     },
     {
@@ -1369,6 +1372,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "d217aa3091515bfc"
+    "hash": "a2b7a1c029e1ee1a"
   }
 }

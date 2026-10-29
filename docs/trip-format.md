@@ -146,7 +146,7 @@ Something fixed on a date that the plan must work around.
 | `stayId` | | id | Defaults to the stay covering that date. |
 | `kind` | | enum | `"plan"` (default), `"work"`, `"rest"`, `"travel"`, `"free"`. A work, rest or travel day may have an empty plan — never invent an outing to fill it. |
 | `title` | | string | A few words: `"Brazilian side"`. |
-| `note` | | string | Only what the plan doesn't show: an order or timing that matters, in one line. `"Garden at opening, before the tour buses."` |
+| `note` | | string | The traveler's own note for the day, written in the app. An assistant leaves it out: the app shows a day note only when the traveler wrote it. |
 | `plan` | | Item[] | Activities placed on this day, in order. |
 | `userEdited` | | string[] | **App-written.** |
 

@@ -410,13 +410,13 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                             val b = WorkBlock(hhmm(start), hhmm(minOf(start + 120, END)))
                             setBlocks(blocks + b, "Added work ${b.label}")
                         })
-                        if (day.note == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
+                        if (day.ownNote == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
                         if (bookings.isNotEmpty()) DropdownMenuItem(text = { Text("This day's bookings") }, onClick = { addMenu = false; navigator.bookings(trip.id, date) })
                     }
                 }
             }
-            if (day.note != null || editingNote) Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                NoteCard(day.note, editing = editingNote, onEdit = { editingNote = true }, onCancel = { editingNote = false }) { text ->
+            if (day.ownNote != null || editingNote) Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                NoteCard(day.ownNote, editing = editingNote, onEdit = { editingNote = true }, onCancel = { editingNote = false }) { text ->
                     editingNote = false
                     if (session.edit("Edit day note") { Edits.setDayNote(it, date, text) }) undoable("Saved your note for ${dayName(date)}")
                 }

@@ -68,7 +68,7 @@ That file is an export from the app, and it contains the traveler's own changes.
   - `confidence`: confirmed|estimate|check.
 - **commitments**: fixed things on a date: `{id, title, date, start?, end?, kind: booking|appointment|work|other, booked?, stayId?, activityId?, ref?, url?, bookDaysBefore?, how?, price?, notes?}`. Use `booked: true` only for a reservation that actually exists. Its booking details sit on the commitment itself; it has no `booking` object.
 - **days**: one per date that has a suggestion: `{date, stayId, kind: plan|work|rest|travel|free, title?, note?, plan: [{activityId, slot: morning|afternoon|evening|allday, time?, status?}]}`.
-  - Leave out `note` unless it says something the plan doesn't: an order or timing that matters ("Garden at opening, before the tour buses"). One short line, never a summary of the day and never hedging ("outings remain optional"). Never about work hours, time off, travel timing or flights ("Finish work by 17:00 to allow travel", "Proposed full-day PTO", "Depart LAX at 11:50"): the app shows the work blocks and transfers itself. Most days have no note. The app lists the stay's 3-star activities on each day itself.
+  - Never write a day `note`. The app shows only the traveler's own day notes, so yours would never be seen. An order or timing that matters goes into the plan as item times.
   - Give `time` only for fixed-time items.
   - A work, rest or travel day can have an empty plan. Never invent an outing to fill it.
 
