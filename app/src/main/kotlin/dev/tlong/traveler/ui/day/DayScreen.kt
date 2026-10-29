@@ -105,6 +105,12 @@ import dev.tlong.traveler.domain.stayOf
 import dev.tlong.traveler.domain.datesOf
 import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
+import dev.tlong.traveler.domain.SlotFit
+import dev.tlong.traveler.domain.suggestFor
+import dev.tlong.traveler.domain.toDate
+import dev.tlong.traveler.ui.activity.TAGS
+import dev.tlong.traveler.ui.common.SectionTitle
+import androidx.compose.foundation.horizontalScroll
 import dev.tlong.traveler.domain.window
 import dev.tlong.traveler.domain.workHoursOn
 import dev.tlong.traveler.domain.zone
@@ -145,7 +151,8 @@ import kotlinx.coroutines.launch
 private data class PendingDrop(val plan: List<PlanItem>, val activity: Activity, val issues: List<PlacementIssue>)
 
 /** Where the activity picker adds: a part of the day, and a time when empty time was tapped. */
-private data class AddAt(val slot: Slot, val time: String?)
+/** Where a picked activity goes; [freeMinutes] is how long until the next thing on the day. */
+private data class AddAt(val slot: Slot, val time: String?, val freeMinutes: Int? = null)
 
 private sealed interface Selected {
     data class Item(val index: Int) : Selected
@@ -427,7 +434,10 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                             else -> {}
                         }
                     },
-                    onEmpty = { m -> picker = AddAt(slotForTime(java.time.LocalTime.of(m / 60 % 24, m % 60)), hhmm(m)) },
+                    onEmpty = { m ->
+                        val next = entries.filter { !it.loose && it.span.start > m }.minOfOrNull { it.span.start }
+                        picker = AddAt(slotForTime(java.time.LocalTime.of(m / 60 % 24, m % 60)), hhmm(m), next?.let { it - m })
+                    },
                 )
             }
         }
@@ -496,7 +506,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     }
 
     picker?.let { at ->
-        PoolPicker(trip, stay?.id, date, at, onDismiss = { picker = null }, onNew = {
+        PoolPicker(trip, stay?.id, date, at, blocks, onDismiss = { picker = null }, onNew = {
             picker = null
             overlays.newEntry = NewEntryRequest(stay?.id ?: trip.stays.first().id, date, at.slot)
         }) { a ->
@@ -617,41 +627,68 @@ private fun NoteCard(note: String?, editing: Boolean, onEdit: () -> Unit, onCanc
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+/** What to add at a free time: what fits first, then the rest with why not, then what is planned, done or turned down. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, onDismiss: () -> Unit, onNew: () -> Unit, onPick: (Activity) -> Unit) {
+private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, work: List<WorkBlock>, onDismiss: () -> Unit, onNew: () -> Unit, onPick: (Activity) -> Unit) {
     var allStays by remember { mutableStateOf(false) }
-    var fit by remember { mutableStateOf<String?>(null) }
-    val scheduled = remember(trip) { trip.scheduledIds() }
-    val list = trip.activities
-        .filter { allStays || it.stayId == stayId }
-        .filter { fit == null || it.fit == fit || (fit == "rainy-day" && "rainy-day" in it.conditions) }
-        .sortedWith(compareBy<Activity> { it.id in scheduled }.then(byRecommendation))
+    var rainy by remember { mutableStateOf(false) }
+    var tag by remember { mutableStateOf<String?>(null) }
+    val here = trip.activities.filter { allStays || it.stayId == stayId }
+    val tags = remember(here) { here.mapNotNull { it.tag }.distinct() }
+    val local = date.toDate() ?: return
+    val fits = remember(trip, here, at, work, tag, rainy) {
+        val pool = here.filter { (tag == null || it.tag == tag) && (!rainy || "rainy-day" in it.conditions) }
+        suggestFor(trip, pool, local, at.slot, at.time?.toTime(), at.freeMinutes, work).groupBy { it.group }
+    }
+    val whenLabel = at.time ?: if (at.slot == Slot.ALLDAY) null else at.slot.label.lowercase()
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Add to ${dayName(date)}" + (at.time?.let { ", $it" } ?: if (at.slot == Slot.ALLDAY) "" else ", ${at.slot.label.lowercase()}"), style = MaterialTheme.typography.titleLarge)
-            OutlinedButton(onClick = onNew, modifier = Modifier.fillMaxWidth()) { Text("New entry of your own") }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf("short" to "Short", "half-day" to "Half day", "evening" to "Evening", "rainy-day" to "Rainy day").forEach { (k, l) ->
-                    FilterChip(fit == k, onClick = { fit = if (fit == k) null else k }, label = { Text(l) })
+            Text("Add to ${dayName(date)}" + (whenLabel?.let { ", $it" } ?: ""), style = MaterialTheme.typography.titleLarge)
+            at.freeMinutes?.let { m -> Text("Free until ${hhmm((at.time?.let(::minutesOf) ?: 0) + m)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            // Glyph chips for the types here, like the Bookings filters.
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                tags.forEach { t ->
+                    FilterChip(tag == t, onClick = { tag = if (tag == t) null else t }, label = { Text(t) },
+                        modifier = Modifier.semantics { contentDescription = TAGS[t] ?: t })
                 }
+                FilterChip(rainy, onClick = { rainy = !rainy }, label = { Text("🌧️") }, modifier = Modifier.semantics { contentDescription = "Good on a rainy day" })
                 FilterChip(allStays, onClick = { allStays = !allStays }, label = { Text("Other stays") })
             }
             LazyColumn(Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
-                items(list, key = { it.id }) { a ->
-                    val planned = trip.placementsOf(a.id)
-                    Column(Modifier.fillMaxWidth().clickable { onPick(a) }.padding(vertical = 8.dp)) {
-                        Text(listOfNotNull(a.tag, a.marked(trip.isBooked(a))).joinToString("  "), style = MaterialTheme.typography.titleSmall, color = bookedColor(trip.isBooked(a)))
-                        Text(
-                            listOfNotNull(a.short, a.factsLine().ifEmpty { null }, if (planned.isNotEmpty()) "planned ${planned.joinToString { dayName(it.date) }}" else null).joinToString(" · "),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2,
-                        )
+                SlotFit.Group.entries.forEach { g ->
+                    val list = fits[g].orEmpty()
+                    if (list.isEmpty()) return@forEach
+                    item("h-$g") {
+                        SectionTitle(when (g) {
+                            SlotFit.Group.FITS -> "Fits" + (whenLabel?.let { " $it" } ?: " this day")
+                            SlotFit.Group.OTHER -> "Other ideas"
+                            SlotFit.Group.PLANNED -> "Planned or done"
+                            SlotFit.Group.WONT_DO -> "Won't do"
+                        }, Modifier.padding(top = 12.dp, bottom = 4.dp))
                     }
-                    HorizontalDivider()
+                    items(list, key = { it.activity.id }) { f -> PickRow(trip, f) { onPick(f.activity) } }
                 }
+                item("new") { TextButton(onClick = onNew, modifier = Modifier.padding(top = 8.dp)) { Text("+ New entry of your own") } }
             }
         }
     }
+}
+
+@Composable
+private fun PickRow(trip: Trip, f: SlotFit, onClick: () -> Unit) {
+    val a = f.activity
+    val booked = trip.isBooked(a)
+    val done = f.reason == "done"
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onClick).padding(vertical = 8.dp)) {
+        Text(listOfNotNull(a.tag, a.marked(booked, done)).joinToString("  "), style = MaterialTheme.typography.titleSmall,
+            color = if (a.isWontDo) muted else bookedColor(booked || done))
+        // Why it doesn't fit, when it doesn't; otherwise what it is.
+        val line = f.reason?.takeIf { !done } ?: listOfNotNull(a.short, a.factsLine().ifEmpty { null }).joinToString(" · ")
+        if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodySmall, color = muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    }
+    HorizontalDivider()
 }
 
 @Composable
