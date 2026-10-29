@@ -1,6 +1,14 @@
 package dev.tlong.traveler.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import dev.tlong.traveler.ui.trips.underWay
+import java.time.LocalDate
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +54,12 @@ import kotlinx.serialization.Serializable
 /** Navigation callbacks the screens share, so none of them holds the controller. */
 class Navigator(private val nav: NavHostController) {
     fun back() { if (!nav.popBackStack()) nav.navigate(TripsRoute) }
-    fun trips() = nav.navigate(TripsRoute) { popUpTo(TripsRoute) { inclusive = true } }
+    /** The list of trips, alone on the stack: the app may have opened on a trip, with nothing under it. */
+    fun trips() = nav.navigate(TripsRoute) { popUpTo(nav.graph.id) { inclusive = true } }
     fun overview(tripId: String, replaceStack: Boolean = false) = nav.navigate(OverviewRoute(tripId)) {
         if (replaceStack) popUpTo(TripsRoute)
     }
-    /** The trip page on its Trip info tab, in place of the trip page already on the stack. */
+    /** The trip page on its Calendar tab, in place of the trip page already on the stack. */
     fun tripCalendar(tripId: String) = nav.navigate(OverviewRoute(tripId, tab = 2)) {
         popUpTo<OverviewRoute> { inclusive = true }
     }
@@ -71,20 +80,26 @@ class Navigator(private val nav: NavHostController) {
 
 @Composable
 fun TravelerNav() {
+    val container = LocalContainer.current
+    // Where the app opens: the trip under way, else the list. Decided before anything is drawn, so the list never flashes past.
+    var opening by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        if (opening == null) opening = container.store.summaries.first().underWay(LocalDate.now())?.id
+            ?.takeIf { container.pendingImport.value == null }.orEmpty()
+    }
+    val start = opening ?: return Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+
     val nav = rememberNavController()
     val navigator = Navigator(nav)
-    val pending by LocalContainer.current.pendingImport.collectAsStateWithLifecycle()
+    val pending by container.pendingImport.collectAsStateWithLifecycle()
 
     // Whatever screen is showing, an opened or shared file brings up its preview.
     LaunchedEffect(pending != null) {
         if (pending != null && nav.currentBackStackEntry?.destination?.route?.contains("ImportRoute") != true) nav.navigate(ImportRoute)
     }
 
-    // On launch, a trip under way opens straight to its page; only once, so the list stays reachable.
-    var openedCurrent by rememberSaveable { mutableStateOf(false) }
-
-    NavHost(nav, startDestination = TripsRoute) {
-        composable<TripsRoute> { TripsScreen(navigator, openCurrent = !openedCurrent) { openedCurrent = true } }
+    NavHost(nav, startDestination = if (start.isEmpty()) TripsRoute else OverviewRoute(start)) {
+        composable<TripsRoute> { TripsScreen(navigator) }
         composable<OverviewRoute> { val r = it.toRoute<OverviewRoute>(); OverviewScreen(r.tripId, navigator, r.tab) }
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }

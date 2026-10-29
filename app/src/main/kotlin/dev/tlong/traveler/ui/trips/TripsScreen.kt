@@ -44,7 +44,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +72,9 @@ import java.time.LocalDate
 
 val TRIP_MIME_TYPES = arrayOf("application/json", "application/octet-stream", "text/plain", "*/*")
 
+/** The trip under way today, the one the list puts on top and the app opens on. */
+fun List<TripSummary>.underWay(today: LocalDate): TripSummary? = firstOrNull { it.deletedAt == null && !it.archived && it.phase(today) == TripPhase.ACTIVE }
+
 private fun TripSummary.phase(today: LocalDate): TripPhase {
     val s = startDate.toDate() ?: return TripPhase.UPCOMING
     val e = endDate.toDate() ?: s
@@ -85,7 +87,7 @@ private fun TripSummary.phase(today: LocalDate): TripPhase {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripsScreen(navigator: Navigator, openCurrent: Boolean = false, onOpenedCurrent: () -> Unit = {}) {
+fun TripsScreen(navigator: Navigator) {
     val container = LocalContainer.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -152,12 +154,7 @@ fun TripsScreen(navigator: Navigator, openCurrent: Boolean = false, onOpenedCurr
         val past = live.filter { !it.archived && it.phase(today) == TripPhase.PAST }.sortedByDescending { it.startDate }
         val archived = live.filter { it.archived }
         // The trip under way goes on top, with its day's plan a tap away.
-        val current = active.firstOrNull()
-        LaunchedEffect(Unit) {
-            if (!openCurrent) return@LaunchedEffect
-            onOpenedCurrent()
-            if (current != null && container.pendingImport.value == null) navigator.overview(current.id)
-        }
+        val current = list.underWay(today)
 
         LazyColumn(
             Modifier.fillMaxSize().padding(padding),

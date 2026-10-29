@@ -105,7 +105,7 @@ The app draws no map of its own and fetches no map tiles. Two things stand in fo
 - **A trip map in Google My Maps.** `tools/make_map.py` turns an exported trip into one KMZ file, `~/Downloads/<trip-id>-map.kmz`, which the local `/build-map` skill runs. My Maps imports each top-level folder as a layer: "Overview" holds the stays, lodging, airports and stations, with the transfers between towns at least 20 km apart drawn as lines, and leaves out the home airport; then one folder per stay holds every activity. The points are hollow ring images packed into the KMZ. The script uses only the standard library and is tested by `tools/test_make_map.py` under `make tools-test`.
 - **Directions for a day.** The day screen's 🧭 button (`ui/day/DayScreen.kt:377`) opens Google Maps with a route from the stay's lodging through the day's planned stops in time order, by coordinates when the place has them. `MapsLinks.route` (`domain/MapsLinks.kt:35`) builds the URL and keeps at most 10 stops.
 
-The overview's Trip info card shows the stay calendar, the stay key and, when the file names `tripMap.imageUrl`, that image. At start-up, `purgeExpiredLater` (`AppContainer.kt:116`) deletes the files the old in-app maps left behind.
+The overview's Calendar tab shows the stay calendar, the stay key and, when the file names `tripMap.imageUrl`, that image. At start-up, `purgeExpiredLater` (`AppContainer.kt:116`) deletes the files the old in-app maps left behind.
 
 ## Conventions that hold across the app
 

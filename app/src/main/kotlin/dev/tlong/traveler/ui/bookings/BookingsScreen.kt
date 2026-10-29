@@ -163,6 +163,7 @@ fun List<Bookable>.tallyLabel(): String? =
 fun BookingsList(
     session: TripSession, snackbar: SnackbarHostState, modifier: Modifier = Modifier,
     group: Bookable.Group? = null, focusDate: String? = null, focusStay: String? = null,
+    header: (@Composable () -> Unit)? = null,
 ) {
     val trip by session.trip.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -198,9 +199,9 @@ fun BookingsList(
     }
 
     LaunchedEffect(Unit) {
-        // Opened from a day: start at that day's bookings (one summary item, then a header and rows per day).
+        // Opened from a day: start at that day's bookings (the header and summary items, then a title and rows per day).
         if (focusDate == null) return@LaunchedEffect
-        var index = 2
+        var index = if (header != null) 3 else 2
         for ((title, list) in groups) {
             if (title == dayName(focusDate)) { listState.scrollToItem(index); break }
             index += 1 + list.size
@@ -211,6 +212,7 @@ fun BookingsList(
         modifier.fillMaxSize(), state = listState,
         contentPadding = PaddingValues(16.dp, 4.dp, 16.dp, 48.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
+        header?.let { item("header") { it() } }
         item("summary") { Summary(items, today) }
         item("order") {
             var sorting by remember { mutableStateOf(false) }

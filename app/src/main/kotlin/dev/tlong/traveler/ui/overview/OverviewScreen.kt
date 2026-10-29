@@ -114,15 +114,15 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OverviewScreen(tripId: String, navigator: Navigator, initialTab: Int = 0) {
-    val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator)
+    val session = rememberSession(tripId).value ?: return LoadingScaffold(navigator, back = false)
     Overview(session, navigator, initialTab)
 }
 
 /** The empty frame shown for the moment a trip takes to open. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoadingScaffold(navigator: Navigator) {
-    Scaffold(topBar = { TopAppBar(title = {}, navigationIcon = { BackButton(navigator) }) }) { Box(Modifier.padding(it)) }
+fun LoadingScaffold(navigator: Navigator, back: Boolean = true) {
+    Scaffold(topBar = { TopAppBar(title = {}, navigationIcon = { if (back) BackButton(navigator) }) }) { Box(Modifier.padding(it)) }
 }
 
 @Composable
@@ -207,31 +207,26 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
         PrimaryTabRow(selectedTabIndex = tab) {
             Tab(tab == 0, onClick = { tab = 0 }, text = { Text("Stays") })
             // Red while lodging or travel is due to book this week; events have their own page.
-            Tab(tab == 1, onClick = { tab = 1; focusStay = null }, text = { Text("Bookings", color = if (due) MaterialTheme.colorScheme.error else Color.Unspecified) })
-            Tab(tab == 2, onClick = { tab = 2 }, text = { Text("Trip info") })
+            Tab(tab == 1, onClick = { tab = 1; focusStay = null }, text = { Text("Planning", color = if (due) MaterialTheme.colorScheme.error else Color.Unspecified) })
+            Tab(tab == 2, onClick = { tab = 2 }, text = { Text("Calendar") })
         }
-        if (tab == 1) key(focusStay) { BookingsList(session, snackbar, group = Bookable.Group.LOGISTICS, focusStay = focusStay) }
-        else LazyColumn(
-            Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 32.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-          if (tab == 2) {
-            item("dates") {
-                Text(
-                    "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays · rev ${base.revision}" +
-                        if (changes > 0) " + $changes edit${if (changes == 1) "" else "s"}" else "",
-                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            item("shortcuts") {
+        // Planning: the trip-wide pages a tap away, then lodging and travel to book.
+        if (tab == 1) key(focusStay) {
+            BookingsList(session, snackbar, group = Bookable.Group.LOGISTICS, focusStay = focusStay, header = {
                 TripShortcuts(
                     trip, checklist,
                     onEvents = { navigator.events(trip.id) },
                     onChecklist = { navigator.checklist(trip.id, it) },
                     onNotes = { navigator.notes(trip.id) },
                 )
-            }
+            })
+        }
+        else LazyColumn(
+            Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp, 12.dp, 16.dp, 32.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+          if (tab == 2) {
             item("calendar") { TripInfoCard(trip, today) { navigator.day(trip.id, it.toString()) } }
           } else {
             // Every stay, so the flights out and back still show, but no card for the home airport.
@@ -250,7 +245,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                 if (stay.id in shown) {
                     item("stay-${stay.id}") {
                         StayCard(
-                            stay, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> if (g == Bookable.Group.EVENTS) navigator.events(trip.id, stay.id) else { focusStay = stay.id; tab = 1 } },
+                            stay, i == current, if (between) legs else emptyList(), tallies[stay.id].orEmpty(), onBookings = { g -> if (g == Bookable.Group.EVENTS) navigator.events(trip.id, stay.id) else { focusStay = stay.id; tab = 1 } },
                         ) { navigator.stay(trip.id, stay.id) }
                     }
                 }
@@ -264,6 +259,14 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
                             )
                         }
                 }
+            }
+            item("dates") {
+                Text(
+                    "${dateRangeLabel(trip.start, trip.end)} · ${trip.destinations.size} stays · rev ${base.revision}" +
+                        if (changes > 0) " + $changes edit${if (changes == 1) "" else "s"}" else "",
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
           }
         }
@@ -362,10 +365,12 @@ private fun TripInfoCard(trip: Trip, today: LocalDate, onDay: (LocalDate) -> Uni
 
 @Composable
 private fun StayCard(
-    stay: Stay, leaving: List<Transfer>, tally: Map<Bookable.Group, Pair<Int, Int>>,
+    stay: Stay, current: Boolean, leaving: List<Transfer>, tally: Map<Bookable.Group, Pair<Int, Int>>,
     onBookings: (Bookable.Group) -> Unit, onClick: () -> Unit,
 ) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    // Today's stay wears the highlight the Today card used to.
+    val colors = if (current) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer) else CardDefaults.cardColors()
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth(), colors = colors) {
         Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
