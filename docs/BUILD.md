@@ -18,7 +18,7 @@ $SDK/cmdline-tools/latest/bin/sdkmanager "system-images;android-36;google_apis;a
 $SDK/cmdline-tools/latest/bin/avdmanager create avd -n traveler -k "system-images;android-36;google_apis;arm64-v8a"
 ```
 
-Then `make emulator` (headless) and `make install`.
+Then `make emulator` (headless) and `make install`. `make emulator-stop` shuts it down. Started from a Claude Code session, the emulator also stops when that session exits, unless you started it with `KEEP=1`.
 
 `tools/emu/ui.py` drives the running app over adb: `tap <text>` (prefix `=` for an exact match), `texts`, `shot <png>`, `scroll [fromY toY]`, `longdrag`, `back`. Put `platform-tools` on `PATH` first.
 

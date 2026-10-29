@@ -13,7 +13,8 @@ make check      # validator tests + example validation + JVM tests: the pre-comm
 make test       # JVM tests only
 make install    # debug build onto the attached device or emulator
 make fixtures   # regenerate the derived example trips (r2 revision, long synthetic trip)
-make emulator   # headless 'traveler' AVD
+make emulator   # headless 'traveler' AVD; stops when this session exits unless KEEP=1
+make emulator-stop   # run it when you are done with the emulator, even after a failure
 JAVA_HOME=$(/usr/libexec/java_home -v 17) ./gradlew compileDebugKotlin   # fastest compile check
 ```
 
