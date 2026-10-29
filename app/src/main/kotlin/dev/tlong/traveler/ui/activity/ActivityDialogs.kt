@@ -55,6 +55,7 @@ import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.PlacementIssue
 import dev.tlong.traveler.domain.checkPlacement
 import dev.tlong.traveler.domain.label
+import dev.tlong.traveler.domain.placeableDays
 import dev.tlong.traveler.domain.stayOf
 import dev.tlong.traveler.domain.toDate
 import dev.tlong.traveler.domain.toTime
@@ -97,8 +98,8 @@ fun PlaceSheet(
     onDismiss: () -> Unit,
     onConfirm: (date: String, slot: Slot, time: String?) -> Unit,
 ) {
-    val days = trip.days
-    var date by remember { mutableStateOf(initialDate ?: days.firstOrNull { trip.stayOf(it)?.id == activity.stayId }?.date ?: days.first().date) }
+    val days = remember(trip, activity.stayId, initialDate) { trip.placeableDays(activity.stayId, java.time.LocalDate.now(), initialDate) }
+    var date by remember { mutableStateOf(initialDate ?: days.first().date) }
     var slot by remember { mutableStateOf(initialSlot ?: activity.bestTime.firstOrNull()?.let { Slot.of(it) } ?: Slot.AFTERNOON) }
     var timeText by remember { mutableStateOf("") }
     val time = normalizeTime(timeText)

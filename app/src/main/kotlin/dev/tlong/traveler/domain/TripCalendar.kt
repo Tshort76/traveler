@@ -187,3 +187,14 @@ fun Trip.nightPairs(): List<NightPair> {
     fun sleptIn(night: LocalDate) = stays.lastOrNull { night >= it.arriveDate && night < it.departDate }
     return dates().map { NightPair(it, sleptIn(it.minusDays(1)), sleptIn(it)) }
 }
+
+/**
+ * The days an activity of [stayId] can go on: its stay's days through the day it is left, from
+ * [today] on while any remain, and [keep] (the day it is being moved from) whatever it is.
+ */
+fun Trip.placeableDays(stayId: String, today: LocalDate, keep: String? = null): List<Day> {
+    val stay = stay(stayId) ?: return days
+    val own = days.filter { stayOf(it)?.id == stayId || it.date == stay.departDate.toString() }
+    val ahead = own.filter { it.date >= today.toString() }.ifEmpty { own }.ifEmpty { days }
+    return days.filter { it in ahead || it.date == keep }
+}
