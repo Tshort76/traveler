@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
@@ -168,9 +169,9 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
         topBar = {
             TopAppBar(
                 title = { Text(trip.title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = { BackButton(navigator) },
                 actions = {
                     SaveIndicator(saveState, session::retrySave)
+                    IconButton(onClick = navigator::trips) { Icon(Icons.AutoMirrored.Filled.List, "All trips") }
                     Box {
                         IconButton(onClick = { exportMenu = true }) { Icon(Icons.Default.Share, "Export trip") }
                         DropdownMenu(exportMenu, onDismissRequest = { exportMenu = false }) {
@@ -233,28 +234,15 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
             }
             item("calendar") { TripInfoCard(trip, today) { navigator.day(trip.id, it.toString()) } }
           } else {
-            if (trip.phase(today) == TripPhase.ACTIVE) item("today") {
-                val stay = trip.stayFor(today)
-                Card(onClick = { navigator.day(trip.id, today.toString()) }, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-                    Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text("Today · ${today.label()}", style = MaterialTheme.typography.titleMedium)
-                            stay?.let { Text(it.name, style = MaterialTheme.typography.bodyMedium) }
-                        }
-                        Text("Open plan", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                    }
-                }
-            }
             // Every stay, so the flights out and back still show, but no card for the home airport.
             val shown = trip.destinations.map { it.id }.toSet()
             val tallies = trip.bookables().tallyByStay()
-            // During the trip, finished stays and the travel between them fold into one row.
-            val active = trip.phase(today) == TripPhase.ACTIVE
-            val finished = if (active) trip.stays.count { it.id in shown && it.departDate < today } else 0
+            // During the trip, the stays before today's and the travel between them fold into one row, so today's stay is on top.
+            val current = if (trip.phase(today) == TripPhase.ACTIVE) trip.stays.indexOf(trip.stayFor(today)) else -1
+            val finished = trip.stays.take(current.coerceAtLeast(0)).count { it.id in shown }
             if (finished > 0) item("past-stays") { EarlierRow(finished, "stay", showPastStays) { showPastStays = !showPastStays } }
-            val folded = active && !showPastStays
             trip.stays.forEachIndexed { i, stay ->
-                if (folded && stay.departDate < today) return@forEachIndexed
+                if (!showPastStays && i < current) return@forEachIndexed
                 val next = trip.stays.getOrNull(i + 1)
                 val legs = next?.let { n -> trip.transfers.filter { it.from == stay.id && it.to == n.id } }.orEmpty()
                 // Travel rides on the card it leaves; only the flight out from home, which has no card, is a line.

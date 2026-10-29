@@ -3,6 +3,9 @@ package dev.tlong.traveler.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -77,8 +80,11 @@ fun TravelerNav() {
         if (pending != null && nav.currentBackStackEntry?.destination?.route?.contains("ImportRoute") != true) nav.navigate(ImportRoute)
     }
 
+    // On launch, a trip under way opens straight to its page; only once, so the list stays reachable.
+    var openedCurrent by rememberSaveable { mutableStateOf(false) }
+
     NavHost(nav, startDestination = TripsRoute) {
-        composable<TripsRoute> { TripsScreen(navigator) }
+        composable<TripsRoute> { TripsScreen(navigator, openCurrent = !openedCurrent) { openedCurrent = true } }
         composable<OverviewRoute> { val r = it.toRoute<OverviewRoute>(); OverviewScreen(r.tripId, navigator, r.tab) }
         composable<StayRoute> { val r = it.toRoute<StayRoute>(); StayScreen(r.tripId, r.stayId, r.tab, navigator) }
         composable<DayRoute> { val r = it.toRoute<DayRoute>(); DayScreen(r.tripId, r.date, navigator) }

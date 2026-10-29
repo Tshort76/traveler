@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,7 +85,7 @@ private fun TripSummary.phase(today: LocalDate): TripPhase {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TripsScreen(navigator: Navigator) {
+fun TripsScreen(navigator: Navigator, openCurrent: Boolean = false, onOpenedCurrent: () -> Unit = {}) {
     val container = LocalContainer.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -152,6 +153,11 @@ fun TripsScreen(navigator: Navigator) {
         val archived = live.filter { it.archived }
         // The trip under way goes on top, with its day's plan a tap away.
         val current = active.firstOrNull()
+        LaunchedEffect(Unit) {
+            if (!openCurrent) return@LaunchedEffect
+            onOpenedCurrent()
+            if (current != null && container.pendingImport.value == null) navigator.overview(current.id)
+        }
 
         LazyColumn(
             Modifier.fillMaxSize().padding(padding),
