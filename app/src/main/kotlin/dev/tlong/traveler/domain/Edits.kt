@@ -6,6 +6,7 @@ import dev.tlong.traveler.model.Booking
 import dev.tlong.traveler.model.BOOKING_ONSITE
 import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.Day
+import dev.tlong.traveler.model.Duration
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Link
 import dev.tlong.traveler.model.Lodging
@@ -203,6 +204,12 @@ object Edits {
     })
 
     /** Reserve ahead (on Bookings) or buy at the door ([BOOKING_ONSITE], off Bookings); the price and advice stay. */
+    /** How long it takes, as the traveler's own edit; a range's upper end below it goes. */
+    fun setDuration(trip: Trip, id: String, minutes: Int): Trip = updateActivity(trip, id) { a ->
+        val d = a.duration ?: Duration()
+        a.copy(duration = d.copy(minutes = minutes, maxMinutes = d.maxMinutes?.takeIf { it > minutes }))
+    }
+
     fun setNeedsReservation(trip: Trip, id: String, needed: Boolean): Trip = updateActivity(trip, id) { a ->
         a.copy(booking = (a.booking ?: Booking()).copy(status = if (needed) "needed" else BOOKING_ONSITE))
     }

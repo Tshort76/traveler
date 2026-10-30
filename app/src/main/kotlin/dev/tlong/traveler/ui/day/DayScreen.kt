@@ -259,6 +259,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     var picker by remember { mutableStateOf<AddAt?>(null) }
     var again by remember { mutableStateOf<Pair<Activity, AddAt>?>(null) }
     var timeFor by remember { mutableStateOf<Edits.ItemRef?>(null) }
+    var lengthFor by remember { mutableStateOf<Activity?>(null) }
     var workTimeFor by remember { mutableStateOf<Int?>(null) }
     var pendingDrop by remember { mutableStateOf<PendingDrop?>(null) }
     var booking by remember { mutableStateOf<BookingTarget?>(null) }
@@ -474,6 +475,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                         if (bookedAs != null) add("Edit booking…" to { act { booking = BookingTarget(bookedAs) } })
                         else {
                             add((if (item.time == null) "Set a time…" else "Change time…") to { act { timeFor = ref } })
+                            a?.let { add("Change length…" to { act { lengthFor = it } }) }
                             if (item.time != null) add("Make it anytime" to { act { setTime(ref, null) } })
                         }
                         if (status != ItemStatus.DONE) add("Mark done" to { act { if (session.edit("Mark done") { Edits.setStatus(it, ref, ItemStatus.DONE) }) undoable("Marked “${a?.name}” done") } })
@@ -550,6 +552,13 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
             },
             dismissButton = { TextButton(onClick = { again = null }) { Text("Cancel") } },
         )
+    }
+
+    lengthFor?.let { a ->
+        LengthDialog(a.duration?.minutes, onDismiss = { lengthFor = null }) { m ->
+            lengthFor = null
+            if (session.edit("Change length") { Edits.setDuration(it, a.id, m) }) undoable("“${a.name}” takes ${durationLabel(m)}")
+        }
     }
 
     timeFor?.let { ref ->
@@ -721,6 +730,31 @@ private fun PickRow(trip: Trip, f: SlotFit, onClick: () -> Unit) {
         if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodySmall, color = muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
     HorizontalDivider()
+}
+
+/** How long an activity takes: a preset, or minutes typed in. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LengthDialog(current: Int?, onDismiss: () -> Unit, onSet: (Int) -> Unit) {
+    var text by remember { mutableStateOf(current?.toString().orEmpty()) }
+    val minutes = text.trim().toIntOrNull()?.takeIf { it in 5..24 * 60 }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Length") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(30, 45, 60, 90, 120, 180, 240).forEach { m ->
+                        FilterChip(minutes == m, onClick = { text = m.toString() }, label = { Text(durationLabel(m)) })
+                    }
+                }
+                OutlinedTextField(text, { text = it }, label = { Text("Minutes") }, singleLine = true, isError = text.isNotBlank() && minutes == null,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number))
+            }
+        },
+        confirmButton = { TextButton(onClick = { minutes?.let(onSet) }, enabled = minutes != null) { Text("Set") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
 
 @Composable

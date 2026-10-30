@@ -131,4 +131,14 @@ class EditsTest {
         assertEquals("done", done.day(sat)!!.plan[0].status)
         assertNull(Edits.setStatus(done, ref, ItemStatus.PROPOSED).day(sat)!!.plan[0].status)
     }
+
+    @Test
+    fun `a new length is the traveler's edit, and a range's top below it goes`() {
+        listOf(120 to 180, 200 to null).forEach { (minutes, max) ->
+            val a = Edits.setDuration(trip, "sendero-macuco", minutes).activities.first { it.id == "sendero-macuco" }
+            assertEquals(minutes, a.duration?.minutes)
+            assertEquals(max, a.duration?.maxMinutes)
+            assertTrue("duration" in a.userEdited)
+        }
+    }
 }
