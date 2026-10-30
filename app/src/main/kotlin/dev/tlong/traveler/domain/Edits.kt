@@ -217,15 +217,19 @@ object Edits {
     fun setUserNote(trip: Trip, id: String, note: String): Trip =
         trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userNote = note.ifBlank { null }) else it })
 
-    /** Deletes the activity itself — every placement of it goes too. Distinct from returning it to the pool. */
     /** [status] is USER_DONE, USER_WONT_DO or null to clear it. */
-    fun setUserStatus(trip: Trip, id: String, status: String?): Trip =
-        trip.copy(activities = trip.activities.map { if (it.id == id) it.copy(userStatus = status) else it })
+    fun setUserStatus(trip: Trip, id: String, status: String?): Trip = setUserStatus(trip, setOf(id), status)
 
-    fun deleteActivity(trip: Trip, id: String): Trip = trip.copy(
-        activities = trip.activities.filterNot { it.id == id },
-        days = trip.days.map { d -> if (d.plan.any { it.activityId == id }) d.withPlan(d.plan.filterNot { it.activityId == id }) else d },
-        commitments = trip.commitments.map { if (it.activityId == id) it.copy(activityId = null) else it },
+    fun setUserStatus(trip: Trip, ids: Set<String>, status: String?): Trip =
+        trip.copy(activities = trip.activities.map { if (it.id in ids) it.copy(userStatus = status) else it })
+
+    /** Deletes the activity itself — every placement of it goes too. Distinct from returning it to the pool. */
+    fun deleteActivity(trip: Trip, id: String): Trip = deleteActivities(trip, setOf(id))
+
+    fun deleteActivities(trip: Trip, ids: Set<String>): Trip = trip.copy(
+        activities = trip.activities.filterNot { it.id in ids },
+        days = trip.days.map { d -> if (d.plan.any { it.activityId in ids }) d.withPlan(d.plan.filterNot { it.activityId in ids }) else d },
+        commitments = trip.commitments.map { if (it.activityId in ids) it.copy(activityId = null) else it },
     )
 
 

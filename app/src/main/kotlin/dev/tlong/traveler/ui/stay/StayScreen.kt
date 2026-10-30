@@ -7,7 +7,15 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Badge
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Checkbox
+import dev.tlong.traveler.domain.Edits
+import dev.tlong.traveler.model.USER_WONT_DO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -48,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -130,10 +139,34 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
     var editingNights by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val pool = remember(trip, stay.id) { trip.activities.filter { it.stayId == stay.id } }
+    // Select mode on the Activities tab: a long press starts it; leaving the tab or emptying the selection ends it.
+    var picked by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var shown by remember { mutableStateOf(listOf<String>()) }
+    val selection = picked.filterTo(mutableSetOf()) { id -> pool.any { it.id == id } }.takeIf { tab == 1 && it.isNotEmpty() }
+    BackHandler(selection != null) { picked = emptySet() }
+    fun bulk(label: String, message: String, f: (Trip, Set<String>) -> Trip) {
+        val ids = selection ?: return
+        picked = emptySet()
+        if (session.edit(label) { f(it, ids) }) scope.launch { snackbar.offerUndo(session, message) }
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            if (selection != null) TopAppBar(
+                title = { Text("${selection.size} selected") },
+                navigationIcon = { IconButton(onClick = { picked = emptySet() }) { Icon(Icons.Default.Close, "End selection") } },
+                actions = {
+                    TextButton(onClick = { picked = selection + shown }) { Text("All") }
+                    val restore = pool.filter { it.id in selection }.all { it.isWontDo }
+                    IconButton(onClick = {
+                        if (restore) bulk("Restore ${selection.size}", "${selection.size} back in the running") { t, ids -> Edits.setUserStatus(t, ids, null) }
+                        else bulk("Won't do ${selection.size}", "${selection.size} marked won't do") { t, ids -> Edits.setUserStatus(t, ids, USER_WONT_DO) }
+                    }) { Text("👎", Modifier.semantics { contentDescription = if (restore) "Undo won't do" else "Won't do" }) }
+                    IconButton(onClick = {
+                        bulk("Delete ${selection.size}", "Deleted ${selection.size} ${if (selection.size == 1) "activity" else "activities"}") { t, ids -> Edits.deleteActivities(t, ids) }
+                    }) { Icon(Icons.Default.Delete, "Delete") }
+                },
+            ) else TopAppBar(
                 title = { Text(stay.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = { BackButton(navigator) },
                 actions = {
@@ -143,7 +176,7 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
             )
         },
         floatingActionButton = {
-            if (tab == 1) ExtendedFloatingActionButton(
+            if (tab == 1 && selection == null) ExtendedFloatingActionButton(
                 onClick = { overlays.newEntry = NewEntryRequest(stay.id, null, null) },
                 icon = { Icon(Icons.Default.Add, null) }, text = { Text("New entry") },
                 // The extended button's label does not reach accessibility services on its own.
@@ -159,7 +192,7 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
             }
             when (tab) {
                 0 -> ItineraryTab(trip, stay, work, onDay = { navigator.day(trip.id, it) }, onActivity = { overlays.detail = it })
-                else -> PoolTab(trip, stay, pool, overlays)
+                else -> PoolTab(trip, stay, pool, overlays, selection, onShown = { shown = it }) { id -> picked = (selection ?: emptySet()).let { if (id in it) it - id else it + id } }
             }
         }
     }
@@ -251,7 +284,7 @@ private val Slot.minute get() = when (this) { Slot.MORNING -> 9 * 60; Slot.AFTER
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Overlays) {
+private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Overlays, selection: Set<String>?, onShown: (List<String>) -> Unit, onPick: (String) -> Unit) {
     var standouts by rememberSaveable { mutableStateOf(false) }
     var planned by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var fits by rememberSaveable { mutableStateOf(setOf<String>()) }
@@ -275,6 +308,8 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
             (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
     }.sortedWith(compareBy<Activity> { it.isWontDo }.then(byRecommendation))
+    // "All" in select mode takes what the filters show.
+    SideEffect { onShown(list.map { it.id }) }
     // By type: the types in the order of their best activity, untagged last.
     val groups = when (order) {
         PoolOrder.BEST -> listOf(null to list)
@@ -315,7 +350,8 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             title?.let { item("h-$it") { SectionTitle(it, Modifier.padding(top = 12.dp)) } }
             items(members, key = { it.id }) { a ->
                 val add = { overlays.place = PlaceRequest(a.id, null, null, null) }
-                PoolRow(a, scheduled[a.id].orEmpty(), trip.isBooked(a), a.id in done, showTag = title == null, onOpen = { overlays.detail = a.id }, onAdd = add)
+                PoolRow(a, scheduled[a.id].orEmpty(), trip.isBooked(a), a.id in done, showTag = title == null, picked = selection?.let { a.id in it },
+                    onOpen = { if (selection != null) onPick(a.id) else overlays.detail = a.id }, onPick = { onPick(a.id) }, onAdd = add)
             }
         }
     }
@@ -362,13 +398,14 @@ private fun Toggle(label: String, description: String, on: Boolean, onClick: () 
     FilterChip(on, onClick = onClick, label = { Text(label) }, modifier = Modifier.semantics { contentDescription = description })
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, done: Boolean, showTag: Boolean, onOpen: () -> Unit, onAdd: () -> Unit) {
+private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, done: Boolean, showTag: Boolean, picked: Boolean?, onOpen: () -> Unit, onPick: () -> Unit, onAdd: () -> Unit) {
     // A list row, not a card: the details line says where it is planned, then the facts. One you won't do is dimmed.
     val planned = plannedOn.mapNotNull { it.toDate()?.let { d -> "${d.weekdayShort()} ${d.dayOfMonth}" } }
     val details = listOfNotNull(planned.takeIf { it.isNotEmpty() }?.let { "🗓️ " + it.joinToString(", ") }, a.factsLine().ifEmpty { null }, "Yours".takeIf { a.isCustom })
     Column {
-        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onOpen).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).combinedClickable(onClick = onOpen, onLongClick = onPick).padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
                 // Done reads like booked: a ✓ and green.
                 val muted = MaterialTheme.colorScheme.onSurfaceVariant
@@ -377,7 +414,9 @@ private fun PoolRow(a: Activity, plannedOn: List<String>, booked: Boolean, done:
                 a.short?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis, color = if (a.isWontDo) muted else Color.Unspecified) }
                 if (details.isNotEmpty()) Text(details.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            IconButton(onClick = onAdd, modifier = Modifier.semantics { contentDescription = "Add ${a.name} to a day" }) {
+            // In select mode the add button gives way to the row's checkbox.
+            if (picked != null) Checkbox(picked, onCheckedChange = { onPick() })
+            else IconButton(onClick = onAdd, modifier = Modifier.semantics { contentDescription = "Add ${a.name} to a day" }) {
                 Icon(Icons.Default.Add, null)
             }
         }

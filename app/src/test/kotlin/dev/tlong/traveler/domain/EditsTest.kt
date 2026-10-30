@@ -3,6 +3,7 @@ package dev.tlong.traveler.domain
 import dev.tlong.traveler.Fixtures
 import dev.tlong.traveler.model.ItemStatus
 import dev.tlong.traveler.model.Slot
+import dev.tlong.traveler.model.USER_WONT_DO
 import dev.tlong.traveler.model.TripReader
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -38,6 +39,17 @@ class EditsTest {
         val deleted = Edits.deleteActivity(trip, "gran-aventura")
         assertNull(deleted.activity("gran-aventura"))
         assertTrue("gran-aventura" !in deleted.scheduledIds())
+        assertNull(deleted.commitments.first { it.id == "boat-gran-aventura" }.activityId)
+    }
+
+    @Test
+    fun `a selection is marked won't do or deleted together, and nothing else changes`() {
+        val ids = setOf("gran-aventura", "feirinha")
+        val skipped = Edits.setUserStatus(trip, ids, USER_WONT_DO)
+        assertEquals(ids, skipped.activities.filter { it.userStatus == USER_WONT_DO }.map { it.id }.toSet())
+        val deleted = Edits.deleteActivities(trip, ids)
+        assertEquals(trip.activities.size - 2, deleted.activities.size)
+        assertTrue(ids.none { it in deleted.scheduledIds() })
         assertNull(deleted.commitments.first { it.id == "boat-gran-aventura" }.activityId)
     }
 
