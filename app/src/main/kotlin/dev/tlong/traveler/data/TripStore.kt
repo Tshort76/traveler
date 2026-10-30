@@ -57,6 +57,9 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
 
     suspend fun exists(id: String) = dao.get(id) != null
 
+    /** Every trip not in Recently deleted, as the traveler has it. */
+    suspend fun liveTrips(): List<Trip> = dao.allLive().map { TripJson.decode(it.localJson).normalized() }
+
     suspend fun importNew(trip: Trip) {
         val n = trip.normalized()
         val now = clock()
@@ -99,6 +102,11 @@ class TripStore(private val dao: TripDao, private val clock: () -> Long = System
                 baseHash = Export.hash(base), baseJson = snap.baseJson, localJson = snap.localJson, updatedAt = clock(),
             ),
         )
+    }
+
+    /** Keeps the trip as it is now in its History, before a change an import makes. */
+    suspend fun snapshot(id: String, reason: String) {
+        dao.get(id)?.let { snapshot(it, reason) }
     }
 
     private suspend fun snapshot(row: TripRow, reason: String) {

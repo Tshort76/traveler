@@ -26,6 +26,17 @@ data class ReadResult(
     val ok get() = trip != null && errors.isEmpty()
 }
 
+/** [ReadResult] for a `traveler-activities` file. */
+data class ActivitiesRead(
+    val file: ActivityFile?,
+    val errors: List<String>,
+    val warnings: List<String>,
+    val forAssistant: List<String> = emptyList(),
+    val stamp: Stamp.Check = Stamp.Check.NONE,
+) {
+    val ok get() = file != null && errors.isEmpty()
+}
+
 object TripReader {
 
     fun read(text: String): ReadResult {
@@ -61,6 +72,36 @@ object TripReader {
         if (format == null) warnings += "No \"format\" field; read as a Traveler trip anyway."
         check(trip, errors, warnings)
         return ReadResult(trip, errors, warnings, Completeness.problems(trip, TripJson.unknownFields(element)), Stamp.check(element))
+    }
+
+    /** Reads a `traveler-activities` file with the same checks an activity gets in a trip, except its stay. */
+    fun readActivities(text: String): ActivitiesRead {
+        val element = try {
+            TripJson.reader.parseToJsonElement(TripJson.extractJson(text))
+        } catch (e: SerializationException) {
+            return ActivitiesRead(null, listOf("This is not a readable activities file: the JSON is broken (${e.message?.lineSequence()?.first()})."), emptyList())
+        }
+        if (element !is JsonObject) return ActivitiesRead(null, listOf("This file holds JSON, but not activities: expected one object."), emptyList())
+        val version = (element["formatVersion"] as? JsonPrimitive)?.content?.toIntOrNull()
+        if (version != null && version > ACTIVITIES_FORMAT_VERSION) {
+            return ActivitiesRead(null, listOf("This activities file uses format version $version; this app reads version $ACTIVITIES_FORMAT_VERSION. Update the app."), emptyList())
+        }
+        badPrices(element).takeIf { it.isNotEmpty() }?.let { return ActivitiesRead(null, it, emptyList()) }
+        val file = try {
+            TripJson.reader.decodeFromJsonElement(ActivityFile.serializer(), element)
+        } catch (e: SerializationException) {
+            return ActivitiesRead(null, listOf(TripJson.plainError(e)), emptyList())
+        } catch (e: IllegalArgumentException) {
+            return ActivitiesRead(null, listOf(e.message ?: "The activities could not be read."), emptyList())
+        }
+        val errors = mutableListOf<String>()
+        if (file.activities.isEmpty()) errors += "activities: the file has none"
+        unique(file.activities.map { it.id }, "activities", errors)
+        checkActivities(file.activities, null, errors)
+        // The trip-level strict checks, run on the activities alone; with no stays, only the activity ones apply.
+        val alone = Trip(id = file.tripId ?: "activities", title = "", startDate = "", endDate = "", activities = file.activities)
+        val unknown = TripJson.unknownFields(element, ActivityFile.serializer().descriptor)
+        return ActivitiesRead(file, errors, emptyList(), Completeness.problems(alone, unknown), Stamp.check(element))
     }
 
     private fun fail(msg: String) = ReadResult(null, listOf(msg), emptyList())
@@ -138,28 +179,7 @@ object TripReader {
             t.booking?.priority?.let { priority(it, "$where.booking.priority", errors) }
             t.booking?.bookDaysBefore?.let { lead(it, "$where.booking.bookDaysBefore", errors) }
         }
-        trip.activities.forEachIndexed { i, a ->
-            val where = "activities[$i] (${a.id})"
-            if (a.stayId !in stayIds) errors += "$where: unknown stay '${a.stayId}'"
-            if (a.name.isBlank()) errors += "$where: name is empty"
-            a.fit?.let { enum(it, Vocab.fits, "$where.fit", errors) }
-            a.effort?.let { enum(it, Vocab.efforts, "$where.effort", errors) }
-            a.stars?.let { if (it !in 1..3) errors += "$where.stars: must be 1, 2 or 3; got $it" }
-            a.confidence?.let { enum(it, Vocab.confidences, "$where.confidence", errors) }
-            a.bestTime.forEach { enum(it, Vocab.bestTimes, "$where.bestTime", errors) }
-            a.origin?.let { enum(it, Vocab.origins, "$where.origin", errors) }
-            a.availability.forEach { w ->
-                w.days.forEach { enum(it, Vocab.weekdays, "$where.availability.days", errors) }
-                w.start?.let { time(it, "$where.availability.start", errors) }
-                w.end?.let { time(it, "$where.availability.end", errors) }
-            }
-            a.checkedOn?.let { date(it, "$where.checkedOn", errors) }
-            a.booking?.status?.let { enum(it, Vocab.bookingStatuses, "$where.booking.status", errors) }
-            price(a.booking?.price, "$where.booking.price", errors)
-            a.booking?.priority?.let { priority(it, "$where.booking.priority", errors) }
-            a.booking?.bookDaysBefore?.let { lead(it, "$where.booking.bookDaysBefore", errors) }
-            checkPlace(a.place, where, errors)
-        }
+        checkActivities(trip.activities, stayIds, errors)
         trip.commitments.forEachIndexed { i, c ->
             val where = "commitments[$i] (${c.id})"
             if (c.stayId != null && c.stayId !in stayIds) errors += "$where: unknown stay '${c.stayId}'"
@@ -187,6 +207,32 @@ object TripReader {
                 item.status?.let { enum(it, Vocab.statuses, "$where.plan[$j].status", errors) }
                 item.time?.let { time(it, "$where.plan[$j].time", errors) }
             }
+        }
+    }
+
+    /** [stayIds] null skips the stay check: an activities file names stays that the import matches later. */
+    private fun checkActivities(activities: List<Activity>, stayIds: Set<String>?, errors: MutableList<String>) {
+        activities.forEachIndexed { i, a ->
+            val where = "activities[$i] (${a.id})"
+            if (stayIds != null && a.stayId !in stayIds) errors += "$where: unknown stay '${a.stayId}'"
+            if (a.name.isBlank()) errors += "$where: name is empty"
+            a.fit?.let { enum(it, Vocab.fits, "$where.fit", errors) }
+            a.effort?.let { enum(it, Vocab.efforts, "$where.effort", errors) }
+            a.stars?.let { if (it !in 1..3) errors += "$where.stars: must be 1, 2 or 3; got $it" }
+            a.confidence?.let { enum(it, Vocab.confidences, "$where.confidence", errors) }
+            a.bestTime.forEach { enum(it, Vocab.bestTimes, "$where.bestTime", errors) }
+            a.origin?.let { enum(it, Vocab.origins, "$where.origin", errors) }
+            a.availability.forEach { w ->
+                w.days.forEach { enum(it, Vocab.weekdays, "$where.availability.days", errors) }
+                w.start?.let { time(it, "$where.availability.start", errors) }
+                w.end?.let { time(it, "$where.availability.end", errors) }
+            }
+            a.checkedOn?.let { date(it, "$where.checkedOn", errors) }
+            a.booking?.status?.let { enum(it, Vocab.bookingStatuses, "$where.booking.status", errors) }
+            price(a.booking?.price, "$where.booking.price", errors)
+            a.booking?.priority?.let { priority(it, "$where.booking.priority", errors) }
+            a.booking?.bookDaysBefore?.let { lead(it, "$where.booking.bookDaysBefore", errors) }
+            checkPlace(a.place, where, errors)
         }
     }
 

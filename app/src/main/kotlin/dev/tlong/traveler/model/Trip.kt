@@ -46,6 +46,24 @@ data class Trip(
     val validated: Validated? = null,
 )
 
+const val ACTIVITIES_FORMAT = "traveler-activities"
+const val ACTIVITIES_FORMAT_VERSION = 1
+
+/**
+ * New activities for a trip, written without the trip file at hand. Each activity's `stayId` is the
+ * stay's id or a slug of its name; [tripId] may be absent. The import only ever adds.
+ */
+@Serializable
+data class ActivityFile(
+    val format: String = ACTIVITIES_FORMAT,
+    val formatVersion: Int = ACTIVITIES_FORMAT_VERSION,
+    val tripId: String? = null,
+    val generatedAt: String? = null,
+    val generatedBy: String? = null,
+    val activities: List<Activity> = emptyList(),
+    val validated: Validated? = null,
+)
+
 @Serializable
 data class Validated(val by: String? = null, val hash: String? = null)
 

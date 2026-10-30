@@ -152,10 +152,30 @@ Something fixed on a date that the plan must work around.
 
 **Item** — `{ "activityId", "slot": "morning"|"afternoon"|"evening"|"allday", "time"?: "HH:MM", "status"?: "proposed"|"done"|"skipped", "note"? }`. A `time` makes it a fixed-time item; without one it is loosely ordered within its slot. Status defaults to `proposed`.
 
+## Activities file (`traveler-activities`, version 1)
+
+New activities for a trip, written without the trip file at hand: in a fresh chat, say, or by another assistant. Importing one only ever adds; nothing already in the trip changes or goes.
+
+```json
+{ "format": "traveler-activities", "formatVersion": 1, "tripId": "argentina-2027",
+  "activities": [ { "id": "punta-tombo", "stayId": "puerto-madryn", "name": "Punta Tombo penguin colony", "stars": 3, "place": { "lat": -44.05, "lng": -65.22 } } ] }
+```
+
+| Field | Req | Type | Notes |
+|---|---|---|---|
+| `format` | ✓ | `"traveler-activities"` | |
+| `formatVersion` | ✓ | `1` | |
+| `tripId` | | id | The trip's id if known. Without it, the app picks the trip most of the stays fit, and the traveler can change it. |
+| `generatedAt`, `generatedBy`, `validated` | | | As in a trip file. |
+| `activities` | ✓ | Activity[] | At least one, each a full Activity as above. |
+
+An activity's `stayId` is the stay's id, or a slug of its name (`"puerto-madryn"`) when the id is unknown. The app matches the id, then the name, then a name that starts with it; a city visited twice takes its current or next visit. One that fits no stay goes to a stay the traveler picks on the preview. An activity whose name is already in that stay is skipped, and a taken `id` gets a suffix. `schema/examples/demo.activities.json` is a worked example for the demo trip.
+
 ## What the app does with a file
 
 - **New trip id** → a preview (name, dates, stays, problems), then import.
 - **Known trip id, same content** → "already imported", nothing changes.
 - **Known trip id, new content** → a revision: the app compares the incoming file with the version it last imported and with the traveler's current plan, lists what changed, keeps the traveler's edits, asks about anything both sides changed, and keeps a snapshot so the import can be undone.
 - **Lower `revision` or older `generatedAt` than the copy in use** → a warning before anything happens.
+- **An activities file** → a preview of what joins which stay, with any already there listed as skipped; the traveler unticks what they don't want and adds the rest in one step, which History can undo.
 - **Export** writes the current plan — the traveler's edits included — in this same format, with `origin`, `userEdited`, `userNote` and `userStatus` filled in, so an assistant can revise it and the app can merge the result.

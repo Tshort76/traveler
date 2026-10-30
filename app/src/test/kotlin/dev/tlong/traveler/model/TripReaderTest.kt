@@ -13,12 +13,29 @@ class TripReaderTest {
 
     @Test
     fun `every example reads without errors`() {
-        val files = File(Fixtures.schemaDir, "examples").listFiles()!!.filter { it.name.endsWith(".json") }
+        val files = File(Fixtures.schemaDir, "examples").listFiles()!!.filter { it.name.endsWith(".trip.json") }
         assertTrue(files.size >= 4)
         files.forEach { f ->
             val r = TripReader.read(f.readText())
             assertTrue("${f.name}: ${r.errors}", r.ok)
         }
+    }
+
+    @Test
+    fun `the demo activities file reads, passes the strict checks and carries a current stamp`() {
+        val r = TripReader.readActivities(Fixtures.text("demo.activities.json"))
+        assertTrue(r.errors.toString(), r.ok)
+        assertEquals(4, r.file!!.activities.size)
+        assertEquals(emptyList<String>(), r.forAssistant)
+        assertEquals(Stamp.Check.MATCHES, r.stamp)
+    }
+
+    @Test
+    fun `an activities file is held to the activity checks, not to its stays`() {
+        val bad = Fixtures.text("demo.activities.json").replace("\"stars\": 3", "\"stars\": 4")
+        val r = TripReader.readActivities(bad)
+        assertTrue(r.errors.toString(), r.errors.any { "stars: must be 1, 2 or 3" in it })
+        assertTrue(r.errors.none { "unknown stay" in it })
     }
 
     @Test

@@ -46,6 +46,16 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.tlong.traveler.data.PendingImport
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.ui.text.TextStyle
+import dev.tlong.traveler.domain.ActivityImport
+import dev.tlong.traveler.domain.stay
+import dev.tlong.traveler.model.Activity
+import dev.tlong.traveler.ui.common.marked
+import java.time.LocalDate
 import dev.tlong.traveler.domain.Merge
 import dev.tlong.traveler.domain.arriveDate
 import dev.tlong.traveler.domain.dateRangeLabel
@@ -84,6 +94,7 @@ fun ImportScreen(navigator: Navigator) {
                             is PendingImport.AlreadyImported -> "Already imported"
                             is PendingImport.Revision -> "Update trip"
                             is PendingImport.Backup -> "Restore backup"
+                            is PendingImport.Activities -> "Add activities"
                             null -> ""
                         },
                     )
@@ -124,6 +135,13 @@ fun ImportScreen(navigator: Navigator) {
                 }
                 is PendingImport.Backup -> BackupReview(p, onCancel = close) { chosen, templates ->
                     scope.launch { container.restoreBackup(chosen, templates); navigator.trips() }
+                }
+                is PendingImport.Activities -> ActivitiesReview(p, onCancel = close) { tripId, add ->
+                    scope.launch {
+                        container.acceptActivities(tripId, add)
+                        navigator.overview(tripId, replaceStack = true)
+                        add.map { it.stayId }.distinct().singleOrNull()?.let { navigator.stay(tripId, it, tab = 1) }
+                    }
                 }
             }
         }
@@ -348,6 +366,61 @@ fun CheckRow(title: String, detail: String?, checked: Boolean, onChange: (Boolea
         Column(Modifier.padding(start = 8.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+    }
+}
+
+/** Which trip, which stay for the ones whose stay fit none, and which to add; duplicates are listed, not added. */
+@Composable
+private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, onAdd: (String, List<Activity>) -> Unit) {
+    val today = remember { LocalDate.now() }
+    var tripId by remember { mutableStateOf(ActivityImport.pickTrip(p.file, p.trips, today)!!.id) }
+    val trip = p.trips.first { it.id == tripId }
+    var fallback by remember(tripId) { mutableStateOf(ActivityImport.defaultStay(trip, today)?.id) }
+    val plan = remember(tripId, fallback) { ActivityImport.plan(trip, p.file, fallback, today) }
+    var left by remember(plan) { mutableStateOf(emptySet<String>()) }
+    val chosen = plan.add.filter { it.id !in left }
+    WithActions(
+        actions = {
+            Button(onClick = { onAdd(tripId, chosen) }, enabled = chosen.isNotEmpty()) { Text("Add ${chosen.size}") }
+            OutlinedButton(onClick = onCancel) { Text("Cancel") }
+        },
+    ) {
+    Picker(trip.title, p.trips.map { it.id to it.title }, MaterialTheme.typography.titleLarge) { tripId = it }
+    Text("From ${p.source}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    if (plan.unmatched.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("No stay matched ${plan.unmatched.size}:", style = MaterialTheme.typography.bodyMedium)
+            Picker(trip.stay(fallback)?.name ?: "", trip.stays.map { it.id to it.name }, MaterialTheme.typography.titleSmall) { fallback = it }
+        }
+    }
+    plan.add.groupBy { it.stayId }.forEach { (stayId, list) ->
+        SectionTitle("${trip.stay(stayId)?.name ?: stayId} (${list.size})")
+        list.forEach { a ->
+            CheckRow(listOfNotNull(a.tag, a.marked(false, false)).joinToString("  "), a.short, checked = a.id !in left) {
+                left = if (it) left - a.id else left + a.id
+            }
+        }
+    }
+    if (plan.skipped.isNotEmpty()) {
+        SectionTitle("Not added (${plan.skipped.size})")
+        plan.skipped.forEach { Text("• ${it.name}: ${it.reason}", style = MaterialTheme.typography.bodyMedium) }
+    }
+    AssistantCheck(p.check)
+    }
+}
+
+/** A value that opens a menu of the others. */
+@Composable
+private fun Picker(label: String, options: List<Pair<String, String>>, style: TextStyle, onPick: (String) -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        TextButton(onClick = { open = true }, enabled = options.size > 1, contentPadding = PaddingValues(0.dp)) {
+            Text(label, style = style, color = MaterialTheme.colorScheme.onSurface)
+            if (options.size > 1) Icon(Icons.Default.ArrowDropDown, contentDescription = "Change")
+        }
+        DropdownMenu(open, onDismissRequest = { open = false }) {
+            options.forEach { (id, name) -> DropdownMenuItem(text = { Text(name) }, onClick = { onPick(id); open = false }) }
         }
     }
 }

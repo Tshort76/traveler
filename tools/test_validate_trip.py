@@ -99,6 +99,34 @@ class Stamp(unittest.TestCase):
         self.assertNotEqual(v.stamp_hash(text), v.stamp_hash(text.replace("Iguaz", "Iguas", 1)))
 
 
+class ActivitiesFile(unittest.TestCase):
+    def setUp(self):
+        self.text = (ROOT / "schema" / "examples" / "demo.activities.json").read_text()
+        self.doc = json.loads(self.text)
+
+    def test_the_demo_is_complete_and_stamped(self):
+        rep, s = v.validate(self.doc)
+        v.check_complete(self.doc, rep)
+        self.assertEqual(rep.errors, [])
+        self.assertEqual(s["activities"], 4)
+        self.assertEqual(self.doc["validated"]["hash"], v.stamp_hash(self.text),
+                         "re-stamp it: python3 tools/validate_trip.py --stamp schema/examples/demo.activities.json")
+
+    def test_a_stay_it_cannot_see_is_fine_but_an_activity_still_needs_its_fields(self):
+        del self.doc["activities"][0]["stayId"]
+        self.doc["activities"][1]["stars"] = 4
+        rep, _ = v.validate(self.doc)
+        errors = " ".join(rep.errors)
+        self.assertIn("missing required field 'stayId'", errors)
+        self.assertIn("stars: must be one of 1, 2, 3", errors)
+        self.assertNotIn("unknown stay", errors)
+
+    def test_an_empty_file_fails(self):
+        self.doc["activities"] = []
+        rep, _ = v.validate(self.doc)
+        self.assertIn("needs at least 1", " ".join(rep.errors))
+
+
 class InvalidFilesAreRejected(unittest.TestCase):
     REASONS = {
         "negative-book-days": "bookDaysBefore",

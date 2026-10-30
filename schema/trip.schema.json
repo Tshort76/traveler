@@ -941,6 +941,57 @@
           "$ref": "#/$defs/userEdited"
         }
       }
+    },
+    "activitiesFile": {
+      "type": "object",
+      "description": "A traveler-activities file: new activities for a trip, written without the trip file. The app only adds them: one already in the stay (same name) is skipped. Each activity's stayId is the stay's id, or a slug of its name (\"mendoza\") when the id is unknown; tripId may be left out.",
+      "required": [
+        "format",
+        "formatVersion",
+        "activities"
+      ],
+      "properties": {
+        "format": {
+          "const": "traveler-activities"
+        },
+        "formatVersion": {
+          "const": 1
+        },
+        "tripId": {
+          "$ref": "#/$defs/id"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "generatedBy": {
+          "type": "string"
+        },
+        "activities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/activity"
+          }
+        },
+        "validated": {
+          "type": "object",
+          "description": "Written by validate_trip.py --stamp when the file passes --complete: a fingerprint of the rest of the file, which the app recomputes to show whether the file was checked.",
+          "properties": {
+            "by": {
+              "type": "string"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{16}$"
+            }
+          },
+          "required": [
+            "hash"
+          ],
+          "additionalProperties": false
+        }
+      }
     }
   }
 }

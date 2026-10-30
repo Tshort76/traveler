@@ -89,6 +89,10 @@ Tags (one emoji per activity): 🏛️ architecture · 🌿 nature · ☕ coffee
 - Say shared logistics once, at trip or stay level, and repeat them on a day only when they change a decision.
 - Dates must be right. Check that every day's date falls inside its stay, and that weekdays match the calendar.
 
+### Adding activities without the trip file
+
+When the traveler asks for more activities and has not sent the trip file (a new chat, say), write a **`traveler-activities`** file instead of a trip: `{ "format": "traveler-activities", "formatVersion": 1, "tripId"?: "<id if you know it>", "generatedAt": "<now>", "activities": [ … ] }`. Each activity is complete, exactly as in a trip file, and its `stayId` is the stay's id if you know it, otherwise a slug of the stay's name (`"puerto-madryn"`). The app adds them to the trip, skips any whose name the stay already has, and changes nothing else; so never use it to remove or change anything, and never repeat what the traveler said they already have. Validate and stamp it the same way, and name it `<trip-id or destination>.activities.json`. With the trip file in the chat, revise the trip instead.
+
 ### Before you hand it over
 
 If you can run code, run `python3 validate_trip.py --stamp <file>`, fix every ERROR, and run it again until it prints "OK and stamped". It checks everything `--complete` does (missing stars, prices, priorities and booking objects too), and on OK writes a `validated` stamp into the file; the app shows the traveler whether the stamp matches, so hand over the stamped file unchanged. If you can't run code, check the cross-references by hand:

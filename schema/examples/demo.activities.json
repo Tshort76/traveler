@@ -1,0 +1,92 @@
+{
+  "format": "traveler-activities",
+  "formatVersion": 1,
+  "generatedAt": "2027-09-01T12:00:00Z",
+  "generatedBy": "demo",
+  "activities": [
+    {
+      "id": "punta-tombo",
+      "stayId": "puerto-madryn",
+      "name": "Punta Tombo penguin colony",
+      "tag": "🐧",
+      "short": "Walk among Magellanic penguins on their nesting ground",
+      "why": "October is nesting season, with the colony at its busiest.",
+      "stars": 3,
+      "place": {
+        "query": "Área Natural Protegida Punta Tombo",
+        "lat": -44.0464,
+        "lng": -65.2236
+      },
+      "duration": {
+        "minutes": 480,
+        "includesTravel": true
+      },
+      "fit": "full-day",
+      "bestTime": [
+        "morning"
+      ],
+      "effort": "easy",
+      "confidence": "check"
+    },
+    {
+      "id": "feria-san-telmo",
+      "stayId": "san-telmo",
+      "name": "Feria de San Telmo",
+      "tag": "🍽️",
+      "short": "Sunday street fair of antiques and tango down Calle Defensa",
+      "stars": 2,
+      "place": {
+        "query": "Mercado de San Telmo, Buenos Aires",
+        "lat": -34.6206,
+        "lng": -58.3714
+      },
+      "duration": {
+        "minutes": 90
+      },
+      "fit": "short",
+      "bestTime": [
+        "morning",
+        "afternoon"
+      ],
+      "effort": "easy",
+      "confidence": "check"
+    },
+    {
+      "id": "palermo-soho-again",
+      "stayId": "palermo",
+      "name": "Palermo Soho",
+      "short": "Already in the demo trip, so the import skips it",
+      "stars": 2,
+      "place": {
+        "query": "Palermo Soho, Buenos Aires",
+        "lat": -34.5885,
+        "lng": -58.4305
+      }
+    },
+    {
+      "id": "tigre-delta",
+      "stayId": "tigre",
+      "name": "Tigre delta by boat",
+      "tag": "🚤",
+      "short": "Commuter launches through the Paraná delta's river islands",
+      "why": "A day out of the city on the water; Tigre is not a stay, so the import asks where it goes.",
+      "stars": 1,
+      "place": {
+        "query": "Estación Fluvial Tigre",
+        "lat": -34.4194,
+        "lng": -58.5794
+      },
+      "duration": {
+        "minutes": 360,
+        "includesTravel": true
+      },
+      "fit": "full-day",
+      "effort": "easy",
+      "confidence": "check"
+    }
+  ],
+  "validated": {
+    "by": "validate_trip.py",
+    "hash": "631e172a41bf217c"
+  }
+}

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Validate a Traveler trip file (traveler-trip v1).
+"""Validate a Traveler trip file (traveler-trip v1), or an activities file (traveler-activities v1).
 
 Usage:
     python3 validate_trip.py trip.json [more.json ...]
     python3 validate_trip.py --complete trip.json   # also require stars, prices, priorities and booking objects
     python3 validate_trip.py --stamp trip.json      # --complete, and on OK write the "validated" stamp into the file
+
+An activities file holds new activities for a trip, written without the trip
+file: the same checks apply to each activity, except that its stayId may name a
+stay this file cannot see.
 
 Prints OK with a one-line summary, or each problem as ERROR / WARNING.
 Exits 1 when any file has an error. Errors stop the app importing the file;
@@ -208,7 +212,10 @@ def _unique_ids(items, label, rep):
     return seen
 
 
-def check_references(trip, rep):
+ACTIVITIES_FORMAT = "traveler-activities"
+
+
+def check_references(trip, rep, standalone=False):
     def lst(key):
         v = trip.get(key)
         return [x for x in v if isinstance(x, dict)] if isinstance(v, list) else []
@@ -259,7 +266,7 @@ def check_references(trip, rep):
                 rep.error(f"transfers[{i}].{k}", f"unknown stay '{t[k]}'")
 
     for i, a in enumerate(acts):
-        if a.get("stayId") and a["stayId"] not in stay_ids:
+        if not standalone and a.get("stayId") and a["stayId"] not in stay_ids:
             rep.error(f"activities[{i}] ({a.get('id', '?')}).stayId", f"unknown stay '{a['stayId']}'")
         dur = a.get("duration")
         if isinstance(dur, dict) and isinstance(dur.get("maxMinutes"), int) and isinstance(dur.get("minutes"), int):
@@ -335,8 +342,9 @@ def validate(trip, schema=None):
         rep.error("", "the file must contain one JSON object (the trip)")
         return rep, None
     schema = schema or load_schema()
-    check_schema(trip, schema, schema, "", rep)
-    summary = check_references(trip, rep)
+    standalone = trip.get("format") == ACTIVITIES_FORMAT
+    check_schema(trip, schema["$defs"]["activitiesFile"] if standalone else schema, schema, "", rep)
+    summary = check_references(trip, rep, standalone)
     return rep, summary
 
 
@@ -479,9 +487,13 @@ def main(argv):
                 trip.pop("validated", None)
                 trip["validated"] = {"by": "validate_trip.py", "hash": stamp_hash(dump(trip))}
                 Path(name).write_text(dump(trip))
-            print(f"{name}: OK{' and stamped' if stamp else ''} — '{trip.get('title')}' r{trip.get('revision')}: {s['stays']} stays, "
-                  f"{s['days']} days, {s['activities']} activities ({s['planned']} planned), "
-                  f"{s['commitments']} commitments, {len(rep.warnings)} warning(s)")
+            done = f"{name}: OK{' and stamped' if stamp else ''} — "
+            if trip.get("format") == ACTIVITIES_FORMAT:
+                print(done + f"{s['activities']} new activities for {trip.get('tripId') or 'a trip'}, {len(rep.warnings)} warning(s)")
+            else:
+                print(done + f"'{trip.get('title')}' r{trip.get('revision')}: {s['stays']} stays, "
+                      f"{s['days']} days, {s['activities']} activities ({s['planned']} planned), "
+                      f"{s['commitments']} commitments, {len(rep.warnings)} warning(s)")
     return 1 if failed else 0
 
 

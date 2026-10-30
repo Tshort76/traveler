@@ -1,13 +1,17 @@
 package dev.tlong.traveler.data
 
+import dev.tlong.traveler.domain.ActivityImport
 import dev.tlong.traveler.domain.Export
 import dev.tlong.traveler.domain.Merge
+import dev.tlong.traveler.model.ACTIVITIES_FORMAT
+import dev.tlong.traveler.model.ActivityFile
 import dev.tlong.traveler.model.Stamp
 import dev.tlong.traveler.model.Trip
 import dev.tlong.traveler.model.TripJson
 import dev.tlong.traveler.model.TripReader
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import java.time.LocalDate
 
 /** What an opened file turned out to be, and what the preview screen should offer. */
 sealed interface PendingImport {
@@ -25,6 +29,9 @@ sealed interface PendingImport {
     ) : PendingImport
 
     data class Backup(override val source: String, val file: BackupFile, val existing: Set<String>) : PendingImport
+
+    /** New activities for one of [trips] (live trips, newest plans first); the preview picks the trip and stays. */
+    data class Activities(override val source: String, val file: ActivityFile, val trips: List<Trip>, val check: FileCheck = FileCheck()) : PendingImport
 }
 
 /** What the strict checks found for the assistant to fix, and whether the validator's stamp matches. */
@@ -39,6 +46,14 @@ class ImportRouter(private val store: TripStore) {
             }
             return PendingImport.Backup(source, file, file.trips.filter { store.exists(it.base.id) }.map { it.base.id }.toSet())
         }
+        if (formatOf(text) == ACTIVITIES_FORMAT) {
+            val read = TripReader.readActivities(text)
+            val file = read.file
+            if (!read.ok || file == null) return PendingImport.Invalid(source, read.errors, read.warnings)
+            val trips = store.liveTrips()
+            if (trips.isEmpty()) return PendingImport.Invalid(source, listOf("These are activities for a trip, and there is no trip on this phone to add them to. Import the trip first."), emptyList())
+            return PendingImport.Activities(source, file, ActivityImport.ordered(trips, LocalDate.now()), FileCheck(read.forAssistant, read.stamp))
+        }
         val read = TripReader.read(text)
         val trip = read.trip
         if (!read.ok || trip == null) return PendingImport.Invalid(source, read.errors, read.warnings)
@@ -51,8 +66,10 @@ class ImportRouter(private val store: TripStore) {
         return PendingImport.Revision(source, Merge.plan(stored.base, stored.local, trip), read.warnings, deleted, check)
     }
 
-    private fun looksLikeBackup(text: String): Boolean = runCatching {
+    private fun looksLikeBackup(text: String): Boolean = formatOf(text) == BACKUP_FORMAT
+
+    private fun formatOf(text: String): String? = runCatching {
         val e = TripJson.reader.parseToJsonElement(TripJson.extractJson(text)) as? JsonObject
-        (e?.get("format") as? JsonPrimitive)?.content == BACKUP_FORMAT
-    }.getOrDefault(false)
+        (e?.get("format") as? JsonPrimitive)?.content
+    }.getOrNull()
 }

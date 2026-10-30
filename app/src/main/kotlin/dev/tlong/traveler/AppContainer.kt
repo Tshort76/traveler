@@ -15,6 +15,7 @@ import dev.tlong.traveler.data.TripStore
 import dev.tlong.traveler.domain.ChecklistTemplate
 import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Merge
+import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.Trip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,6 +84,13 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
         refreshSession(merged.id)
         _pending.value = null
         return merged.id
+    }
+
+    /** Adds the chosen activities as one edit; History keeps the trip as it was, like any import. */
+    suspend fun acceptActivities(tripId: String, add: List<Activity>) {
+        store.snapshot(tripId, "Before adding ${add.size} activit${if (add.size == 1) "y" else "ies"}")
+        session(tripId)?.edit("Add ${add.size} activit${if (add.size == 1) "y" else "ies"}") { it.copy(activities = it.activities + add) }
+        _pending.value = null
     }
 
     suspend fun undelete(id: String) {
