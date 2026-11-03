@@ -9,7 +9,10 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.Orientation
 import android.content.pm.PackageManager
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import dev.tlong.traveler.domain.destinations
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -146,7 +149,6 @@ import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.ui.common.offerUndo
 import dev.tlong.traveler.ui.common.rememberSession
 import dev.tlong.traveler.ui.common.rich
-import dev.tlong.traveler.ui.overview.BackButton
 import dev.tlong.traveler.ui.overview.LoadingScaffold
 import java.time.ZoneId
 import kotlinx.coroutines.launch
@@ -255,6 +257,9 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     val dayIndex = trip.days.indexOfFirst { it.date == date }
     val day = trip.day(date)
     val stay = day?.let { trip.stayOf(it) }
+    // A travel day at the home airport has no itinerary to go back to.
+    val backTo = stay?.takeIf { s -> trip.destinations.any { it.id == s.id } }?.id
+    BackHandler { navigator.backFromDay(trip.id, backTo) }
     var editingNote by remember(date) { mutableStateOf(false) }
     var picker by remember { mutableStateOf<AddAt?>(null) }
     var again by remember { mutableStateOf<Pair<Activity, AddAt>?>(null) }
@@ -326,7 +331,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                         modifier = Modifier.semantics { contentDescription = local?.longLabel() ?: date },
                     )
                 },
-                navigationIcon = { BackButton(navigator) },
+                navigationIcon = { IconButton(onClick = { navigator.backFromDay(trip.id, backTo) }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") } },
                 actions = {
                     SaveIndicator(saveState, session::retrySave)
                     IconButton(onClick = { goTo(-1) }, enabled = dayIndex > 0) {

@@ -21,8 +21,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.activity.compose.BackHandler
 import dev.tlong.traveler.domain.day
 import dev.tlong.traveler.domain.destinations
 import dev.tlong.traveler.domain.stayOf
@@ -65,6 +63,17 @@ class Navigator(private val nav: NavHostController) {
         val entry = nav.currentBackStackEntry
         if (entry?.destination?.hasRoute<DayRoute>() == true) nav.navigate(OverviewRoute(entry.toRoute<DayRoute>().tripId)) { popUpTo(nav.graph.id) { inclusive = true } }
         else trips()
+    }
+    /**
+     * Back from a day: to its stay's itinerary, with the trip's Stays page under that, whatever led to the
+     * day (the trips list, the trip's calendar, the app opening on it). A stay already under the day is kept as it was.
+     */
+    fun backFromDay(tripId: String, stayId: String?) {
+        val under = nav.previousBackStackEntry
+        if (stayId == null || under?.destination?.hasRoute<StayRoute>() == true && under.toRoute<StayRoute>().stayId == stayId) return back()
+        val hasTrips = runCatching { nav.getBackStackEntry<TripsRoute>() }.isSuccess
+        nav.navigate(OverviewRoute(tripId)) { if (hasTrips) popUpTo<TripsRoute>() else popUpTo(nav.graph.id) { inclusive = true } }
+        nav.navigate(StayRoute(tripId, stayId))
     }
     /** The list of trips, alone on the stack: the app may have opened on a trip, with nothing under it. */
     fun trips() = nav.navigate(TripsRoute) { popUpTo(nav.graph.id) { inclusive = true } }
@@ -132,7 +141,4 @@ fun TravelerNav() {
         composable<AssistantGuideRoute> { AssistantGuideScreen(navigator) }
         composable<TemplateRoute> { TemplateScreen(it.toRoute<TemplateRoute>().id, navigator) }
     }
-    // Back from a day the app opened on goes up to its trip rather than out of the app.
-    val entry by nav.currentBackStackEntryAsState()
-    BackHandler(enabled = entry?.destination?.hasRoute<DayRoute>() == true && nav.previousBackStackEntry == null) { navigator.back() }
 }
