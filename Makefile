@@ -46,7 +46,7 @@ fixtures: ## Regenerate the derived example trips
 tools-test: ## The Python tools' own tests
 	@cd tools && python3 -m unittest -q test_validate_trip test_stay_brief test_make_map
 
-emulator: ## Start the 'traveler' emulator headless; stops when the starting Claude session exits unless KEEP=1
+emulator: ## Start the 'traveler' emulator headless; stops when the starting agent session exits unless KEEP=1
 	@tools/emu/emulator.sh start
 
 emulator-stop: ## Shut the emulator down (do this when you are done with it)

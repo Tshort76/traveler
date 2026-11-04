@@ -1,7 +1,7 @@
 #!/bin/bash
 # Start or stop the headless 'traveler' emulator.
 #
-#   emulator.sh start   boot it if it is not running; when started from a Claude Code session,
+#   emulator.sh start   boot it if it is not running; when started from an agent session (Claude Code or Codex),
 #                       a watchdog stops it once that session's process exits (KEEP=1 skips it)
 #   emulator.sh stop    shut it down
 #
@@ -16,10 +16,10 @@ LOG=/tmp/traveler-emulator.log
 
 running() { pgrep -f "qemu-system.*-avd $AVD( |$)" >/dev/null; }
 
-claude_ancestor() {
+agent_ancestor() {
   local pid=$PPID
   while [ "${pid:-1}" -gt 1 ]; do
-    case "$(ps -o comm= -p "$pid")" in *claude*) echo "$pid"; return ;; esac
+    case "$(ps -o comm= -p "$pid")" in *claude*|*codex*) echo "$pid"; return ;; esac
     pid=$(ps -o ppid= -p "$pid" | tr -d ' ')
   done
 }
@@ -36,10 +36,10 @@ start() {
     echo "emulator already running"
   else
     "$EMULATOR" -avd "$AVD" -no-window -no-audio -no-boot-anim >"$LOG" 2>&1 &
-    owner=$(claude_ancestor)
+    owner=$(agent_ancestor)
     if [ -n "$owner" ] && [ "${KEEP:-0}" != 1 ]; then
       nohup bash -c "while kill -0 $owner 2>/dev/null; do sleep 30; done; '$0' stop" >/dev/null 2>&1 &
-      echo "emulator will stop when Claude session $owner exits (KEEP=1 to keep it)"
+      echo "emulator will stop when agent session $owner exits (KEEP=1 to keep it)"
     fi
   fi
   "$ADB" wait-for-device && echo "emulator booting; 'make install' once it is up, 'make emulator-stop' when done"
