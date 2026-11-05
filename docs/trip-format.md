@@ -22,7 +22,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 2. **The trip `id` never changes** across revisions. A new trip gets a new id.
 3. **`revision` goes up by one** each time you produce a new version of the trip.
 4. **Fields named `origin`, `userEdited`, `userNote` and `userStatus` are written by the app.** Keep them exactly as given. An item with `"origin": "user"` is the traveler's own entry: never delete or reword it. A field listed in `userEdited` holds the traveler's wording: do not overwrite it — propose changes in your reply instead.
-5. **Never invent facts.** Leave out hours, prices, bookings and availability you have not verified, or mark the activity `"confidence": "check"`.
+5. **Never invent facts.** Leave out hours, prices, bookings and availability you have not verified.
 
 ## Trip (top level)
 
@@ -122,7 +122,7 @@ Times are local to the place they happen.
 | `availability` | | Window[] | Machine-readable opening windows: `{ "days"?: ["tue",…], "start"?: "HH:MM", "end"?: "HH:MM", "note"? }`. Used to warn when a plan puts it outside them. |
 | `practical` | | object | Any of `transport`, `booking`, `cost`, `weather`, `access`, `tips` — strings. |
 | `booking` | | Booking | Set when it needs a reservation or ticket: `{ "status": "needed", "price": {…} }`. It then appears on the Bookings screen; booking it in the app adds a commitment linked to it. `"status": "onsite"` is a paid entry bought at the door: the app shows its price on the activity but leaves it off Bookings. |
-| `confidence` | | enum | `"confirmed"` (checked recently), `"estimate"`, `"check"` (verify before going). |
+| `confidence` | | enum | Retired: still accepted, ignored by the app. Don't write it. |
 | `checkedOn` | | ISO date | When details were last verified. |
 | `url`, `sources` | | URL, URL[] | Official site; where the facts came from. |
 | `origin`, `userEdited`, `userNote` | | | **App-written.** See the rules above. |

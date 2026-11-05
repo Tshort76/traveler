@@ -418,7 +418,6 @@
         "afternoon"
       ],
       "effort": "moderate",
-      "confidence": "check",
       "stars": 3
     },
     {
@@ -445,7 +444,6 @@
         "evening"
       ],
       "effort": "easy",
-      "confidence": "check",
       "stars": 3
     },
     {
@@ -471,7 +469,6 @@
         "afternoon"
       ],
       "effort": "easy",
-      "confidence": "check",
       "stars": 3
     },
     {
@@ -497,7 +494,6 @@
       "conditions": [
         "rainy-day"
       ],
-      "confidence": "check",
       "stars": 2
     },
     {
@@ -524,7 +520,6 @@
         "free-afternoon",
         "short-morning"
       ],
-      "confidence": "check",
       "stars": 1,
       "userStatus": "wontdo"
     },
@@ -552,7 +547,6 @@
         "morning"
       ],
       "effort": "easy",
-      "confidence": "check",
       "stars": 3
     },
     {
@@ -578,7 +572,6 @@
       "conditions": [
         "rainy-day"
       ],
-      "confidence": "check",
       "stars": 2
     },
     {
@@ -608,7 +601,6 @@
       "practical": {
         "weather": "May close during strong rain or wind."
       },
-      "confidence": "check",
       "stars": 3,
       "userNote": "Go early; it gets hot by noon."
     },
@@ -635,7 +627,6 @@
         "evening"
       ],
       "effort": "easy",
-      "confidence": "check",
       "stars": 2
     },
     {
@@ -665,7 +656,6 @@
       "practical": {
         "transport": "Use an app car or direct transit and visit during the day."
       },
-      "confidence": "check",
       "stars": 2
     },
     {
@@ -691,7 +681,6 @@
         "afternoon"
       ],
       "effort": "easy",
-      "confidence": "check",
       "stars": 2,
       "userStatus": "done"
     },
@@ -718,7 +707,6 @@
         "evening"
       ],
       "effort": "easy",
-      "confidence": "confirmed",
       "hours": "Daily 12:00–16:00 and 19:00–01:00",
       "booking": {
         "status": "booked",
@@ -761,7 +749,6 @@
       "conditions": [
         "rainy-day"
       ],
-      "confidence": "confirmed",
       "availability": [
         {
           "days": [
@@ -815,7 +802,6 @@
         "evening"
       ],
       "effort": "easy",
-      "confidence": "estimate",
       "booking": {
         "status": "needed",
         "bookDaysBefore": 7,
@@ -881,7 +867,6 @@
         "transport": "About 19 km from central Puerto Madryn; arrange a car, taxi/remis, or local excursion.",
         "tips": "For whale viewing, the local tourism office recommends going around high tide."
       },
-      "confidence": "confirmed",
       "url": "https://madryn.travel/anp-el-doradillo/",
       "sources": [
         "https://madryn.travel/anp-el-doradillo/",
@@ -918,7 +903,6 @@
         "short-morning",
         "free-afternoon"
       ],
-      "confidence": "confirmed",
       "url": "https://madryn.travel/playas/",
       "sources": [
         "https://madryn.travel/playas/"
@@ -953,7 +937,6 @@
       "conditions": [
         "short-morning"
       ],
-      "confidence": "confirmed",
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
         "https://madryn.travel/anp-punta-loma/"
@@ -990,7 +973,6 @@
         "short-morning",
         "free-afternoon"
       ],
-      "confidence": "confirmed",
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
         "https://madryn.travel/anp-punta-loma/"
@@ -1024,8 +1006,7 @@
       "effort": "easy",
       "conditions": [
         "free-afternoon"
-      ],
-      "confidence": "check"
+      ]
     },
     {
       "id": "punta-loma",
@@ -1061,7 +1042,6 @@
       "practical": {
         "transport": "The tourism office describes the route south of town as including about 14 km of gravel."
       },
-      "confidence": "confirmed",
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
         "https://madryn.travel/anp-punta-loma/"
@@ -1103,8 +1083,7 @@
       "effort": "easy",
       "conditions": [
         "free-afternoon"
-      ],
-      "confidence": "check"
+      ]
     },
     {
       "id": "cerro-avanzado",
@@ -1137,7 +1116,6 @@
         "needs-car",
         "free-afternoon"
       ],
-      "confidence": "confirmed",
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
         "https://madryn.travel/anp-punta-loma/"
@@ -1172,7 +1150,6 @@
       "conditions": [
         "needs-car"
       ],
-      "confidence": "confirmed",
       "practical": {
         "transport": "Tour pickup from your hotel, or a rental car (1h20 each way).",
         "cost": "Park entry about USD 40 extra",
@@ -1372,6 +1349,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "a2b7a1c029e1ee1a"
+    "hash": "a7bb10076664f753"
   }
 }

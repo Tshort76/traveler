@@ -25,8 +25,7 @@
       "bestTime": [
         "morning"
       ],
-      "effort": "easy",
-      "confidence": "check"
+      "effort": "easy"
     },
     {
       "id": "feria-san-telmo",
@@ -48,8 +47,7 @@
         "morning",
         "afternoon"
       ],
-      "effort": "easy",
-      "confidence": "check"
+      "effort": "easy"
     },
     {
       "id": "palermo-soho-again",
@@ -81,12 +79,11 @@
         "includesTravel": true
       },
       "fit": "full-day",
-      "effort": "easy",
-      "confidence": "check"
+      "effort": "easy"
     }
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "631e172a41bf217c"
+    "hash": "a7416df6396348a9"
   }
 }

@@ -150,7 +150,6 @@ fun ActivitySheet(
                     val what = when { trip.isBooked(a) -> "✓ Booked"; b.isOnSite -> "Pay at the door"; else -> "🎟️ Reserve ahead" }
                     Pill(listOfNotNull(what, b.price?.let { it.rateLabel() ?: it.label() }).joinToString(" · "))
                 }
-                if (a.confidence == "check") Pill("⚠ Check before going", container = MaterialTheme.colorScheme.tertiaryContainer, content = MaterialTheme.colorScheme.onTertiaryContainer)
             }
             a.short?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
 

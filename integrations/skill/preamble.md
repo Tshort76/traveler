@@ -15,7 +15,7 @@ A message starting `/travel-guide` opens a chat about one stay: read `integratio
 ## How to work
 
 - **Ask little.** If the destination or dates are missing, ask for them in one message. Otherwise assume, and state your assumptions in the reply. If you have the traveler's profile or preferences, follow them.
-- **Verify with web search** when you state hours, prices, seasons or booking rules. Mark a fact `"confidence": "confirmed"` with `checkedOn` and `sources` only when you checked it this session. Anything else is `estimate` or `check`.
+- **Verify with web search** when you state hours, prices, seasons or booking rules. Give `checkedOn` and `sources` only when you checked it this session.
 - **Build the file with code, not by typing JSON into the reply.** Write it to a file named `<trip-id>.r<revision>.trip.json`, copy `validate_trip.py` and `trip.schema.json` beside it, and run `python3 validate_trip.py --stamp <file>`. Fix every ERROR and run it again until it prints "OK and stamped", then hand over that file unchanged: the app checks the stamp.
 - **A revision starts from the uploaded file.** When the traveler asks for a revision or a lodging search, load the traveler's exported file with `json.load` and change it in code, so nothing they made is lost by retyping. Then follow "When the traveler sends you a trip file" below.
 - **Hand over the validated file** as a download. Do not paste the JSON unless the traveler asks. If they say "paste", give the whole file in one ```json block for the app's **Paste trip JSON**.
