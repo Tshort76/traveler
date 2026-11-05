@@ -61,8 +61,13 @@ data class ActivityFile(
     val generatedAt: String? = null,
     val generatedBy: String? = null,
     val activities: List<Activity> = emptyList(),
+    /** Drafted day plans; each replaces that date's suggested plan. Items name this file's activities. */
+    val days: List<FileDay> = emptyList(),
     val validated: Validated? = null,
 )
+
+@Serializable
+data class FileDay(val date: String, val plan: List<PlanItem> = emptyList())
 
 @Serializable
 data class Validated(val by: String? = null, val hash: String? = null)

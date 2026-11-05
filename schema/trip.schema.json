@@ -912,32 +912,7 @@
         "plan": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": [
-              "activityId",
-              "slot"
-            ],
-            "properties": {
-              "activityId": {
-                "$ref": "#/$defs/id"
-              },
-              "slot": {
-                "$ref": "#/$defs/slot"
-              },
-              "time": {
-                "$ref": "#/$defs/time"
-              },
-              "status": {
-                "enum": [
-                  "proposed",
-                  "done",
-                  "skipped"
-                ]
-              },
-              "note": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/$defs/planItem"
           }
         },
         "userEdited": {
@@ -947,7 +922,7 @@
     },
     "activitiesFile": {
       "type": "object",
-      "description": "A traveler-activities file: new activities for a trip, written without the trip file. The app only adds them: one already in the stay (same name) is skipped. Each activity's stayId is the stay's id, or a slug of its name (\"mendoza\") when the id is unknown; tripId may be left out.",
+      "description": "A traveler-activities file: new activities for a trip, written without the trip file. The app adds them: one already in the stay (same name) is skipped. Its days, if any, replace those dates' suggested plans. Each activity's stayId is the stay's id, or a slug of its name (\"mendoza\") when the id is unknown; tripId may be left out.",
       "required": [
         "format",
         "formatVersion",
@@ -977,6 +952,28 @@
             "$ref": "#/$defs/activity"
           }
         },
+        "days": {
+          "type": "array",
+          "description": "Drafted day plans: each replaces that date's suggested plan. Every activityId is an activity in this file.",
+          "items": {
+            "type": "object",
+            "required": [
+              "date",
+              "plan"
+            ],
+            "properties": {
+              "date": {
+                "$ref": "#/$defs/date"
+              },
+              "plan": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/planItem"
+                }
+              }
+            }
+          }
+        },
         "validated": {
           "type": "object",
           "description": "Written by validate_trip.py --stamp when the file passes --complete: a fingerprint of the rest of the file, which the app recomputes to show whether the file was checked.",
@@ -993,6 +990,34 @@
             "hash"
           ],
           "additionalProperties": false
+        }
+      }
+    },
+    "planItem": {
+      "type": "object",
+      "required": [
+        "activityId",
+        "slot"
+      ],
+      "properties": {
+        "activityId": {
+          "$ref": "#/$defs/id"
+        },
+        "slot": {
+          "$ref": "#/$defs/slot"
+        },
+        "time": {
+          "$ref": "#/$defs/time"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "done",
+            "skipped"
+          ]
+        },
+        "note": {
+          "type": "string"
         }
       }
     }

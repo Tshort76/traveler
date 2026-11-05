@@ -80,8 +80,29 @@
       }
     }
   ],
+  "days": [
+    {
+      "date": "2027-10-19",
+      "plan": [
+        {
+          "activityId": "palermo-soho-again",
+          "slot": "afternoon"
+        }
+      ]
+    },
+    {
+      "date": "2027-10-24",
+      "plan": [
+        {
+          "activityId": "punta-tombo",
+          "slot": "morning",
+          "time": "07:30"
+        }
+      ]
+    }
+  ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "85d89e110a47210e"
+    "hash": "3aae18d71db0e19b"
   }
 }

@@ -8,7 +8,7 @@ Usage:
 
 An activities file holds new activities for a trip, written without the trip
 file: the same checks apply to each activity, except that its stayId may name a
-stay this file cannot see.
+stay this file cannot see. Its optional days plan only the file's own activities.
 
 Prints OK with a one-line summary, or each problem as ERROR / WARNING.
 Exits 1 when any file has an error. Errors stop the app importing the file;
@@ -497,7 +497,8 @@ def main(argv):
                 Path(name).write_text(dump(trip))
             done = f"{name}: OK{' and stamped' if stamp else ''} — "
             if trip.get("format") == ACTIVITIES_FORMAT:
-                print(done + f"{s['activities']} new activities for {trip.get('tripId') or 'a trip'}, {len(rep.warnings)} warning(s)")
+                print(done + f"{s['activities']} new activities" + (f" and {s['days']} day plan(s)" if s['days'] else "")
+                      + f" for {trip.get('tripId') or 'a trip'}, {len(rep.warnings)} warning(s)")
             else:
                 print(done + f"'{trip.get('title')}' r{trip.get('revision')}: {s['stays']} stays, "
                       f"{s['days']} days, {s['activities']} activities ({s['planned']} planned), "

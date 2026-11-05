@@ -133,6 +133,12 @@ class ActivitiesFile(unittest.TestCase):
         self.assertIn("stars: must be one of 1, 2, 3", errors)
         self.assertNotIn("unknown stay", errors)
 
+    def test_a_day_plans_only_the_files_own_activities(self):
+        self.assertEqual(v.validate(self.doc)[1]["days"], 2)
+        self.doc["days"][0]["plan"][0]["activityId"] = "not-in-the-file"
+        rep, _ = v.validate(self.doc)
+        self.assertIn("unknown activity 'not-in-the-file'", " ".join(rep.errors))
+
     def test_an_empty_file_fails(self):
         self.doc["activities"] = []
         rep, _ = v.validate(self.doc)

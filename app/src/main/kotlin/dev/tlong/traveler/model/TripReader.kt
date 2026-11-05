@@ -98,6 +98,14 @@ object TripReader {
         if (file.activities.isEmpty()) errors += "activities: the file has none"
         unique(file.activities.map { it.id }, "activities", errors)
         checkActivities(file.activities, null, errors)
+        val ids = file.activities.map { it.id }.toSet()
+        val dates = mutableSetOf<String>()
+        file.days.forEachIndexed { i, day ->
+            val where = "days[$i] (${day.date})"
+            date(day.date, "$where.date", errors)
+            if (!dates.add(day.date)) errors += "$where: a second entry for the same date"
+            checkPlan(day.plan, ids, where, errors)
+        }
         // The trip-level strict checks, run on the activities alone; with no stays, only the activity ones apply.
         val alone = Trip(id = file.tripId ?: "activities", title = "", startDate = "", endDate = "", activities = file.activities)
         val unknown = TripJson.unknownFields(element, ActivityFile.serializer().descriptor)
@@ -201,12 +209,16 @@ object TripReader {
             if (!inTrip(d)) warnings += "$where: date is outside the trip"
             if (day.stayId != null && day.stayId !in stayIds) errors += "$where: unknown stay '${day.stayId}'"
             day.kind?.let { enum(it, Vocab.dayKinds, "$where.kind", errors) }
-            day.plan.forEachIndexed { j, item ->
-                if (item.activityId !in activityIds) errors += "$where.plan[$j]: unknown activity '${item.activityId}'"
-                enum(item.slot, Vocab.slots, "$where.plan[$j].slot", errors)
-                item.status?.let { enum(it, Vocab.statuses, "$where.plan[$j].status", errors) }
-                item.time?.let { time(it, "$where.plan[$j].time", errors) }
-            }
+            checkPlan(day.plan, activityIds, where, errors)
+        }
+    }
+
+    private fun checkPlan(plan: List<PlanItem>, activityIds: Set<String>, where: String, errors: MutableList<String>) {
+        plan.forEachIndexed { j, item ->
+            if (item.activityId !in activityIds) errors += "$where.plan[$j]: unknown activity '${item.activityId}'"
+            enum(item.slot, Vocab.slots, "$where.plan[$j].slot", errors)
+            item.status?.let { enum(it, Vocab.statuses, "$where.plan[$j].status", errors) }
+            item.time?.let { time(it, "$where.plan[$j].time", errors) }
         }
     }
 

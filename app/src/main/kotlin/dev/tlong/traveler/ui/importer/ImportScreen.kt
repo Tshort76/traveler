@@ -52,6 +52,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.ui.text.TextStyle
 import dev.tlong.traveler.domain.ActivityImport
+import dev.tlong.traveler.ui.activity.dayName
 import dev.tlong.traveler.domain.stay
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.ui.common.marked
@@ -136,11 +137,12 @@ fun ImportScreen(navigator: Navigator) {
                 is PendingImport.Backup -> BackupReview(p, onCancel = close) { chosen, templates ->
                     scope.launch { container.restoreBackup(chosen, templates); navigator.trips() }
                 }
-                is PendingImport.Activities -> ActivitiesReview(p, onCancel = close) { tripId, add ->
+                is PendingImport.Activities -> ActivitiesReview(p, onCancel = close) { tripId, add, days ->
                     scope.launch {
-                        container.acceptActivities(tripId, add)
+                        container.acceptActivities(tripId, add, days)
                         navigator.overview(tripId, replaceStack = true)
-                        add.map { it.stayId }.distinct().singleOrNull()?.let { navigator.stay(tripId, it, tab = 1) }
+                        days.firstOrNull()?.let { navigator.day(tripId, it.date) }
+                            ?: add.map { it.stayId }.distinct().singleOrNull()?.let { navigator.stay(tripId, it, tab = 1) }
                     }
                 }
             }
@@ -370,9 +372,9 @@ fun CheckRow(title: String, detail: String?, checked: Boolean, onChange: (Boolea
     }
 }
 
-/** Which trip, which stay for the ones whose stay fit none, and which to add; duplicates are listed, not added. */
+/** Which trip, which stay for the ones whose stay fit none, which to add and which day plans to replace; duplicates are listed, not added. */
 @Composable
-private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, onAdd: (String, List<Activity>) -> Unit) {
+private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, onAdd: (String, List<Activity>, List<ActivityImport.DayChange>) -> Unit) {
     val today = remember { LocalDate.now() }
     var tripId by remember { mutableStateOf(ActivityImport.pickTrip(p.file, p.trips, today)!!.id) }
     val trip = p.trips.first { it.id == tripId }
@@ -380,9 +382,14 @@ private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, 
     val plan = remember(tripId, fallback) { ActivityImport.plan(trip, p.file, fallback, today) }
     var left by remember(plan) { mutableStateOf(emptySet<String>()) }
     val chosen = plan.add.filter { it.id !in left }
+    var leftDays by remember(plan) { mutableStateOf(emptySet<String>()) }
+    // An unticked activity comes off the days that plan it too.
+    val days = plan.days.filter { it.date !in leftDays }.map { d -> d.copy(items = d.items.filter { it.activityId !in left }) }
     WithActions(
         actions = {
-            Button(onClick = { onAdd(tripId, chosen) }, enabled = chosen.isNotEmpty()) { Text("Add ${chosen.size}") }
+            Button(onClick = { onAdd(tripId, chosen, days) }, enabled = chosen.isNotEmpty() || days.isNotEmpty()) {
+                Text("Add ${chosen.size}" + if (days.isNotEmpty()) " + ${days.size} day${if (days.size == 1) "" else "s"}" else "")
+            }
             OutlinedButton(onClick = onCancel) { Text("Cancel") }
         },
     ) {
@@ -399,6 +406,15 @@ private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, 
         list.forEach { a ->
             CheckRow(listOfNotNull(a.tag, a.marked(false, false)).joinToString("  "), a.short, checked = a.id !in left) {
                 left = if (it) left - a.id else left + a.id
+            }
+        }
+    }
+    if (plan.days.isNotEmpty()) {
+        SectionTitle("Days (${plan.days.size})")
+        plan.days.forEach { d ->
+            val items = d.items.count { it.activityId !in left }
+            CheckRow(dayName(d.date), "$items planned" + if (d.replaced > 0) " · replaces ${d.replaced}" else "", checked = d.date !in leftDays) {
+                leftDays = if (it) leftDays - d.date else leftDays + d.date
             }
         }
     }

@@ -11,6 +11,7 @@ import dev.tlong.traveler.data.TravelerDatabase
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.data.TemplateStore
 import dev.tlong.traveler.data.TripStore
+import dev.tlong.traveler.domain.ActivityImport
 import dev.tlong.traveler.domain.ChecklistTemplate
 import dev.tlong.traveler.domain.Checklists
 import dev.tlong.traveler.domain.Merge
@@ -85,9 +86,13 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
     }
 
     /** Adds the chosen activities as one edit; History keeps the trip as it was, like any import. */
-    suspend fun acceptActivities(tripId: String, add: List<Activity>) {
-        store.snapshot(tripId, "Before adding ${add.size} activit${if (add.size == 1) "y" else "ies"}")
-        session(tripId)?.edit("Add ${add.size} activit${if (add.size == 1) "y" else "ies"}") { it.copy(activities = it.activities + add) }
+    suspend fun acceptActivities(tripId: String, add: List<Activity>, days: List<ActivityImport.DayChange> = emptyList()) {
+        val what = listOfNotNull(
+            add.size.takeIf { it > 0 }?.let { "$it activit${if (it == 1) "y" else "ies"}" },
+            days.size.takeIf { it > 0 }?.let { "$it day plan${if (it == 1) "" else "s"}" },
+        ).joinToString(" and ")
+        store.snapshot(tripId, "Before adding $what")
+        session(tripId)?.edit("Add $what") { ActivityImport.applyDays(it.copy(activities = it.activities + add), days) }
         _pending.value = null
     }
 
