@@ -154,9 +154,9 @@ fun ActivitySheet(
             val hasPlace = a.place != null || !a.isCustom
             val done = a.id in Edits.doneIds(trip)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (hasPlace) Button(onClick = {
+                if (hasPlace) IconButton(onClick = {
                     if (!openUrl(context, MapsLinks.open(a.place, a.name, stay?.name))) onMessage("No app can open Google Maps links")
-                }) { Text("Open in Maps") }
+                }) { Text("🗺️", style = MaterialTheme.typography.titleLarge) }
                 Checkbox(done, onCheckedChange = { on -> session.edit(if (on) "Done" else "Clear Done") { Edits.setDone(it, setOf(a.id), on) } })
             }
             if (hasPlace) {
