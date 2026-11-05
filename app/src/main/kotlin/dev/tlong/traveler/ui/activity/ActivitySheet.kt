@@ -42,9 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.ui.semantics.Role
-import androidx.compose.foundation.layout.heightIn
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.domain.Edits
 import dev.tlong.traveler.domain.MapsLinks
@@ -163,13 +160,7 @@ fun ActivitySheet(
                 if (hasPlace) Button(onClick = {
                     if (!openUrl(context, MapsLinks.open(a.place, a.name, stay?.name))) onMessage("No app can open Google Maps links")
                 }) { Text("Open in Maps") }
-                Row(
-                    Modifier.heightIn(min = 48.dp).toggleable(done, role = Role.Checkbox) { on -> session.edit(if (on) "Done" else "Clear Done") { Edits.setDone(it, setOf(a.id), on) } },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(done, onCheckedChange = null)
-                    Text("Done")
-                }
+                Checkbox(done, onCheckedChange = { on -> session.edit(if (on) "Done" else "Clear Done") { Edits.setDone(it, setOf(a.id), on) } })
             }
             if (hasPlace) {
                 if (!online) Text(
