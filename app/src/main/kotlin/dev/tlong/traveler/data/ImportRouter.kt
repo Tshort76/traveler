@@ -31,7 +31,23 @@ sealed interface PendingImport {
     data class Backup(override val source: String, val file: BackupFile, val existing: Set<String>) : PendingImport
 
     /** New activities for one of [trips] (live trips, newest plans first); the preview picks the trip and stays. */
-    data class Activities(override val source: String, val file: ActivityFile, val trips: List<Trip>, val check: FileCheck = FileCheck()) : PendingImport
+    data class Activities(
+        override val source: String, val file: ActivityFile, val trips: List<Trip>, val check: FileCheck = FileCheck(), val preferTrip: String? = null,
+    ) : PendingImport
+}
+
+/**
+ * A day's ＋ menu imports day plans only: an activities file with `days`, applied as the trip's import would,
+ * with [tripId] chosen. Anything else is refused with what to do instead.
+ */
+fun dayPlanOnly(p: PendingImport, tripId: String): PendingImport = when {
+    p is PendingImport.Invalid -> p
+    p is PendingImport.Activities && p.file.days.isNotEmpty() ->
+        p.copy(preferTrip = tripId.takeIf { id -> p.trips.any { it.id == id } })
+    else -> PendingImport.Invalid(p.source, listOf(
+        if (p is PendingImport.Activities) "This activities file has no day plans. Import it from the trip's Import revision instead."
+        else "This is not a day plan. Import trip files and backups from the trip's Import revision instead."
+    ), emptyList())
 }
 
 /** What the strict checks found for the assistant to fix, and whether the validator's stamp matches. */

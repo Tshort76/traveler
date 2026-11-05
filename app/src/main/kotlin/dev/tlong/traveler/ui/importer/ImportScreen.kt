@@ -376,7 +376,7 @@ fun CheckRow(title: String, detail: String?, checked: Boolean, onChange: (Boolea
 @Composable
 private fun ActivitiesReview(p: PendingImport.Activities, onCancel: () -> Unit, onAdd: (String, List<Activity>, List<ActivityImport.DayChange>) -> Unit) {
     val today = remember { LocalDate.now() }
-    var tripId by remember { mutableStateOf(ActivityImport.pickTrip(p.file, p.trips, today)!!.id) }
+    var tripId by remember { mutableStateOf(p.preferTrip ?: ActivityImport.pickTrip(p.file, p.trips, today)!!.id) }
     val trip = p.trips.first { it.id == tripId }
     var fallback by remember(tripId) { mutableStateOf(ActivityImport.defaultStay(trip, today)?.id) }
     val plan = remember(tripId, fallback) { ActivityImport.plan(trip, p.file, fallback, today) }

@@ -7,6 +7,7 @@ import android.provider.OpenableColumns
 import dev.tlong.traveler.data.BackupTrip
 import dev.tlong.traveler.data.ImportRouter
 import dev.tlong.traveler.data.PendingImport
+import dev.tlong.traveler.data.dayPlanOnly
 import dev.tlong.traveler.data.TravelerDatabase
 import dev.tlong.traveler.data.TripSession
 import dev.tlong.traveler.data.TemplateStore
@@ -57,14 +58,23 @@ class AppContainer(private val context: Context, db: TravelerDatabase = Traveler
     }
 
     suspend fun openUri(uri: Uri) {
+        _pending.value = readUri(uri)
+    }
+
+    /** A day's ＋ → Import day plan: only a file with day plans gets through, with [tripId] preselected. */
+    suspend fun openDayPlan(uri: Uri, tripId: String) {
+        _pending.value = dayPlanOnly(readUri(uri), tripId)
+    }
+
+    private suspend fun readUri(uri: Uri): PendingImport {
         val name = displayName(uri) ?: uri.lastPathSegment ?: "file"
         val text = withContext(Dispatchers.IO) {
             runCatching { context.contentResolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } }.getOrNull()
         }
-        if (text == null) {
-            _pending.value = PendingImport.Invalid(name, listOf("The file could not be opened. It may have moved, or the app that shared it withdrew access."), emptyList())
+        return if (text == null) {
+            PendingImport.Invalid(name, listOf("The file could not be opened. It may have moved, or the app that shared it withdrew access."), emptyList())
         } else {
-            openText(text, name)
+            withContext(Dispatchers.IO) { router.route(text, name) }
         }
     }
 

@@ -8,6 +8,9 @@ import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.activity.compose.BackHandler
+import dev.tlong.traveler.ui.trips.TRIP_MIME_TYPES
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import dev.tlong.traveler.domain.destinations
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -268,6 +271,9 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
     var viewport by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
     val container = LocalContainer.current
     val context = LocalContext.current
+    val openDayPlan = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) scope.launch { container.openDayPlan(uri, trip.id) }
+    }
 
     fun undoable(message: String) = scope.launch { snackbar.offerUndo(session, message) }
 
@@ -405,6 +411,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                             setBlocks(blocks + b, "Added work ${b.label}")
                         })
                         if (day.ownNote == null) DropdownMenuItem(text = { Text("Note") }, onClick = { addMenu = false; editingNote = true })
+                        DropdownMenuItem(text = { Text("Import day plan…") }, onClick = { addMenu = false; openDayPlan.launch(TRIP_MIME_TYPES) })
                         if (bookings.isNotEmpty()) DropdownMenuItem(text = { Text("This day's bookings") }, onClick = { addMenu = false; navigator.bookings(trip.id, date) })
                     }
                 }
