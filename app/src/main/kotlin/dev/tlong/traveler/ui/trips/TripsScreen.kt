@@ -220,7 +220,7 @@ private fun CurrentTripCard(t: TripSummary, onOpen: () -> Unit, onToday: () -> U
             }
             Text(t.title, style = MaterialTheme.typography.headlineSmall)
             Text(range(t), style = MaterialTheme.typography.bodyMedium)
-            Button(onClick = onToday, modifier = Modifier.padding(top = 4.dp)) { Text("Today's plan") }
+            Button(onClick = onToday, modifier = Modifier.padding(top = 4.dp)) { Text("☀️") }
         }
     }
 }

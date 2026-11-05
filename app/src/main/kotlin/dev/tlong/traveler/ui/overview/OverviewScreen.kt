@@ -293,7 +293,7 @@ private fun Overview(session: TripSession, navigator: Navigator, initialTab: Int
             }
         },
         confirmButton = { TextButton(onClick = { showLinks = false }) { Text("Done") } },
-        dismissButton = { TextButton(onClick = { editingLink = LinkTarget(null) }) { Text("+ Add link") } },
+        dismissButton = { TextButton(onClick = { editingLink = LinkTarget(null) }) { Text("+🔗") } },
     )
     editingLink?.let { target ->
         LinkDialog(target.link, onDismiss = { editingLink = null }) { link ->

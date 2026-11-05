@@ -41,7 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -181,12 +181,9 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
             )
         },
         floatingActionButton = {
-            if (tab == 1 && selection == null) ExtendedFloatingActionButton(
-                onClick = { overlays.newEntry = NewEntryRequest(stay.id, null, null) },
-                icon = { Icon(Icons.Default.Add, null) }, text = { Text("New entry") },
-                // The extended button's label does not reach accessibility services on its own.
-                modifier = Modifier.semantics { contentDescription = "New entry" },
-            )
+            if (tab == 1 && selection == null) FloatingActionButton(onClick = { overlays.newEntry = NewEntryRequest(stay.id, null, null) }) {
+                Icon(Icons.Default.Add, "New entry")
+            }
         },
         snackbarHost = { SnackbarHost(snackbar) },
     ) { padding ->
@@ -339,7 +336,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         if (advanced) item("advanced") {
             Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (tagOptions.isNotEmpty()) FilterGroup("Type", tagOptions.map { it to it }, tags) { tags = it }
-                if (more > 0) TextButton(onClick = { tags = emptySet() }) { Text("Clear filters") }
+                if (more > 0) TextButton(onClick = { tags = emptySet() }) { Text("✕") }
             }
         }
         if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }

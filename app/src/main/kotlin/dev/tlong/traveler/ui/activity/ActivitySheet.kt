@@ -196,7 +196,7 @@ fun ActivitySheet(
                 HorizontalDivider()
                 facts.forEach { (k, v) -> LabeledText(k, v) }
             }
-            a.url?.let { url -> TextButton(onClick = { openUrl(context, url) }) { Text("Website ↗") } }
+            a.url?.let { url -> IconButton(onClick = { openUrl(context, url) }) { Text("🔗", style = MaterialTheme.typography.titleLarge) } }
             if (editingLink) UrlDialog("Link for ${a.name}", "The venue, tour or booking page.", a.url, onDismiss = { editingLink = false }) { url ->
                 editingLink = false
                 session.edit("Edit link") { Edits.updateActivity(it, activityId) { x -> x.copy(url = url) } }
@@ -219,7 +219,7 @@ fun ActivitySheet(
                     Text("🔒 Booked ${dayName(c.date)}${c.start?.let { " $it" } ?: ""}${c.ref?.let { " · $it" } ?: ""}")
                 }
             }
-            Button(onClick = { onPlace(a) }) { Text(if (placements.isEmpty()) "Add to a day…" else "Add again…") }
+            Button(onClick = { onPlace(a) }) { Text("+🗓️") }
 
             OutlinedTextField(
                 note, { note = it }, label = { Text("Note") }, modifier = Modifier.fillMaxWidth(), minLines = 2,

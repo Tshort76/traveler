@@ -1,5 +1,6 @@
 package dev.tlong.traveler.domain
 
+import dev.tlong.traveler.model.Place
 import dev.tlong.traveler.model.PlanItem
 import dev.tlong.traveler.model.Trip
 import java.time.Instant
@@ -99,3 +100,7 @@ fun CalendarEntry.insertTimes(zone: ZoneId = ZoneId.systemDefault()): Pair<Long,
     fun local(ms: Long) = Instant.ofEpochMilli(ms).atZone(ZoneOffset.UTC).toLocalDate().atStartOfDay(zone).toInstant().toEpochMilli()
     return local(begin) to local(end)
 }
+
+/** The event location the calendar app shows: an address, a search term, a name or coordinates. */
+internal fun locationOf(p: Place?): String? =
+    p?.address ?: p?.query ?: p?.name ?: if (p?.hasCoordinates == true) "${p.lat},${p.lng}" else null

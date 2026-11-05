@@ -530,20 +530,20 @@ private fun ReservationDialog(trip: Trip, b: Bookable, option: LodgingOption?, o
                 if (lodging) OutlinedTextField(notes, { notes = it }, label = { Text("Notes (optional)") }, minLines = 2, modifier = Modifier.fillMaxWidth())
             }
         },
-        // Cancel and Save stay together; with four buttons, Delete and Not booked wrap onto the next line.
+        // Cancel and Save stay together; with four buttons, Delete and ✕ (not booked) wrap onto the next line.
         confirmButton = {
             Row {
                 TextButton(onClick = onDismiss) { Text("Cancel") }
                 TextButton(enabled = ok, onClick = {
                     fun clean(v: String) = v.trim().ifEmpty { null }
                     onSave(Edits.Booked(clean(name), clean(ref), clean(url), price.value, clean(notes), s, e, clean(address)))
-                }) { Text(if (b.booked) "Save" else "Mark booked") }
+                }) { Text(if (b.booked) "Save" else "✓") }
             }
         },
         dismissButton = {
             Row {
                 onDelete?.let { TextButton(onClick = it) { Text("Delete", color = MaterialTheme.colorScheme.error) } }
-                onNotBooked?.let { TextButton(onClick = it) { Text("Not booked") } }
+                onNotBooked?.let { TextButton(onClick = it) { Text("✕") } }
             }
         },
     )
