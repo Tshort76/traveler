@@ -409,6 +409,9 @@ def check_complete(trip, rep):
     if unplaced:
         rep.error("activities", f"{len(unplaced)} have no place.lat/lng, so the trip map can't show them: {_names(unplaced)}. "
                                 "Give every activity's coordinates")
+    no_outdoor = [a.get("id", "?") for a in acts if not isinstance(a.get("outdoor"), bool)]
+    if no_outdoor:
+        rep.error("activities", f"{len(no_outdoor)} have no outdoor (true or false): {_names(no_outdoor)}")
     unsearchable = [a.get("id", "?") for a in acts
                     if not (q := ((a.get("place") or {}).get("query") or "").strip()) or q.casefold() == (a.get("name") or "").strip().casefold()]
     if unsearchable:

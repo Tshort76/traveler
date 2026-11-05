@@ -412,13 +412,12 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "afternoon"
       ],
-      "effort": "moderate",
-      "stars": 3
+      "stars": 3,
+      "outdoor": true
     },
     {
       "id": "palermo-soho",
@@ -438,13 +437,12 @@
       "duration": {
         "minutes": 150
       },
-      "fit": "evening",
       "bestTime": [
         "afternoon",
         "evening"
       ],
-      "effort": "easy",
-      "stars": 3
+      "stars": 3,
+      "outdoor": true
     },
     {
       "id": "avenida-alvear",
@@ -464,12 +462,11 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "afternoon"
       ],
-      "effort": "easy",
-      "stars": 3
+      "stars": 3,
+      "outdoor": true
     },
     {
       "id": "el-ateneo",
@@ -489,12 +486,8 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "stars": 2
+      "stars": 2,
+      "outdoor": false
     },
     {
       "id": "barrancas-belgrano",
@@ -514,13 +507,8 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon",
-        "short-morning"
-      ],
       "stars": 1,
+      "outdoor": true,
       "userStatus": "wontdo"
     },
     {
@@ -542,12 +530,11 @@
       "duration": {
         "minutes": 150
       },
-      "fit": "half-day",
       "bestTime": [
         "morning"
       ],
-      "effort": "easy",
-      "stars": 3
+      "stars": 3,
+      "outdoor": true
     },
     {
       "id": "cafe-tortoni",
@@ -567,12 +554,8 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "stars": 2
+      "stars": 2,
+      "outdoor": false
     },
     {
       "id": "costanera-sur",
@@ -593,15 +576,14 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "short",
       "bestTime": [
         "afternoon"
       ],
-      "effort": "moderate",
       "practical": {
         "weather": "May close during strong rain or wind."
       },
       "stars": 3,
+      "outdoor": true,
       "userNote": "Go early; it gets hot by noon."
     },
     {
@@ -622,12 +604,11 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
-      "stars": 2
+      "stars": 2,
+      "outdoor": true
     },
     {
       "id": "caminito",
@@ -647,16 +628,15 @@
       "duration": {
         "minutes": 150
       },
-      "fit": "half-day",
       "bestTime": [
         "morning",
         "afternoon"
       ],
-      "effort": "easy",
       "practical": {
         "transport": "Use an app car or direct transit and visit during the day."
       },
-      "stars": 2
+      "stars": 2,
+      "outdoor": true
     },
     {
       "id": "mercado-san-telmo",
@@ -676,12 +656,11 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "afternoon"
       ],
-      "effort": "easy",
       "stars": 2,
+      "outdoor": false,
       "userStatus": "done"
     },
     {
@@ -690,6 +669,7 @@
       "name": "Don Julio",
       "tag": "🍽️",
       "stars": 3,
+      "outdoor": false,
       "short": "The Palermo parrilla everyone talks about",
       "detail": [
         "Steak and provoleta; book well ahead or queue at opening."
@@ -702,11 +682,9 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
       "hours": "Daily 12:00–16:00 and 19:00–01:00",
       "booking": {
         "status": "booked",
@@ -726,6 +704,7 @@
       "name": "Teatro Colón guided tour",
       "tag": "🎭",
       "stars": 3,
+      "outdoor": false,
       "short": "Backstage at one of the great opera houses",
       "detail": [
         "50-minute guided tour of the hall, the foyers and the workshops.",
@@ -740,14 +719,9 @@
       "duration": {
         "minutes": 60
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
       ],
       "availability": [
         {
@@ -788,6 +762,7 @@
       "name": "Tango show at Bar Sur",
       "tag": "💃",
       "stars": 2,
+      "outdoor": false,
       "short": "Small, old-school tango bar in San Telmo",
       "place": {
         "query": "Bar Sur, Estados Unidos 299, Buenos Aires",
@@ -797,11 +772,9 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
       "booking": {
         "status": "needed",
         "bookDaysBefore": 7,
@@ -830,7 +803,6 @@
       "duration": {
         "minutes": 60
       },
-      "fit": "short",
       "userNote": "Text her the day before."
     },
     {
@@ -845,6 +817,7 @@
       "why": "A simple nature-first Puerto Madryn outing with a very different feel from Buenos Aires.",
       "rank": 1,
       "stars": 3,
+      "outdoor": true,
       "place": {
         "query": "Playa Las Canteras, El Doradillo, Puerto Madryn",
         "lat": -42.6507,
@@ -854,14 +827,9 @@
         "minutes": 180,
         "includesTravel": true
       },
-      "fit": "half-day",
       "bestTime": [
         "morning",
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
       ],
       "practical": {
         "transport": "About 19 km from central Puerto Madryn; arrange a car, taxi/remis, or local excursion.",
@@ -885,6 +853,7 @@
       "why": "Low-friction orientation walk after the flight.",
       "rank": 2,
       "stars": 3,
+      "outdoor": true,
       "place": {
         "query": "Rambla de Puerto Madryn, Chubut",
         "lat": -42.7692,
@@ -893,15 +862,9 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "afternoon",
         "evening"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "short-morning",
-        "free-afternoon"
       ],
       "url": "https://madryn.travel/playas/",
       "sources": [
@@ -920,6 +883,7 @@
       "why": "Combines the Welsh-settlement story with an outdoor coastal stop.",
       "rank": 3,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Punta Cuevas, Puerto Madryn",
         "lat": -42.7904,
@@ -928,14 +892,9 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
       ],
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
@@ -954,6 +913,7 @@
       "why": "A compact viewpoint that pairs naturally with Punta Cuevas.",
       "rank": 4,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Monumento al Indio Tehuelche, Puerto Madryn",
         "lat": -42.7921,
@@ -962,16 +922,10 @@
       "duration": {
         "minutes": 30
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "afternoon",
         "evening"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "short-morning",
-        "free-afternoon"
       ],
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
@@ -990,6 +944,7 @@
       "why": "Easy to fit around another outing without committing a half day.",
       "rank": 5,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Muelle Luis Piedra Buena, Puerto Madryn",
         "lat": -42.7652,
@@ -998,14 +953,9 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
       "bestTime": [
         "afternoon",
         "evening"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
       ]
     },
     {
@@ -1020,6 +970,7 @@
       "why": "A second wildlife option that works even outside peak whale viewing.",
       "rank": 6,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Área Natural Protegida Punta Loma, Chubut",
         "lat": -42.8137,
@@ -1029,15 +980,9 @@
         "minutes": 180,
         "includesTravel": true
       },
-      "fit": "half-day",
       "bestTime": [
         "morning",
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon",
-        "needs-car"
       ],
       "practical": {
         "transport": "The tourism office describes the route south of town as including about 14 km of gravel."
@@ -1068,6 +1013,7 @@
       "why": "A flexible outdoor alternative when you do not want another structured excursion.",
       "rank": 7,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Playa Paraná, Puerto Madryn",
         "lat": -42.8178,
@@ -1076,13 +1022,8 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
       ]
     },
     {
@@ -1097,6 +1038,7 @@
       "why": "Good spare option if you have a car and want more landscape than city.",
       "rank": 8,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Cerro Avanzado, Puerto Madryn",
         "lat": -42.855,
@@ -1106,15 +1048,9 @@
         "minutes": 180,
         "includesTravel": true
       },
-      "fit": "half-day",
       "bestTime": [
         "morning",
         "afternoon"
-      ],
-      "effort": "moderate",
-      "conditions": [
-        "needs-car",
-        "free-afternoon"
       ],
       "url": "https://madryn.travel/anp-punta-loma/",
       "sources": [
@@ -1127,6 +1063,7 @@
       "name": "Whale-watching boat, Península Valdés",
       "tag": "🐋",
       "stars": 3,
+      "outdoor": true,
       "short": "Southern right whales up close from Puerto Pirámides",
       "detail": [
         "Drive or take the tour bus 95 km to Puerto Pirámides; boats leave from the beach.",
@@ -1142,13 +1079,8 @@
         "minutes": 480,
         "includesTravel": true
       },
-      "fit": "full-day",
       "bestTime": [
         "morning"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "needs-car"
       ],
       "practical": {
         "transport": "Tour pickup from your hotel, or a rental car (1h20 each way).",
@@ -1349,6 +1281,6 @@
   ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "a7bb10076664f753"
+    "hash": "b50ff745180c7a9a"
   }
 }

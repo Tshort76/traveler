@@ -52,12 +52,10 @@ def revision_two(r1):
         "id": "itaipu-dam", "stayId": "iguazu", "name": "Itaipu Dam panoramic tour", "tag": "🏛️",
         "short": "Bus tour of one of the world's largest dams",
         "detail": ["A guided bus tour across the dam on the Brazil–Paraguay border, from the Brazilian visitor center north of Foz do Iguaçu."],
-        "rank": 8, "stars": 2,
+        "rank": 8, "stars": 2, "outdoor": False,
         "place": {"query": "Itaipu Binacional visitor center, Foz do Iguaçu", "lat": -25.4080, "lng": -54.5888},
-        "duration": {"minutes": 180, "includesTravel": True}, "fit": "half-day", "effort": "easy",
-        "conditions": ["free-afternoon", "rainy-day"],
+        "duration": {"minutes": 180, "includesTravel": True},
         "practical": {"access": "Passport for the border; tours sell out on weekends."},
-        "confidence": "check",
     })
     # Revised wording of an existing suggestion.
     by_id(r2["activities"], "garganta-del-diablo")["detail"].append(
@@ -90,9 +88,6 @@ CITIES = [  # (id, name, region, lat, lng, tz, nights)
     ("lima-2", "Lima", "Peru", -12.0464, -77.0428, "America/Lima", 3),
 ]
 TAGS = ["🌿", "☕", "🍽️", "🎨", "📸", "🏃", "🚶", "🏛️", "🏡", "🌊", "🎭", "🏔️"]
-FITS = ["short", "half-day", "full-day", "evening"]
-EFFORTS = ["easy", "moderate", "hard"]
-CONDITIONS = [[], ["rainy-day"], ["short-morning"], ["free-afternoon"], []]
 
 
 def long_trip():
@@ -125,8 +120,7 @@ def long_trip():
                 "detail": [f"Synthetic description for {name} sight {i + 1}."],
                 "rank": i + 1, "place": {"query": f"{name} {i + 1}", "lat": round(lat + (i % 7 - 3) * 0.01, 4),
                                          "lng": round(lng + (i % 5 - 2) * 0.01, 4)},
-                "duration": {"minutes": 45 + (i % 6) * 30}, "fit": FITS[i % 4], "effort": EFFORTS[i % 3],
-                "conditions": CONDITIONS[i % 5], "confidence": ["confirmed", "estimate", "check"][i % 3]})
+                "duration": {"minutes": 45 + (i % 6) * 30}, "outdoor": i % 3 != 0})
         for k in range(nights):
             dd = d + timedelta(days=k)
             weekend = dd.weekday() >= 5

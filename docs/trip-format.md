@@ -114,10 +114,9 @@ Times are local to the place they happen.
 | `stars` | | 1–3 | How strongly it is recommended for this traveler: 3 must do (shown "(✨)" after the name), 2 likely to enjoy ("(⭐)"), 1 a common pick worth doing with time to spare (no mark). |
 | `place` | | Place | |
 | `duration` | | Duration | `{ "minutes"?, "maxMinutes"?, "includesTravel"?: bool }` — an estimate, not a rule. |
-| `fit` | | enum | `"short"` (≤ 2 h), `"half-day"`, `"full-day"`, `"evening"`. |
+| `outdoor` | | bool | `true` when it is mostly outside, so weather decides it; `false` when it is mostly indoors. The full check wants it on every activity. |
 | `bestTime` | | enum[] | Any of `"morning"`, `"afternoon"`, `"evening"`. |
-| `effort` | | enum | `"easy"`, `"moderate"`, `"hard"`. |
-| `conditions` | | string[] | When it is a good alternative: `"rainy-day"`, `"short-morning"`, `"free-afternoon"`, `"hot-day"`, `"needs-car"`… |
+| `fit`, `effort`, `conditions` | | | Retired: still accepted, ignored by the app. Don't write them. |
 | `hours` | | string | Opening hours as a human sentence, only if verified. |
 | `availability` | | Window[] | Machine-readable opening windows: `{ "days"?: ["tue",…], "start"?: "HH:MM", "end"?: "HH:MM", "note"? }`. Used to warn when a plan puts it outside them. |
 | `practical` | | object | Any of `transport`, `booking`, `cost`, `weather`, `access`, `tips` — strings. |

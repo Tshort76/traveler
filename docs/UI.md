@@ -27,7 +27,7 @@ Traveler is a single-user, offline-first Android app (Compose, Material 3). The 
 10. Small `TopAppBar`: one title line, ≤ 3 actions. Context goes in the first content line, not a subtitle `Column`.
 11. Field labels are nouns; examples and formats go in `placeholder`; supporting text only for an error.
 12. Right M3 chip type: `FilterChip` to refine, `AssistChip` for an action in context, `InputChip` for a chosen value. Chip label is one or two words or a glyph.
-13. Vocabulary keys (`mon`, `half-day`, `rainy-day`) never reach the screen raw; they go through a label function in `Common.kt`.
+13. Vocabulary keys (`mon`, `morning`, `tentative`) never reach the screen raw; they go through a label function in `Common.kt`.
 14. Drag handles use a drag-handle icon, not `Icons.Default.Menu`.
 
 ## Where things live

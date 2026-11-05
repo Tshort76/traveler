@@ -19,7 +19,7 @@ class SlotSuggestionsTest {
     fun `groups fits, other ideas with a reason, planned or done, and won't do`() {
         val g = groups(free = 180)
         assertEquals(listOf("caminito" to null), g[SlotFit.Group.FITS])
-        assertEquals(listOf("tango-show" to "An evening outing"), g[SlotFit.Group.OTHER])
+        assertEquals(listOf("tango-show" to "Best in the evening"), g[SlotFit.Group.OTHER])
         assertEquals("done", g[SlotFit.Group.PLANNED]!!.toMap()["mercado-san-telmo"])
         assertEquals(listOf("barrancas-belgrano" to null), g[SlotFit.Group.WONT_DO])
     }

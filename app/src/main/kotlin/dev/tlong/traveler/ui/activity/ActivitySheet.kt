@@ -63,10 +63,7 @@ import dev.tlong.traveler.ui.common.starLabel
 import dev.tlong.traveler.ui.overview.UrlDialog
 import dev.tlong.traveler.ui.common.LabeledText
 import dev.tlong.traveler.ui.common.Pill
-import dev.tlong.traveler.ui.common.conditionLabel
 import dev.tlong.traveler.ui.common.durationLabel
-import dev.tlong.traveler.ui.common.effortLabel
-import dev.tlong.traveler.ui.common.fitLabel
 import dev.tlong.traveler.ui.common.openUrl
 import dev.tlong.traveler.ui.common.rememberOnline
 import dev.tlong.traveler.ui.common.resolveMapsLink
@@ -146,6 +143,7 @@ fun ActivitySheet(
                     USER_WONT_DO -> Pill("👎 Won't do")
                     else -> starLabel(a.stars)?.let { Pill(it) }
                 }
+                a.outdoor?.let { Pill(if (it) "🌳 Outdoors" else "🏠 Indoors") }
                 a.booking?.let { b ->
                     val what = when { trip.isBooked(a) -> "✓ Booked"; b.isOnSite -> "Pay at the door"; else -> "🎟️ Reserve ahead" }
                     Pill(listOfNotNull(what, b.price?.let { it.rateLabel() ?: it.label() }).joinToString(" · "))
@@ -182,13 +180,10 @@ fun ActivitySheet(
 
             val facts = listOfNotNull(
                 durationLabel(a.duration)?.let { "Time" to it },
-                fitLabel(a.fit)?.let { "Suits" to (it + (if (a.bestTime.isNotEmpty()) ", best in the " + a.bestTime.joinToString("/") else "")) },
-                effortLabel(a.effort)?.let { "Effort" to it },
                 a.hours?.let { "Hours" to it },
                 a.availability.takeIf { it.isNotEmpty() }?.let { w ->
                     "Open" to w.joinToString("; ") { listOfNotNull(it.days.joinToString(" ").ifEmpty { null }, listOfNotNull(it.start, it.end).joinToString("–").ifEmpty { null }, it.note).joinToString(" · ") }
                 },
-                a.conditions.takeIf { it.isNotEmpty() }?.let { "Good for" to it.joinToString(", ") { c -> conditionLabel(c) } },
                 a.practical?.transport?.let { "Getting there" to it },
                 a.practical?.booking?.let { "Booking" to it },
                 a.practical?.cost?.let { "Cost" to it },

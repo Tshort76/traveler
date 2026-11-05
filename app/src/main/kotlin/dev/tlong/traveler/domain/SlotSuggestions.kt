@@ -36,8 +36,6 @@ private fun misfit(trip: Trip, a: Activity, date: LocalDate, slot: Slot, time: L
     val minutes = a.duration?.minutes
     if (freeMinutes != null && minutes != null && minutes > freeMinutes) return "Takes ${minutesLabel(minutes)}; ${minutesLabel(freeMinutes)} free"
     if (slot == Slot.ALLDAY) return null
-    if (a.fit == "evening" && slot != Slot.EVENING) return "An evening outing"
-    if (a.fit == "full-day" && slot == Slot.EVENING) return "Takes the whole day"
     if (a.bestTime.isNotEmpty() && slot.key !in a.bestTime) return "Best in the " + a.bestTime.joinToString(" or ")
     return null
 }

@@ -252,6 +252,7 @@
       "why": "The single strongest sight of the trip, and it is best with the place nearly empty.",
       "rank": 1,
       "stars": 3,
+      "outdoor": true,
       "place": {
         "name": "Garganta del Diablo",
         "query": "Garganta del Diablo, Parque Nacional Iguazú",
@@ -262,11 +263,9 @@
         "minutes": 120,
         "includesTravel": true
       },
-      "fit": "half-day",
       "bestTime": [
         "morning"
       ],
-      "effort": "easy",
       "practical": {
         "booking": "Park ticket at the gate or online; the train is included.",
         "weather": "Wet from spray; quick-dry clothes."
@@ -295,6 +294,7 @@
       ],
       "rank": 2,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Circuito Superior, Parque Nacional Iguazú",
         "lat": -25.6865,
@@ -303,8 +303,6 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "short",
-      "effort": "easy",
       "confidence": "estimate"
     },
     {
@@ -319,6 +317,7 @@
       "why": "The most varied walk in the park; pairs naturally with the boat ride, which leaves from its lower end.",
       "rank": 3,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Circuito Inferior, Parque Nacional Iguazú",
         "lat": -25.688,
@@ -327,8 +326,6 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
-      "effort": "moderate",
       "confidence": "estimate"
     },
     {
@@ -342,6 +339,7 @@
       ],
       "rank": 4,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Iguazú Jungle Gran Aventura, Parque Nacional Iguazú",
         "lat": -25.6817,
@@ -350,8 +348,6 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
-      "effort": "easy",
       "practical": {
         "booking": "Booked — see the commitment for the time.",
         "tips": "Dry bag for phone and passport."
@@ -378,6 +374,7 @@
       "why": "The only real hike in the park, and the quietest part of it.",
       "rank": 6,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Sendero Macuco, Parque Nacional Iguazú",
         "lat": -25.683,
@@ -387,13 +384,8 @@
         "minutes": 150,
         "maxMinutes": 180
       },
-      "fit": "half-day",
       "bestTime": [
         "morning"
-      ],
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
       ],
       "confidence": "check"
     },
@@ -410,6 +402,7 @@
       "why": "Argentina is for being inside the falls; Brazil is for seeing all of them at once.",
       "rank": 2,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Parque Nacional do Iguaçu, Foz do Iguaçu",
         "lat": -25.627,
@@ -419,11 +412,6 @@
         "minutes": 240,
         "includesTravel": true
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
       "practical": {
         "transport": "Remis from town, about 30 min plus the border crossing.",
         "access": "Passport required at the border.",
@@ -442,6 +430,7 @@
       ],
       "rank": 5,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Parque das Aves, Foz do Iguaçu",
         "lat": -25.6157,
@@ -450,11 +439,6 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
       "confidence": "check"
     },
     {
@@ -469,6 +453,7 @@
       "why": "An hour that fits after a work day, and nothing else on the trip looks like it.",
       "rank": 3,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Jardín de los Picaflores, Puerto Iguazú",
         "lat": -25.5985,
@@ -477,13 +462,8 @@
       "duration": {
         "minutes": 60
       },
-      "fit": "short",
       "bestTime": [
         "afternoon"
-      ],
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
       ],
       "confidence": "check"
     },
@@ -498,6 +478,7 @@
       ],
       "rank": 4,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Hito Tres Fronteras, Puerto Iguazú",
         "lat": -25.5917,
@@ -507,11 +488,9 @@
         "minutes": 60,
         "includesTravel": false
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
       "confidence": "estimate"
     },
     {
@@ -525,6 +504,7 @@
       ],
       "rank": 7,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "Güira Oga, Puerto Iguazú",
         "lat": -25.6116,
@@ -533,11 +513,6 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
       "confidence": "check"
     },
     {
@@ -551,6 +526,7 @@
       ],
       "rank": 9,
       "stars": 1,
+      "outdoor": true,
       "place": {
         "query": "La Aripuca, Puerto Iguazú",
         "lat": -25.6033,
@@ -559,11 +535,6 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
       "confidence": "check"
     },
     {
@@ -578,6 +549,7 @@
       "why": "Local, casual and good — the right dinner after a work day.",
       "rank": 6,
       "stars": 1,
+      "outdoor": false,
       "place": {
         "query": "La Feirinha, Puerto Iguazú",
         "lat": -25.596,
@@ -586,11 +558,9 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
       "confidence": "check"
     },
     {
@@ -604,6 +574,7 @@
       ],
       "rank": 8,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Avenida Costanera, Puerto Iguazú",
         "lat": -25.5935,
@@ -612,15 +583,9 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "evening"
-      ],
-      "effort": "moderate",
-      "conditions": [
-        "short-morning",
-        "hot-day"
       ],
       "confidence": "estimate"
     },
@@ -636,6 +601,7 @@
       "why": "A real run or walk from downtown, with nature right next to the skyline.",
       "rank": 1,
       "stars": 3,
+      "outdoor": true,
       "place": {
         "query": "Reserva Ecológica Costanera Sur, Buenos Aires",
         "lat": -34.6105,
@@ -644,12 +610,10 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
       "bestTime": [
         "afternoon",
         "evening"
       ],
-      "effort": "moderate",
       "availability": [
         {
           "days": [
@@ -678,6 +642,7 @@
       ],
       "rank": 3,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Rosedal de Palermo, Buenos Aires",
         "lat": -34.5717,
@@ -686,14 +651,9 @@
       "duration": {
         "minutes": 60
       },
-      "fit": "short",
       "bestTime": [
         "morning",
         "evening"
-      ],
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
       ],
       "confidence": "estimate"
     },
@@ -708,6 +668,7 @@
       ],
       "rank": 2,
       "stars": 2,
+      "outdoor": false,
       "place": {
         "query": "MALBA, Buenos Aires",
         "lat": -34.5772,
@@ -716,11 +677,6 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
       "availability": [
         {
           "days": [
@@ -747,6 +703,7 @@
       ],
       "rank": 4,
       "stars": 2,
+      "outdoor": false,
       "place": {
         "query": "Parrilla Don Julio, Buenos Aires",
         "lat": -34.5864,
@@ -755,11 +712,9 @@
       "duration": {
         "minutes": 120
       },
-      "fit": "evening",
       "bestTime": [
         "evening"
       ],
-      "effort": "easy",
       "practical": {
         "booking": "Reservation strongly recommended."
       },
@@ -787,6 +742,7 @@
       ],
       "rank": 5,
       "stars": 1,
+      "outdoor": false,
       "place": {
         "query": "Café Tortoni, Buenos Aires",
         "lat": -34.6088,
@@ -795,11 +751,6 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
       "confidence": "estimate"
     },
     {
@@ -814,6 +765,7 @@
       "why": "The city at its liveliest, and it only happens on Sundays.",
       "rank": 1,
       "stars": 3,
+      "outdoor": true,
       "place": {
         "query": "Plaza Dorrego, San Telmo, Buenos Aires",
         "lat": -34.621,
@@ -822,8 +774,6 @@
       "duration": {
         "minutes": 180
       },
-      "fit": "half-day",
-      "effort": "easy",
       "availability": [
         {
           "days": [
@@ -846,6 +796,7 @@
       ],
       "rank": 2,
       "stars": 2,
+      "outdoor": true,
       "place": {
         "query": "Cementerio de la Recoleta, Buenos Aires",
         "lat": -34.5875,
@@ -854,8 +805,6 @@
       "duration": {
         "minutes": 90
       },
-      "fit": "short",
-      "effort": "easy",
       "confidence": "estimate"
     },
     {
@@ -869,6 +818,7 @@
       ],
       "rank": 3,
       "stars": 1,
+      "outdoor": false,
       "place": {
         "query": "El Ateneo Grand Splendid, Buenos Aires",
         "lat": -34.5958,
@@ -877,11 +827,6 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
       "confidence": "estimate"
     },
     {
@@ -895,6 +840,7 @@
       ],
       "rank": 8,
       "stars": 2,
+      "outdoor": false,
       "place": {
         "query": "Itaipu Binacional visitor center, Foz do Iguaçu",
         "lat": -25.408,
@@ -904,16 +850,9 @@
         "minutes": 180,
         "includesTravel": true
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon",
-        "rainy-day"
-      ],
       "practical": {
         "access": "Passport for the border; tours sell out on weekends."
-      },
-      "confidence": "check"
+      }
     }
   ],
   "days": [

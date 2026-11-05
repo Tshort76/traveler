@@ -143,6 +143,7 @@ import dev.tlong.traveler.ui.activity.rememberOverlays
 import dev.tlong.traveler.ui.common.byRecommendation
 import dev.tlong.traveler.ui.common.marked
 import dev.tlong.traveler.ui.common.SaveIndicator
+import dev.tlong.traveler.ui.common.OutdoorFilter
 import dev.tlong.traveler.ui.common.factsLine
 import dev.tlong.traveler.ui.common.modeEmoji
 import dev.tlong.traveler.ui.common.modeLabel
@@ -679,13 +680,13 @@ private fun NoteCard(note: String?, editing: Boolean, onEdit: () -> Unit, onCanc
 @Composable
 private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, work: List<WorkBlock>, onDismiss: () -> Unit, onNew: () -> Unit, onPick: (Activity) -> Unit) {
     var allStays by remember { mutableStateOf(false) }
-    var rainy by remember { mutableStateOf(false) }
     var tag by remember { mutableStateOf<String?>(null) }
+    var outdoor by remember { mutableStateOf<Boolean?>(null) }
     val here = trip.activities.filter { allStays || it.stayId == stayId }
     val tags = remember(here) { here.mapNotNull { it.tag }.distinct() }
     val local = date.toDate() ?: return
-    val fits = remember(trip, here, at, work, tag, rainy) {
-        val pool = here.filter { (tag == null || it.tag == tag) && (!rainy || "rainy-day" in it.conditions) }
+    val fits = remember(trip, here, at, work, tag, outdoor) {
+        val pool = here.filter { (tag == null || it.tag == tag) && (outdoor == null || it.outdoor == outdoor) }
         suggestFor(trip, pool, local, at.slot, at.time?.toTime(), at.freeMinutes, work).groupBy { it.group }
     }
     val whenLabel = at.time ?: if (at.slot == Slot.ALLDAY) null else at.slot.label.lowercase()
@@ -700,7 +701,7 @@ private fun PoolPicker(trip: Trip, stayId: String?, date: String, at: AddAt, wor
                     FilterChip(tag == t, onClick = { tag = if (tag == t) null else t }, label = { Text(t) },
                         modifier = Modifier.semantics { contentDescription = TAGS[t] ?: t })
                 }
-                FilterChip(rainy, onClick = { rainy = !rainy }, label = { Text("🌧️") }, modifier = Modifier.semantics { contentDescription = "Good on a rainy day" })
+                if (here.any { it.outdoor != null }) OutdoorFilter(outdoor) { outdoor = it }
                 FilterChip(allStays, onClick = { allStays = !allStays }, label = { Text("Other stays") })
             }
             LazyColumn(Modifier.fillMaxWidth().padding(bottom = 24.dp)) {

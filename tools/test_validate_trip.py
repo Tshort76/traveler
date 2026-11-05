@@ -47,6 +47,11 @@ class CompletenessCheck(unittest.TestCase):
         self.assertIn("have no stars", errs)
         self.assertIn("practical.booking", errs)
 
+    def test_an_activity_needs_outdoor(self):
+        a = self.trip["activities"][0]
+        del a["outdoor"]
+        self.assertIn("have no outdoor", " ".join(self.errors(self.trip)))
+
     def test_an_activity_needs_a_maps_query_other_than_its_name(self):
         a = self.trip["activities"][0]
         for query in (None, a["name"], f"  {a['name'].upper()} "):

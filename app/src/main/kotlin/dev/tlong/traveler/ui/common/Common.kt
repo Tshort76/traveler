@@ -243,23 +243,6 @@ fun durationLabel(d: Duration?): String? {
     }
 }
 
-fun fitLabel(fit: String?) = when (fit) {
-    "short" -> "Short outing"
-    "half-day" -> "Half day"
-    "full-day" -> "Full day"
-    "evening" -> "Evening"
-    else -> null
-}
-
-fun effortLabel(effort: String?) = when (effort) {
-    "easy" -> "Easy"
-    "moderate" -> "Moderate effort"
-    "hard" -> "Demanding"
-    else -> null
-}
-
-fun conditionLabel(c: String) = c.replace('-', ' ').replaceFirstChar { it.uppercase() }
-
 /** A stay's seasonal weather concern as an emoji; windy is drawn as [WindIcon] instead, and an unknown flag shows nothing. */
 private fun climateGlyph(flag: String) = when (flag) {
     "dry" -> "☀️"; "rainy" -> "🌧️"; "stormy" -> "⛈️"; "humid" -> "🥵"; "snowy" -> "❄️"; else -> ""
@@ -345,10 +328,16 @@ val byRecommendation = compareBy<Activity>({ -(it.stars ?: 0) }, { it.rank ?: In
 
 fun modeLabel(mode: String?) = mode?.replaceFirstChar { it.uppercase() } ?: "Transfer"
 
-/** Compact one-line facts for list rows: "Half day · Moderate effort · 2 h". */
+/** A cycling filter: all, then 🌳 outdoors only (true), then 🏠 indoors only (false). */
+@Composable
+fun OutdoorFilter(outdoor: Boolean?, onChange: (Boolean?) -> Unit) {
+    FilterChip(outdoor != null, onClick = { onChange(when (outdoor) { null -> true; true -> false; false -> null }) },
+        label = { Text(if (outdoor == false) "🏠" else "🌳") })
+}
+
+/** Compact facts for list rows: the duration, "2 h". */
 fun Activity.factsLine(): String =
-    listOfNotNull(fitLabel(fit), effortLabel(effort), durationLabel(duration)?.substringBefore(" incl.")?.substringBefore(", plus"))
-        .joinToString(" · ")
+    durationLabel(duration)?.substringBefore(" incl.")?.substringBefore(", plus").orEmpty()
 
 /**
  * One chip, three states, drawn as a box: everything (a faded tick), then only the ones that are

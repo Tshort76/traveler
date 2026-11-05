@@ -708,6 +708,9 @@
         "conditions": {
           "$ref": "#/$defs/strings"
         },
+        "outdoor": {
+          "type": "boolean"
+        },
         "hours": {
           "type": "string"
         },

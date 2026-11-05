@@ -111,7 +111,7 @@ import dev.tlong.traveler.ui.common.Pill
 import dev.tlong.traveler.ui.common.SaveIndicator
 import dev.tlong.traveler.ui.common.offerUndo
 import dev.tlong.traveler.ui.common.SectionTitle
-import dev.tlong.traveler.ui.common.conditionLabel
+import dev.tlong.traveler.ui.common.OutdoorFilter
 import dev.tlong.traveler.ui.common.factsLine
 import dev.tlong.traveler.ui.common.rememberSession
 import dev.tlong.traveler.ui.overview.BackButton
@@ -292,24 +292,18 @@ private val Slot.minute get() = when (this) { Slot.MORNING -> 9 * 60; Slot.AFTER
 private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Overlays, selection: Set<String>?, onShown: (List<String>) -> Unit, onPick: (String) -> Unit) {
     var standouts by rememberSaveable { mutableStateOf(false) }
     var toDo by rememberSaveable { mutableStateOf(false) }
+    var outdoor by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var planned by rememberSaveable { mutableStateOf<Boolean?>(null) }
-    var fits by rememberSaveable { mutableStateOf(setOf<String>()) }
-    var efforts by rememberSaveable { mutableStateOf(setOf<String>()) }
-    var conditions by rememberSaveable { mutableStateOf(setOf<String>()) }
     var tags by rememberSaveable { mutableStateOf(setOf<String>()) }
     val scheduled = remember(trip) { trip.days.flatMap { d -> d.plan.map { it.activityId to d.date } }.groupBy({ it.first }, { it.second }) }
     val done = remember(trip) { Edits.doneIds(trip) }
     var order by rememberSaveable { mutableStateOf(PoolOrder.TYPE) }
     // Only the options this stay's activities actually have.
-    val fitOptions = remember(pool) { FITS.filter { (k, _) -> pool.any { it.fit == k } } }
-    val effortOptions = remember(pool) { EFFORTS.filter { (k, _) -> pool.any { it.effort == k } } }
-    val conditionOptions = remember(pool) { pool.flatMap { it.conditions }.distinct().sorted() }
     val tagOptions = remember(pool) { pool.mapNotNull { it.tag }.distinct() }
 
     val list = pool.filter { a ->
-        (!standouts || a.stars == 3) && (!toDo || a.id !in done) && (planned == null || (a.id in scheduled) == planned) &&
-            (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
-            (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
+        (!standouts || a.stars == 3) && (!toDo || a.id !in done) && (outdoor == null || a.outdoor == outdoor) && (planned == null || (a.id in scheduled) == planned) &&
+            (tags.isEmpty() || a.tag in tags)
     }.sortedWith(compareBy<Activity> { it.isWontDo }.then(byRecommendation))
     // "All" in select mode takes what the filters show.
     SideEffect { onShown(list.map { it.id }) }
@@ -319,7 +313,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         PoolOrder.TYPE -> list.groupBy { it.tag }.toList().sortedBy { it.first == null }
             .map { (tag, l) -> (tag?.let { "$it ${TAGS[it] ?: ""}".trim() } ?: "Other") to l }
     }
-    val more = fits.size + efforts.size + conditions.size + tags.size
+    val more = tags.size
     var advanced by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 96.dp)) {
@@ -330,6 +324,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
                 // ✅ dimmed: done activities are hidden; full brightness: all show.
                 if (pool.any { it.id in done }) FilterChip(false, onClick = { toDo = !toDo }, label = { Text("✅", Modifier.alpha(if (toDo) 0.38f else 1f)) })
+                if (pool.any { it.outdoor != null }) OutdoorFilter(outdoor) { outdoor = it }
                 TriStateFilter(planned, { when (it) { null -> "Showing planned and unplanned"; true -> "Showing planned only"; false -> "Showing unplanned only" } }) { planned = it }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
@@ -343,11 +338,8 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
         }
         if (advanced) item("advanced") {
             Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (fitOptions.isNotEmpty()) FilterGroup("Time available", fitOptions, fits) { fits = it }
-                if (effortOptions.isNotEmpty()) FilterGroup("Effort", effortOptions, efforts) { efforts = it }
-                if (conditionOptions.isNotEmpty()) FilterGroup("Good for", conditionOptions.map { it to conditionLabel(it) }, conditions) { conditions = it }
                 if (tagOptions.isNotEmpty()) FilterGroup("Type", tagOptions.map { it to it }, tags) { tags = it }
-                if (more > 0) TextButton(onClick = { fits = emptySet(); efforts = emptySet(); conditions = emptySet(); tags = emptySet() }) { Text("Clear filters") }
+                if (more > 0) TextButton(onClick = { tags = emptySet() }) { Text("Clear filters") }
             }
         }
         if (list.isEmpty()) item("empty") { Text("Nothing matches", style = MaterialTheme.typography.bodyMedium) }
@@ -384,8 +376,6 @@ private fun OrderMenu(order: PoolOrder, onChange: (PoolOrder) -> Unit) {
     }
 }
 
-private val FITS = listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening")
-private val EFFORTS = listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding")
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

@@ -53,15 +53,15 @@ That file is an export from the app, and it contains the traveler's own changes.
 - **transfers**: `{id, from: stayId, to: stayId, date, mode: flight|train|bus|boat|ferry|car|taxi|hike|other, depart?, arrive?, details?, fromPlace?, toPlace?, booking?: {status: booked|tentative|needed|onsite, ref?, url?, bookDaysBefore?, how?, price?}}`. For a flight, or a bus, train or ferry between towns, give `fromPlace` and `toPlace`: the airports, stations or ports, as `{name, query, lat, lng}`, with an airport's code in its name ("Aeroparque Jorge Newbery (AEP)", "Terminal de Ómnibus Retiro").
   - `mode` is the main vehicle, which the app shows as an icon: `taxi` for a taxi, remis or hired driver, `hike` for a leg on foot. Use `other` only when none fits.
 - **activities**: the pool. Give every stay of three or more days a real pool: its suggested activities plus alternatives for a short morning, a free afternoon and a rainy day. Each activity is:
-  - `{id, stayId, name, tag, short, detail: [paragraphs], why?, rank, stars, place?, duration?, fit?, bestTime?, effort?, conditions?, hours?, availability?, practical?, checkedOn?, url?, sources?}`
+  - `{id, stayId, name, tag, short, detail: [paragraphs], why?, rank, stars, outdoor, place?, duration?, bestTime?, hours?, availability?, practical?, checkedOn?, url?, sources?}`
   - `name` is a named place or experience ("Jardín de los Picaflores"), never an instruction ("keep plans light").
   - `short` is 10 words or fewer. `why` is one line on why it fits this traveler.
   - `rank`: 1 is the strongest pick in the stay.
   - `stars`: how well it fits this traveler. 3 = a must do for this traveler; 2 = they will likely enjoy it; 1 = a common pick, worth doing if there's time. Be stingy with 3: a stay has one or two, and some have none.
   - `place`: `{query, lat, lng}`. `query` is what the app's Open in Maps searches, so it must land on one spot: the name Google Maps knows the place by plus the city ("Café Tortoni, Avenida de Mayo, Buenos Aires"), never the activity's title. For a walk, a neighborhood or a route, use where it starts ("Plaza Armenia, Palermo Soho, Buenos Aires"). Always give `lat`/`lng`, looked up for the actual place: the trip's map and the day's directions are drawn from them, which is how the traveler sees what is near what and groups a day. The validator's full check fails without them.
   - `duration`: `{minutes, maxMinutes?, includesTravel?}`.
-  - `fit`: short|half-day|full-day|evening. `bestTime`: any of morning, afternoon, evening. `effort`: easy|moderate|hard.
-  - `conditions`: rainy-day, short-morning, free-afternoon, hot-day, needs-car, …
+  - `outdoor`: `true` when it is mostly outside, so weather decides it (a park, a hike, a walking tour, a beach); `false` when it is mostly indoors (a museum, a café, a show). Give it on every activity: it is how the traveler finds an indoor option on a rainy day. Never write `fit`, `effort` or `conditions`.
+  - `bestTime`: any of morning, afternoon, evening.
   - `availability`: `[{days?, start?, end?, note?}]`, only when verified.
   - `practical`: `{transport?, booking?, cost?, weather?, access?, tips?}`.
   - `booking`: `{status: "needed", price?, url?, bookDaysBefore?, how?}` on anything that needs a reservation or a ticket bought ahead (a tour, a concert, a rental car, a popular restaurant, a timed-entry site). The app lists these as things to book. A paid entry bought at the door or on the day (most museums, gardens and parks) gets `{status: "onsite", price}` instead, with no `bookDaysBefore`: the app shows its price but keeps it off the Bookings list.

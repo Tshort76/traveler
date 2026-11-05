@@ -244,10 +244,9 @@ data class Activity(
     val stars: Int? = null,
     val place: Place? = null,
     val duration: Duration? = null,
-    val fit: String? = null,
+    /** True when it is mostly outside, so weather decides it; false when mostly indoors. */
+    val outdoor: Boolean? = null,
     val bestTime: List<String> = emptyList(),
-    val effort: String? = null,
-    val conditions: List<String> = emptyList(),
     val hours: String? = null,
     val availability: List<Window> = emptyList(),
     val practical: Practical? = null,
@@ -388,8 +387,6 @@ object Vocab {
     val slots = Slot.entries.map { it.key }
     val statuses = ItemStatus.entries.map { it.key }
     val dayKinds = DayKind.entries.map { it.key }
-    val fits = listOf("short", "half-day", "full-day", "evening")
-    val efforts = listOf("easy", "moderate", "hard")
     val confidences = listOf("confirmed", "estimate", "check")
     val bestTimes = listOf("morning", "afternoon", "evening")
     val transferModes = listOf("flight", "train", "bus", "boat", "ferry", "car", "taxi", "hike", "other")

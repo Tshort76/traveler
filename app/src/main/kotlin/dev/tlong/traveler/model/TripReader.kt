@@ -216,8 +216,6 @@ object TripReader {
             val where = "activities[$i] (${a.id})"
             if (stayIds != null && a.stayId !in stayIds) errors += "$where: unknown stay '${a.stayId}'"
             if (a.name.isBlank()) errors += "$where: name is empty"
-            a.fit?.let { enum(it, Vocab.fits, "$where.fit", errors) }
-            a.effort?.let { enum(it, Vocab.efforts, "$where.effort", errors) }
             a.stars?.let { if (it !in 1..3) errors += "$where.stars: must be 1, 2 or 3; got $it" }
             a.confidence?.let { enum(it, Vocab.confidences, "$where.confidence", errors) }
             a.bestTime.forEach { enum(it, Vocab.bestTimes, "$where.bestTime", errors) }

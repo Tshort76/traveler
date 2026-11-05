@@ -584,10 +584,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a02",
@@ -607,12 +604,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a03",
@@ -632,12 +624,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a04",
@@ -657,12 +644,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a05",
@@ -682,10 +664,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a06",
@@ -705,10 +684,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a07",
@@ -728,12 +704,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a08",
@@ -753,12 +724,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a09",
@@ -778,12 +744,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a10",
@@ -803,10 +764,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a11",
@@ -826,10 +784,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a12",
@@ -849,12 +804,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a13",
@@ -874,12 +824,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a14",
@@ -899,12 +844,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a15",
@@ -924,10 +864,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a16",
@@ -947,10 +884,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a17",
@@ -970,12 +904,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a18",
@@ -995,12 +924,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a19",
@@ -1020,12 +944,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-a20",
@@ -1045,10 +964,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-a21",
@@ -1068,10 +984,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-a22",
@@ -1091,12 +1004,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a01",
@@ -1116,10 +1024,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a02",
@@ -1139,12 +1044,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a03",
@@ -1164,12 +1064,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a04",
@@ -1189,12 +1084,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a05",
@@ -1214,10 +1104,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a06",
@@ -1237,10 +1124,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a07",
@@ -1260,12 +1144,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a08",
@@ -1285,12 +1164,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a09",
@@ -1310,12 +1184,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a10",
@@ -1335,10 +1204,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a11",
@@ -1358,10 +1224,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a12",
@@ -1381,12 +1244,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a13",
@@ -1406,12 +1264,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a14",
@@ -1431,12 +1284,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a15",
@@ -1456,10 +1304,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a16",
@@ -1479,10 +1324,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a17",
@@ -1502,12 +1344,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a18",
@@ -1527,12 +1364,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a19",
@@ -1552,12 +1384,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a20",
@@ -1577,10 +1404,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a21",
@@ -1600,10 +1424,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a22",
@@ -1623,12 +1444,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "cusco-a23",
@@ -1648,12 +1464,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "cusco-a24",
@@ -1673,12 +1484,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "cusco-a25",
@@ -1698,10 +1504,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a01",
@@ -1721,10 +1524,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a02",
@@ -1744,12 +1544,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a03",
@@ -1769,12 +1564,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a04",
@@ -1794,12 +1584,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a05",
@@ -1819,10 +1604,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a06",
@@ -1842,10 +1624,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a07",
@@ -1865,12 +1644,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a08",
@@ -1890,12 +1664,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a09",
@@ -1915,12 +1684,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a10",
@@ -1940,10 +1704,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a11",
@@ -1963,10 +1724,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a12",
@@ -1986,12 +1744,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a13",
@@ -2011,12 +1764,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a14",
@@ -2036,12 +1784,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a15",
@@ -2061,10 +1804,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a16",
@@ -2084,10 +1824,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a17",
@@ -2107,12 +1844,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a18",
@@ -2132,12 +1864,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a19",
@@ -2157,12 +1884,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "arequipa-a20",
@@ -2182,10 +1904,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "arequipa-a21",
@@ -2205,10 +1924,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "arequipa-a22",
@@ -2228,12 +1944,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a01",
@@ -2253,10 +1964,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a02",
@@ -2276,12 +1984,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a03",
@@ -2301,12 +2004,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a04",
@@ -2326,12 +2024,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a05",
@@ -2351,10 +2044,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a06",
@@ -2374,10 +2064,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a07",
@@ -2397,12 +2084,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a08",
@@ -2422,12 +2104,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a09",
@@ -2447,12 +2124,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a10",
@@ -2472,10 +2144,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a11",
@@ -2495,10 +2164,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a12",
@@ -2518,12 +2184,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a13",
@@ -2543,12 +2204,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a14",
@@ -2568,12 +2224,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a15",
@@ -2593,10 +2244,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a16",
@@ -2616,10 +2264,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a17",
@@ -2639,12 +2284,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a18",
@@ -2664,12 +2304,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "la-paz-a19",
@@ -2689,12 +2324,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "la-paz-a20",
@@ -2714,10 +2344,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "la-paz-a21",
@@ -2737,10 +2364,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a01",
@@ -2760,10 +2384,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a02",
@@ -2783,12 +2404,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a03",
@@ -2808,12 +2424,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a04",
@@ -2833,12 +2444,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a05",
@@ -2858,10 +2464,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a06",
@@ -2881,10 +2484,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a07",
@@ -2904,12 +2504,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a08",
@@ -2929,12 +2524,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a09",
@@ -2954,12 +2544,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a10",
@@ -2979,10 +2564,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a11",
@@ -3002,10 +2584,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a12",
@@ -3025,12 +2604,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a13",
@@ -3050,12 +2624,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a14",
@@ -3075,12 +2644,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a15",
@@ -3100,10 +2664,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a16",
@@ -3123,10 +2684,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a17",
@@ -3146,12 +2704,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a18",
@@ -3171,12 +2724,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a19",
@@ -3196,12 +2744,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a20",
@@ -3221,10 +2764,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a21",
@@ -3244,10 +2784,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a22",
@@ -3267,12 +2804,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "santiago-a23",
@@ -3292,12 +2824,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "santiago-a24",
@@ -3317,12 +2844,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "santiago-a25",
@@ -3342,10 +2864,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a01",
@@ -3365,10 +2884,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a02",
@@ -3388,12 +2904,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a03",
@@ -3413,12 +2924,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a04",
@@ -3438,12 +2944,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a05",
@@ -3463,10 +2964,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a06",
@@ -3486,10 +2984,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a07",
@@ -3509,12 +3004,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a08",
@@ -3534,12 +3024,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a09",
@@ -3559,12 +3044,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a10",
@@ -3584,10 +3064,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a11",
@@ -3607,10 +3084,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a12",
@@ -3630,12 +3104,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a13",
@@ -3655,12 +3124,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a14",
@@ -3680,12 +3144,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a15",
@@ -3705,10 +3164,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a16",
@@ -3728,10 +3184,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a17",
@@ -3751,12 +3204,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a18",
@@ -3776,12 +3224,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "valparaiso-a19",
@@ -3801,12 +3244,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "valparaiso-a20",
@@ -3826,10 +3264,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a01",
@@ -3849,10 +3284,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a02",
@@ -3872,12 +3304,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a03",
@@ -3897,12 +3324,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a04",
@@ -3922,12 +3344,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a05",
@@ -3947,10 +3364,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a06",
@@ -3970,10 +3384,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a07",
@@ -3993,12 +3404,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a08",
@@ -4018,12 +3424,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a09",
@@ -4043,12 +3444,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a10",
@@ -4068,10 +3464,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a11",
@@ -4091,10 +3484,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a12",
@@ -4114,12 +3504,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a13",
@@ -4139,12 +3524,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a14",
@@ -4164,12 +3544,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a15",
@@ -4189,10 +3564,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a16",
@@ -4212,10 +3584,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a17",
@@ -4235,12 +3604,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a18",
@@ -4260,12 +3624,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a19",
@@ -4285,12 +3644,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a20",
@@ -4310,10 +3664,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "mendoza-a21",
@@ -4333,10 +3684,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "mendoza-a22",
@@ -4356,12 +3704,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "mendoza-a23",
@@ -4381,12 +3724,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a01",
@@ -4406,10 +3744,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a02",
@@ -4429,12 +3764,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a03",
@@ -4454,12 +3784,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a04",
@@ -4479,12 +3804,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a05",
@@ -4504,10 +3824,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a06",
@@ -4527,10 +3844,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a07",
@@ -4550,12 +3864,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a08",
@@ -4575,12 +3884,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a09",
@@ -4600,12 +3904,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a10",
@@ -4625,10 +3924,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a11",
@@ -4648,10 +3944,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a12",
@@ -4671,12 +3964,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a13",
@@ -4696,12 +3984,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a14",
@@ -4721,12 +4004,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a15",
@@ -4746,10 +4024,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a16",
@@ -4769,10 +4044,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a17",
@@ -4792,12 +4064,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a18",
@@ -4817,12 +4084,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a19",
@@ -4842,12 +4104,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a20",
@@ -4867,10 +4124,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a21",
@@ -4890,10 +4144,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a22",
@@ -4913,12 +4164,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a23",
@@ -4938,12 +4184,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a24",
@@ -4963,12 +4204,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "bariloche-a25",
@@ -4988,10 +4224,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "bariloche-a26",
@@ -5011,10 +4244,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "bariloche-a27",
@@ -5034,12 +4264,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a01",
@@ -5059,10 +4284,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a02",
@@ -5082,12 +4304,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a03",
@@ -5107,12 +4324,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a04",
@@ -5132,12 +4344,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a05",
@@ -5157,10 +4364,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a06",
@@ -5180,10 +4384,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a07",
@@ -5203,12 +4404,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a08",
@@ -5228,12 +4424,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a09",
@@ -5253,12 +4444,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a10",
@@ -5278,10 +4464,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a11",
@@ -5301,10 +4484,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a12",
@@ -5324,12 +4504,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a13",
@@ -5349,12 +4524,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a14",
@@ -5374,12 +4544,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a15",
@@ -5399,10 +4564,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a16",
@@ -5422,10 +4584,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a17",
@@ -5445,12 +4604,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a18",
@@ -5470,12 +4624,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a19",
@@ -5495,12 +4644,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a20",
@@ -5520,10 +4664,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a21",
@@ -5543,10 +4684,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a22",
@@ -5566,12 +4704,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "buenos-aires-a23",
@@ -5591,12 +4724,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a24",
@@ -5616,12 +4744,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "buenos-aires-a25",
@@ -5641,10 +4764,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a01",
@@ -5664,10 +4784,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a02",
@@ -5687,12 +4804,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a03",
@@ -5712,12 +4824,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a04",
@@ -5737,12 +4844,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a05",
@@ -5762,10 +4864,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a06",
@@ -5785,10 +4884,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a07",
@@ -5808,12 +4904,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a08",
@@ -5833,12 +4924,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a09",
@@ -5858,12 +4944,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a10",
@@ -5883,10 +4964,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a11",
@@ -5906,10 +4984,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a12",
@@ -5929,12 +5004,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a13",
@@ -5954,12 +5024,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a14",
@@ -5979,12 +5044,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a15",
@@ -6004,10 +5064,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a16",
@@ -6027,10 +5084,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a17",
@@ -6050,12 +5104,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a18",
@@ -6075,12 +5124,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a19",
@@ -6100,12 +5144,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "montevideo-a20",
@@ -6125,10 +5164,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "montevideo-a21",
@@ -6148,10 +5184,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "montevideo-a22",
@@ -6171,12 +5204,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a01",
@@ -6196,10 +5224,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a02",
@@ -6219,12 +5244,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a03",
@@ -6244,12 +5264,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a04",
@@ -6269,12 +5284,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a05",
@@ -6294,10 +5304,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a06",
@@ -6317,10 +5324,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a07",
@@ -6340,12 +5344,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a08",
@@ -6365,12 +5364,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a09",
@@ -6390,12 +5384,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a10",
@@ -6415,10 +5404,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a11",
@@ -6438,10 +5424,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a12",
@@ -6461,12 +5444,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a13",
@@ -6486,12 +5464,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a14",
@@ -6511,12 +5484,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a15",
@@ -6536,10 +5504,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a16",
@@ -6559,10 +5524,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a17",
@@ -6582,12 +5544,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a18",
@@ -6607,12 +5564,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a19",
@@ -6632,12 +5584,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a20",
@@ -6657,10 +5604,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a21",
@@ -6680,10 +5624,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a22",
@@ -6703,12 +5644,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "florianopolis-a23",
@@ -6728,12 +5664,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "florianopolis-a24",
@@ -6753,12 +5684,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a01",
@@ -6778,10 +5704,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a02",
@@ -6801,12 +5724,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a03",
@@ -6826,12 +5744,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a04",
@@ -6851,12 +5764,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a05",
@@ -6876,10 +5784,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a06",
@@ -6899,10 +5804,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a07",
@@ -6922,12 +5824,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a08",
@@ -6947,12 +5844,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a09",
@@ -6972,12 +5864,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a10",
@@ -6997,10 +5884,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a11",
@@ -7020,10 +5904,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a12",
@@ -7043,12 +5924,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a13",
@@ -7068,12 +5944,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a14",
@@ -7093,12 +5964,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a15",
@@ -7118,10 +5984,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a16",
@@ -7141,10 +6004,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a17",
@@ -7164,12 +6024,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a18",
@@ -7189,12 +6044,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a19",
@@ -7214,12 +6064,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a20",
@@ -7239,10 +6084,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a21",
@@ -7262,10 +6104,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "sao-paulo-a22",
@@ -7285,12 +6124,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "sao-paulo-a23",
@@ -7310,12 +6144,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a01",
@@ -7335,10 +6164,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a02",
@@ -7358,12 +6184,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a03",
@@ -7383,12 +6204,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a04",
@@ -7408,12 +6224,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a05",
@@ -7433,10 +6244,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a06",
@@ -7456,10 +6264,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a07",
@@ -7479,12 +6284,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a08",
@@ -7504,12 +6304,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a09",
@@ -7529,12 +6324,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a10",
@@ -7554,10 +6344,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a11",
@@ -7577,10 +6364,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a12",
@@ -7600,12 +6384,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a13",
@@ -7625,12 +6404,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a14",
@@ -7650,12 +6424,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a15",
@@ -7675,10 +6444,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a16",
@@ -7698,10 +6464,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a17",
@@ -7721,12 +6484,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a18",
@@ -7746,12 +6504,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a19",
@@ -7771,12 +6524,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a20",
@@ -7796,10 +6544,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a21",
@@ -7819,10 +6564,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a22",
@@ -7842,12 +6584,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "rio-a23",
@@ -7867,12 +6604,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "rio-a24",
@@ -7892,12 +6624,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "rio-a25",
@@ -7917,10 +6644,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a01",
@@ -7940,10 +6664,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a02",
@@ -7963,12 +6684,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a03",
@@ -7988,12 +6704,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-2-a04",
@@ -8013,12 +6724,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a05",
@@ -8038,10 +6744,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a06",
@@ -8061,10 +6764,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-2-a07",
@@ -8084,12 +6784,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "full-day",
-      "effort": "easy",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a08",
@@ -8109,12 +6804,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "evening",
-      "effort": "moderate",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a09",
@@ -8134,12 +6824,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "short",
-      "effort": "hard",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-2-a10",
@@ -8159,10 +6844,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "half-day",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a11",
@@ -8182,10 +6864,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "full-day",
-      "effort": "moderate",
-      "conditions": [],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a12",
@@ -8205,12 +6884,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "evening",
-      "effort": "hard",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-2-a13",
@@ -8230,12 +6904,7 @@
       "duration": {
         "minutes": 45
       },
-      "fit": "short",
-      "effort": "easy",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a14",
@@ -8255,12 +6924,7 @@
       "duration": {
         "minutes": 75
       },
-      "fit": "half-day",
-      "effort": "moderate",
-      "conditions": [
-        "free-afternoon"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a15",
@@ -8280,10 +6944,7 @@
       "duration": {
         "minutes": 105
       },
-      "fit": "full-day",
-      "effort": "hard",
-      "conditions": [],
-      "confidence": "check"
+      "outdoor": true
     },
     {
       "id": "lima-2-a16",
@@ -8303,10 +6964,7 @@
       "duration": {
         "minutes": 135
       },
-      "fit": "evening",
-      "effort": "easy",
-      "conditions": [],
-      "confidence": "confirmed"
+      "outdoor": false
     },
     {
       "id": "lima-2-a17",
@@ -8326,12 +6984,7 @@
       "duration": {
         "minutes": 165
       },
-      "fit": "short",
-      "effort": "moderate",
-      "conditions": [
-        "rainy-day"
-      ],
-      "confidence": "estimate"
+      "outdoor": true
     },
     {
       "id": "lima-2-a18",
@@ -8351,12 +7004,7 @@
       "duration": {
         "minutes": 195
       },
-      "fit": "half-day",
-      "effort": "hard",
-      "conditions": [
-        "short-morning"
-      ],
-      "confidence": "check"
+      "outdoor": true
     }
   ],
   "commitments": [

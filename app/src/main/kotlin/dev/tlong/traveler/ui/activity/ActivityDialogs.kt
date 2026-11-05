@@ -231,8 +231,7 @@ fun EditActivityDialog(activity: Activity, onDismiss: () -> Unit, onSave: (Activ
     var place by remember { mutableStateOf(activity.place?.query ?: activity.place?.name.orEmpty()) }
     var minutes by remember { mutableStateOf(activity.duration?.minutes?.toString().orEmpty()) }
     var tag by remember { mutableStateOf(activity.tag) }
-    var fit by remember { mutableStateOf(activity.fit) }
-    var effort by remember { mutableStateOf(activity.effort) }
+    var outdoor by remember { mutableStateOf(activity.outdoor) }
 
     fun build(): Activity {
         val placeChanged = place != (activity.place?.query ?: activity.place?.name.orEmpty())
@@ -246,7 +245,7 @@ fun EditActivityDialog(activity: Activity, onDismiss: () -> Unit, onSave: (Activ
         return activity.copy(
             name = name, short = short.ifEmpty { null }, why = why.ifEmpty { null },
             detail = if (detail == activity.detail.joinToString("\n\n")) activity.detail else detail.split(Regex("\\n\\s*\\n")).filter { it.isNotBlank() },
-            place = newPlace, duration = duration, tag = tag, fit = fit, effort = effort,
+            place = newPlace, duration = duration, tag = tag, outdoor = outdoor,
         )
     }
 
@@ -272,10 +271,8 @@ fun EditActivityDialog(activity: Activity, onDismiss: () -> Unit, onSave: (Activ
                         minutes, { minutes = it.filter(Char::isDigit) }, label = { Text("Minutes it takes (estimate)") }, singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth(),
                     )
-                    Text("Suits", style = MaterialTheme.typography.labelLarge)
-                    ChoiceChips(listOf("short" to "Short", "half-day" to "Half day", "full-day" to "Full day", "evening" to "Evening"), fit) { fit = it }
-                    Text("Effort", style = MaterialTheme.typography.labelLarge)
-                    ChoiceChips(listOf("easy" to "Easy", "moderate" to "Moderate", "hard" to "Demanding"), effort) { effort = it }
+                    Text("Setting", style = MaterialTheme.typography.labelLarge)
+                    ChoiceChips(listOf("true" to "🌳 Outdoors", "false" to "🏠 Indoors"), outdoor?.toString()) { outdoor = it?.toBoolean() }
                     Text("Category", style = MaterialTheme.typography.labelLarge)
                     ChoiceChips(TAGS.keys.map { it to it }, tag) { tag = it }
                 }
