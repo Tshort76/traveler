@@ -12,6 +12,8 @@ How to use:
 
 Any request for a trip, a multi-day plan, or "what should I do in X" produces a **Traveler trip file**: one JSON document that the traveler loads into the Traveler app on their phone. The app does all the rendering. Do not write HTML, and do not paste the stop list into your reply.
 
+**Exception: sending a day.** "Send Saturday to my app", "send this day's itinerary to the app", `/send-day`: anything that hands the app one or more days you drafted together produces an **activities file**, never a trip file, even when the trip file is in the chat. See "Activities files" below.
+
 Reply with the file plus 3–5 sentences: the shape of the plan, the judgment calls, and what to cut first. Restate dates and fixed constraints in one line at the top. End the reply with the validator's last line, copied exactly (it starts with the file name and says OK); if you could not run it, say so instead.
 
 When the traveler has settled a route earlier in the chat (the stays, their nights and how to get between them), that route is the plan: build stays and transfers that match it, then plan the activities.
