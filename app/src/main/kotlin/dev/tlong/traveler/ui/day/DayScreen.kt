@@ -53,6 +53,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
@@ -401,6 +402,7 @@ private fun DayContent(session: TripSession, date: String, navigator: Navigator)
                         }
                     }
                 }) { Text("🧭", style = MaterialTheme.typography.titleLarge) }
+                backTo?.let { id -> IconButton(onClick = { navigator.stay(trip.id, id, tab = 1) }) { Icon(Icons.AutoMirrored.Filled.List, "Stay activities") } }
                 IconButton(onClick = { navigator.tripCalendar(trip.id) }) { Icon(Icons.Default.DateRange, "Trip calendar") }
                 Box {
                     IconButton(onClick = { addMenu = true }) { Icon(Icons.Default.Add, "Add to this day") }
