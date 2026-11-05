@@ -286,6 +286,7 @@ private val Slot.minute get() = when (this) { Slot.MORNING -> 9 * 60; Slot.AFTER
 @Composable
 private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Overlays, selection: Set<String>?, onShown: (List<String>) -> Unit, onPick: (String) -> Unit) {
     var standouts by rememberSaveable { mutableStateOf(false) }
+    var toDo by rememberSaveable { mutableStateOf(false) }
     var planned by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var fits by rememberSaveable { mutableStateOf(setOf<String>()) }
     var efforts by rememberSaveable { mutableStateOf(setOf<String>()) }
@@ -304,7 +305,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     val tagOptions = remember(pool) { pool.mapNotNull { it.tag }.distinct() }
 
     val list = pool.filter { a ->
-        (!standouts || a.stars == 3) && (planned == null || (a.id in scheduled) == planned) &&
+        (!standouts || a.stars == 3) && (!toDo || a.id !in done) && (planned == null || (a.id in scheduled) == planned) &&
             (fits.isEmpty() || a.fit in fits) && (efforts.isEmpty() || a.effort in efforts) &&
             (conditions.isEmpty() || a.conditions.any { it in conditions }) && (tags.isEmpty() || a.tag in tags)
     }.sortedWith(compareBy<Activity> { it.isWontDo }.then(byRecommendation))
@@ -325,6 +326,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 OrderMenu(order) { order = it }
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
+                if (pool.any { it.id in done }) Toggle("To do", "Hide done", toDo) { toDo = !toDo }
                 TriStateFilter(planned, { when (it) { null -> "Showing planned and unplanned"; true -> "Showing planned only"; false -> "Showing unplanned only" } }) { planned = it }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
