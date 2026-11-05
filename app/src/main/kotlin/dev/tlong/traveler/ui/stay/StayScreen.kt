@@ -66,6 +66,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -326,7 +327,8 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
             Row(Modifier.padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                 OrderMenu(order) { order = it }
                 if (pool.any { it.stars == 3 }) Toggle("✨", "Standouts", standouts) { standouts = !standouts }
-                if (pool.any { it.id in done }) Toggle("To do", "Hide done", toDo) { toDo = !toDo }
+                // ✅ dimmed: done activities are hidden; full brightness: all show.
+                if (pool.any { it.id in done }) FilterChip(false, onClick = { toDo = !toDo }, label = { Text("✅", Modifier.alpha(if (toDo) 0.38f else 1f)) })
                 TriStateFilter(planned, { when (it) { null -> "Showing planned and unplanned"; true -> "Showing planned only"; false -> "Showing unplanned only" } }) { planned = it }
                 Spacer(Modifier.weight(1f))
                 IconButton(onClick = { advanced = !advanced }, modifier = Modifier.semantics {
