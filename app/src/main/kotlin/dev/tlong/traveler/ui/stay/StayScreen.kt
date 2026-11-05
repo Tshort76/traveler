@@ -94,7 +94,6 @@ import dev.tlong.traveler.ui.common.modeLabel
 import dev.tlong.traveler.model.Activity
 import dev.tlong.traveler.model.DayKind
 import dev.tlong.traveler.model.ItemStatus
-import dev.tlong.traveler.model.USER_DONE
 import androidx.compose.ui.graphics.Color
 import dev.tlong.traveler.model.Slot
 import dev.tlong.traveler.model.Stay
@@ -163,6 +162,11 @@ private fun StayContent(session: TripSession, trip: Trip, stay: Stay, initialTab
                         if (restore) bulk("Restore ${selection.size}", "${selection.size} back in the running") { t, ids -> Edits.setUserStatus(t, ids, null) }
                         else bulk("Won't do ${selection.size}", "${selection.size} marked won't do") { t, ids -> Edits.setUserStatus(t, ids, USER_WONT_DO) }
                     }) { Text("👎", Modifier.semantics { contentDescription = if (restore) "Undo won't do" else "Won't do" }) }
+                    val undone = Edits.doneIds(trip).containsAll(selection)
+                    IconButton(onClick = {
+                        if (undone) bulk("Not done ${selection.size}", "${selection.size} no longer done") { t, ids -> Edits.setDone(t, ids, false) }
+                        else bulk("Done ${selection.size}", "${selection.size} marked done") { t, ids -> Edits.setDone(t, ids, true) }
+                    }) { Text("✅") }
                     IconButton(onClick = {
                         bulk("Delete ${selection.size}", "Deleted ${selection.size} ${if (selection.size == 1) "activity" else "activities"}") { t, ids -> Edits.deleteActivities(t, ids) }
                     }) { Icon(Icons.Default.Delete, "Delete") }
@@ -294,10 +298,7 @@ private fun PoolTab(trip: Trip, stay: Stay, pool: List<Activity>, overlays: Over
     var conditions by rememberSaveable { mutableStateOf(setOf<String>()) }
     var tags by rememberSaveable { mutableStateOf(setOf<String>()) }
     val scheduled = remember(trip) { trip.days.flatMap { d -> d.plan.map { it.activityId to d.date } }.groupBy({ it.first }, { it.second }) }
-    val done = remember(trip) {
-        trip.days.flatMap { d -> d.plan.filter { ItemStatus.of(it.status) == ItemStatus.DONE }.map { it.activityId } }.toSet() +
-            trip.activities.filter { it.userStatus == USER_DONE }.map { it.id }
-    }
+    val done = remember(trip) { Edits.doneIds(trip) }
     var order by rememberSaveable { mutableStateOf(PoolOrder.TYPE) }
     // Only the options this stay's activities actually have.
     val fitOptions = remember(pool) { FITS.filter { (k, _) -> pool.any { it.fit == k } } }

@@ -8,6 +8,7 @@ import dev.tlong.traveler.model.Commitment
 import dev.tlong.traveler.model.Day
 import dev.tlong.traveler.model.Duration
 import dev.tlong.traveler.model.ItemStatus
+import dev.tlong.traveler.model.USER_DONE
 import dev.tlong.traveler.model.Link
 import dev.tlong.traveler.model.Lodging
 import dev.tlong.traveler.model.ORIGIN_USER
@@ -222,6 +223,20 @@ object Edits {
 
     fun setUserStatus(trip: Trip, ids: Set<String>, status: String?): Trip =
         trip.copy(activities = trip.activities.map { if (it.id in ids) it.copy(userStatus = status) else it })
+
+    /** Activities marked done by the traveler or done on a day's plan. */
+    fun doneIds(trip: Trip): Set<String> =
+        trip.days.flatMap { d -> d.plan.filter { ItemStatus.of(it.status) == ItemStatus.DONE }.map { it.activityId } }.toSet() +
+            trip.activities.filter { it.userStatus == USER_DONE }.map { it.id }
+
+    /** Marks [ids] done, or not done: clearing also returns their done plan items to planned, so nothing still reads done. */
+    fun setDone(trip: Trip, ids: Set<String>, done: Boolean): Trip {
+        if (done) return setUserStatus(trip, ids, USER_DONE)
+        val cleared = trip.copy(activities = trip.activities.map { if (it.id in ids && it.userStatus == USER_DONE) it.copy(userStatus = null) else it })
+        return cleared.days.filter { d -> d.plan.any { it.activityId in ids && ItemStatus.of(it.status) == ItemStatus.DONE } }.fold(cleared) { t, d ->
+            t.updateDay(d.date) { day -> day.withPlan(day.plan.map { if (it.activityId in ids && ItemStatus.of(it.status) == ItemStatus.DONE) it.copy(status = null) else it }) }
+        }
+    }
 
     /** Deletes the activity itself — every placement of it goes too. Distinct from returning it to the pool. */
     fun deleteActivity(trip: Trip, id: String): Trip = deleteActivities(trip, setOf(id))

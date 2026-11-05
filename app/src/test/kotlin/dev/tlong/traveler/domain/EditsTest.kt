@@ -54,6 +54,18 @@ class EditsTest {
     }
 
     @Test
+    fun `marking done and then not done clears both the traveler's mark and a done plan item`() {
+        val planned = trip.day(sat)!!.plan[0].activityId
+        val other = trip.activities.first { it.id != planned }.id
+        val onPlan = Edits.setStatus(trip, Edits.ItemRef(sat, 0), ItemStatus.DONE)
+        val done = Edits.setDone(onPlan, setOf(planned, other), true)
+        assertEquals(setOf(planned, other), Edits.doneIds(done))
+        val cleared = Edits.setDone(done, setOf(planned, other), false)
+        assertTrue(Edits.doneIds(cleared).isEmpty())
+        assertEquals(planned, cleared.day(sat)!!.plan[0].activityId)
+    }
+
+    @Test
     fun `two entries with the same title get distinct ids and the trip stays valid`() {
         val (t1, a) = Edits.addCustom(trip, "iguazu", "Laundry")
         val (t2, b) = Edits.addCustom(t1, "iguazu", "Laundry")
