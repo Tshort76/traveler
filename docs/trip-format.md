@@ -54,7 +54,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 
 **TripMap** — `{ "url"?, "imageUrl"?, "attribution"?, "note"? }`. `imageUrl` is a small overview picture showing the destinations, with `attribution` kept beside it. `url` (a custom Google map) is kept but not shown.
 
-**Place** — `{ "name"?, "query"?, "address"?, "lat"?, "lng"?, "placeId"?, "mapsUrl"? }`. Any one is enough. For "Open in Google Maps" the app prefers `mapsUrl`, then `placeId`, then `query`, then `lat`/`lng`, then `name` plus the stay's name. `query` is what you would type into Google Maps (`"Jardín de los Picaflores, Puerto Iguazú"`). Coordinates are what put a place on the trip's Google My Maps map and in the day's directions, so give them for every stay and every activity.
+**Place** — `{ "name"?, "query"?, "address"?, "lat"?, "lng"?, "placeId"?, "mapsUrl"? }`. Any one is enough. For "Open in Google Maps" the app prefers `mapsUrl`, then `placeId`, then `query`, then `lat`/`lng`, then `name` plus the stay's name. `query` is what you would type into Google Maps (`"Jardín de los Picaflores, Puerto Iguazú"`). Coordinates are what put a place on the trip's Google My Maps map and in the day's directions, so give them for every stay and every activity. The full check also wants every activity's `query`, and not just the activity's name: the place's own name plus the city, or a walk's starting point.
 
 ## Stay
 

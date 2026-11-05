@@ -409,6 +409,11 @@ def check_complete(trip, rep):
     if unplaced:
         rep.error("activities", f"{len(unplaced)} have no place.lat/lng, so the trip map can't show them: {_names(unplaced)}. "
                                 "Give every activity's coordinates")
+    unsearchable = [a.get("id", "?") for a in acts
+                    if not (q := ((a.get("place") or {}).get("query") or "").strip()) or q.casefold() == (a.get("name") or "").strip().casefold()]
+    if unsearchable:
+        rep.error("activities", f"{len(unsearchable)} have no place.query, or one that is only the activity's name, so Open in Maps "
+                                f"searches the title: {_names(unsearchable)}. Give the name Google Maps knows the place by, plus the city")
     loose = [a.get("id", "?") for a in acts if (a.get("practical") or {}).get("booking") and "booking" not in a]
     if loose:
         rep.error("activities", f"booking advice only in practical.booking, with no booking object "

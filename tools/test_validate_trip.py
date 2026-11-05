@@ -47,6 +47,13 @@ class CompletenessCheck(unittest.TestCase):
         self.assertIn("have no stars", errs)
         self.assertIn("practical.booking", errs)
 
+    def test_an_activity_needs_a_maps_query_other_than_its_name(self):
+        a = self.trip["activities"][0]
+        for query in (None, a["name"], f"  {a['name'].upper()} "):
+            with self.subTest(query=query):
+                a["place"]["query"] = query
+                self.assertIn("have no place.query", " ".join(self.errors(self.trip)))
+
     def test_a_field_outside_the_format_and_a_non_usd_price_fail(self):
         a = self.trip["activities"][0]
         a["price"] = {"amount": 40}
