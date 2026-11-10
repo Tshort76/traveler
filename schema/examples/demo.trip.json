@@ -1130,6 +1130,14 @@
       "end": "13:00",
       "kind": "work",
       "stayId": "palermo"
+    },
+    {
+      "id": "demo-airport-taxi",
+      "title": "Airport taxi to Palermo",
+      "date": "2027-10-18",
+      "kind": "booking",
+      "booked": false,
+      "stayId": "palermo"
     }
   ],
   "days": [
@@ -1279,8 +1287,33 @@
       "plan": []
     }
   ],
+  "planning": [
+    {
+      "id": "transfer:fly-south",
+      "type": "flight",
+      "status": "research",
+      "nextAction": "Confirm baggage on the selected fare.",
+      "fields": {
+        "Baggage": "Allowance not confirmed"
+      },
+      "options": [
+        {
+          "name": "Protected through ticket",
+          "notes": "Compare the total including bags."
+        }
+      ]
+    },
+    {
+      "id": "commitment:demo-airport-taxi",
+      "type": "transfer",
+      "status": "resolved",
+      "stayId": "palermo",
+      "nextAction": "Use the airport taxi stand.",
+      "notes": "No advance reservation needed."
+    }
+  ],
   "validated": {
     "by": "validate_trip.py",
-    "hash": "b50ff745180c7a9a"
+    "hash": "26d4e760d8e0a6ea"
   }
 }

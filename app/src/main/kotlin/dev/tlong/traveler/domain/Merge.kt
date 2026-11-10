@@ -64,12 +64,12 @@ object Merge {
         val restore: Set<String> = emptySet(),
     )
 
-    private val tripLists = listOf("stays", "transfers", "activities", "commitments", "days")
+    private val tripLists = listOf("stays", "transfers", "activities", "commitments", "days", "planning")
     private val ignoredTripFields = setOf("exportedFrom", "revision", "generatedAt", "generatedBy", "format", "formatVersion", "validated")
 
     private fun categoryOf(kind: String, field: String): Category = when (kind) {
         "stays" -> when (field) { "arrive", "depart" -> Category.DATES; "lodging" -> Category.BOOKINGS; else -> Category.STAYS }
-        "transfers", "commitments" -> Category.BOOKINGS
+        "transfers", "commitments", "planning" -> Category.BOOKINGS
         "activities" -> if (field == "booking") Category.BOOKINGS else Category.ACTIVITIES
         "days" -> Category.PLANS
         else -> if (field == "startDate" || field == "endDate") Category.DATES else Category.TRIP
@@ -91,7 +91,7 @@ object Merge {
             "days" -> s("date")?.toDate()?.label() ?: s("date") ?: "?"
             "stays" -> s("name") ?: s("id") ?: "?"
             "transfers" -> listOfNotNull(trip.stay(s("from"))?.name ?: s("from"), trip.stay(s("to"))?.name ?: s("to")).joinToString(" → ")
-            "commitments" -> s("title") ?: s("id") ?: "?"
+            "commitments", "planning" -> s("title") ?: s("id") ?: "?"
             "activities" -> s("name") ?: s("id") ?: "?"
             else -> trip.title
         }

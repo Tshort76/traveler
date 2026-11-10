@@ -156,6 +156,8 @@ def check_schema(value, schema, root, path, rep):
         for k, v in value.items():
             if k in props:
                 check_schema(v, props[k], root, f"{path}.{k}" if path else k, rep)
+            elif isinstance(schema.get("additionalProperties"), dict):
+                check_schema(v, schema["additionalProperties"], root, f"{path}.{k}", rep)
             elif props:
                 rep.warn(f"{path}.{k}" if path else k, "unknown field (typo?) — it will be ignored")
 
@@ -225,6 +227,10 @@ def check_references(trip, rep, standalone=False):
     _unique_ids(transfers, "transfers", rep)
     act_ids = _unique_ids(acts, "activities", rep)
     _unique_ids(commits, "commitments", rep)
+    _unique_ids(lst("planning"), "planning", rep)
+    for i, item in enumerate(lst("planning")):
+        if item.get("stayId") and item["stayId"] not in stay_ids:
+            rep.error(f"planning[{i}].stayId", "unknown stay")
 
     start, end = _date(trip.get("startDate")), _date(trip.get("endDate"))
     if start and end and end < start:

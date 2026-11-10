@@ -143,11 +143,16 @@ fun Bookable.Group.glyph(): String = when (this) {
     Bookable.Group.EVENTS -> "🎟️"
 }
 
-fun Bookable.glyph(): String = when (kind) {
+fun Bookable.glyph(): String = when (planningType) {
+    "flight" -> "✈️"
+    "lodging" -> "🏨"
+    "transfer" -> "🚌"
+    else -> when (kind) {
     Bookable.Kind.LODGING -> "🏨"
     Bookable.Kind.TRANSFER -> modeEmoji(glyph)
     Bookable.Kind.ACTIVITY -> glyph ?: "🎟️"
     Bookable.Kind.BOOKING -> glyph ?: "🎫"
+    }
 }
 
 /** "2/3 booked", or "✅ 3/3 booked" once everything is; null when nothing needs booking. */
@@ -170,7 +175,7 @@ fun BookingsList(
     val context = LocalContext.current
     val all = remember(trip) { trip.bookables() }
     // Only what is on the plan: a suggestion needing a booking shows here once it is on a day.
-    val items = remember(all, group) { all.filter { !it.unplanned && (group == null || it.group == group) } }
+    val items = remember(all, group) { all.filter { (!it.unplanned || trip.planning.any { p -> p.id == it.key }) && (group == null || it.group == group) } }
     // The type chips this list offers: lodging, flights and transfers on Bookings; all four from a day; none on Events.
     val types = Bookable.Type.entries.filter { group == null || (it == Bookable.Type.EVENT) == (group == Bookable.Group.EVENTS) }
     var booked by rememberSaveable { mutableStateOf<Boolean?>(null) }
@@ -180,7 +185,7 @@ fun BookingsList(
     val today = LocalDate.now()
     val groups = remember(items, order, booked, type, onlyStay, today) {
         val shown = items
-            .filter { (booked == null || it.booked == booked) && (type == null || it.type == type) && (onlyStay == null || it.stayId == onlyStay) }
+            .filter { (booked == null || (if (booked == true) it.booked else !it.settled)) && (type == null || it.type == type) && (onlyStay == null || it.stayId == onlyStay) }
         when (order) {
             Order.STAY -> shown.groupBy { it.stayId }.toList()
                 .sortedBy { (id, _) -> trip.stays.indexOfFirst { it.id == id }.let { i -> if (i < 0) Int.MAX_VALUE else i } }
@@ -242,7 +247,7 @@ fun BookingsList(
                         FilterChip(type == t, onClick = { type = if (type == t) null else t }, label = { Text(t.glyph) },
                             modifier = Modifier.semantics { contentDescription = t.label })
                     }
-                    TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing not booked only" } }) { booked = it }
+                    TriStateFilter(booked, { when (it) { null -> "Showing booked and not booked"; true -> "Showing booked only"; false -> "Showing unresolved only" } }) { booked = it }
                 }
             }
         }
@@ -260,7 +265,7 @@ fun BookingsList(
         if (items.isEmpty()) item("empty") {
             Text("Nothing on this trip needs booking.", style = MaterialTheme.typography.bodyMedium)
         } else if (groups.isEmpty()) item("empty") {
-            Text(if (booked == false) "Everything here is booked." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
+            Text(if (booked == false) "Everything here is resolved." else "Nothing matches these filters.", style = MaterialTheme.typography.bodyMedium)
         }
     }
 
@@ -299,7 +304,7 @@ fun BookingsList(
 @Composable
 private fun Summary(items: List<Bookable>, today: LocalDate) {
     val booked = items.count { it.booked }
-    val open = items.filterNot { it.booked }
+    val open = items.filterNot { it.settled }
     Column(Modifier.fillMaxWidth().padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -317,7 +322,7 @@ private enum class Order(val label: String) { DATE("By date"), STAY("By stay") }
 /** "by 22 Nov", or "now" once that date has passed, on an open item: error red once it is due, quiet before. */
 @Composable
 fun BookByTag(b: Bookable, today: LocalDate) {
-    if (b.booked) return
+    if (b.settled) return
     val by = b.bookBy ?: return
     Tag(if (by < today) "now" else "by ${by.shortLabel()}", due = b.due(today))
 }
@@ -338,7 +343,7 @@ private fun BookableRow(
             Text(b.glyph(), style = MaterialTheme.typography.titleMedium, modifier = Modifier.width(36.dp))
             Column(Modifier.weight(1f)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    BookByTag(b, today)
+                    if (b.resolved) Pill("Resolved") else BookByTag(b, today)
                     Text(marked(b.title, null, false, b.booked), style = MaterialTheme.typography.bodyLarge, color = bookedColor(b.booked), maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
                 detailLine(trip, b).takeIf { it.isNotEmpty() }?.let {
@@ -347,6 +352,7 @@ private fun BookableRow(
             }
             b.price?.let { Text(it.label(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 8.dp)) }
         }
+        if (expanded) b.planningInfo?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 36.dp, bottom = 6.dp)) }
         if (expanded && b.booked) BookingDetails(trip, b, onLink) { onDetails(null) }
         else if (expanded) Column(Modifier.padding(start = 36.dp, end = 4.dp, bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             b.how?.let { Text(rich(it), style = MaterialTheme.typography.bodyMedium) }

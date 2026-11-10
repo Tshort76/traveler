@@ -52,6 +52,7 @@ class TripReaderTest {
             "duplicate-activity-id" to "duplicate id 'cherry-creek'",
             "unknown-stay" to "unknown stay 'boulder'",
             "bad-price" to "max is below amount",
+            "bad-planning" to "planning[0].status",
             "price-not-object" to "stays[0] (denver).lodging.price: must be an object",
             "price-without-amount" to "lodging.price: missing required field 'amount'",
             "night-price-off-lodging" to "\"night\" is only for lodging",

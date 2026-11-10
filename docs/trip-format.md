@@ -43,6 +43,7 @@ An activity exists once, in `activities`. A day's plan points at activities by i
 | `tripMap` | | TripMap | A custom Google map and/or an overview image. |
 | `stays` | ✓ | Stay[] | In visit order. At least one. A zero-night stay (arrive = depart) first or last is the home airport, there so the flights out and back have a `from` and `to`; the app shows those flights but no stay card or map pin for it. |
 | `transfers` | | Transfer[] | |
+| `planning` | | PlanningDetail[] | Optional desktop research keyed to existing bookables; see below. |
 | `activities` | | Activity[] | |
 | `commitments` | | Commitment[] | |
 | `days` | | Day[] | Any dates left out get an empty day. |
@@ -136,6 +137,12 @@ Something fixed on a date that the plan must work around.
 `{ "id", "title", "date", "start"?: "HH:MM", "end"?: "HH:MM", "kind": "booking"|"appointment"|"work"|"other", "booked"?: bool, "stayId"?, "place"?, "ref"?, "url"?, "bookDaysBefore"?, "how"?, "price"?: Price, "notes"?, "activityId"? }`
 
 `booked: true` means a reservation exists outside the app. The app never moves it and warns before anything is planned on top of it. `activityId` links a booked tour to the activity it is for. A commitment of kind `booking`, or any booked one, appears on the Bookings screen. Recurring work hours belong in the stay's `workRhythm`, not here.
+
+## Desktop planning details
+
+Optional top-level `planning[]` attaches research to existing bookables without duplicating reservation facts. Each entry has `id` (a key such as `transfer:fly-south`, `lodging:madryn`, `activity:tour` or `commitment:airport-taxi`) and `type` (`flight`, `transfer`, `lodging`, `event`). Optional fields are `status` (`research`, the default; `ready`; `resolved` for an arrangement requiring no reservation), `title`, `stayId`, `nextAction`, `notes`, `critical` (default true), `fields` (a dictionary of human-readable labels to strings), and `options` (objects with `name`, optional `url`, `estimate`, `notes`). `flightId` and `journey` (`departure` or `arrival`) associate an airport ground journey with a flight record.
+
+The source entity's booked state is authoritative; `resolved` never claims a reservation exists. A resolved item stays visible but is not due or unresolved. New ground arrangements are ordinary `kind: "booking"` commitments, even before reservation. New flights are transfers; lodging belongs to an existing stay. Entries whose source was removed are retained for reconciliation and ignored by the booking list. Research survives app import/export and merges by the planning entry's stable key. Older apps ignore these optional details, so use an updated app before exporting research back to desktop.
 
 ## Day
 

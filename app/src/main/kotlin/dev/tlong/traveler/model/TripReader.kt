@@ -146,6 +146,14 @@ object TripReader {
         unique(trip.transfers.map { it.id }, "transfers", errors)
         val activityIds = unique(trip.activities.map { it.id }, "activities", errors)
         unique(trip.commitments.map { it.id }, "commitments", errors)
+        unique(trip.planning.map { it.id }, "planning", errors)
+        trip.planning.forEachIndexed { i, p ->
+            if (!Regex("^(lodging|transfer|activity|commitment):.+$").matches(p.id)) errors += "planning[$i].id: expected a bookable key"
+            if (p.type !in setOf("lodging", "flight", "transfer", "event")) errors += "planning[$i].type: invalid type"
+            if (p.status !in setOf("research", "ready", "resolved")) errors += "planning[$i].status: invalid status"
+            if (p.stayId != null && p.stayId !in stayIds) errors += "planning[$i].stayId: unknown stay"
+            if (p.journey != null && p.journey !in setOf("departure", "arrival")) errors += "planning[$i].journey: invalid journey"
+        }
 
         var previousArrive: LocalDate? = null
         trip.stays.forEachIndexed { i, s ->

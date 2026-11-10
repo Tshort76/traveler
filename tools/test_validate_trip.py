@@ -158,6 +158,7 @@ class InvalidFilesAreRejected(unittest.TestCase):
         "duplicate-activity-id": "cherry-creek",
         "unknown-stay": "boulder",
         "bad-price": "max is below amount",
+        "bad-planning": "planning[0].status",
         "price-not-object": "lodging.price: must be an object",
         "price-without-amount": "lodging.price: missing required field 'amount'",
         "night-price-off-lodging": '"night" is only for lodging',

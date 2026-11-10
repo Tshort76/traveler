@@ -37,13 +37,17 @@ data class Bookable(
     val glyph: String? = null,
     /** The booking record behind it: the commitment itself, or the one booking a suggestion. */
     val record: Commitment? = null,
+    val resolved: Boolean = false,
+    val planningType: String? = null,
+    val planningInfo: String? = null,
 ) {
+    val settled get() = booked || resolved
     enum class Kind { LODGING, TRANSFER, ACTIVITY, BOOKING }
 
     /** The two things a traveler books: getting there and sleeping (logistics), and what they go to do (events). */
     enum class Group(val label: String) { LOGISTICS("Logistics"), EVENTS("Events") }
 
-    val group: Group get() = when (kind) {
+    val group: Group get() = planningType?.let { if (it == "event") Group.EVENTS else Group.LOGISTICS } ?: when (kind) {
         Kind.LODGING, Kind.TRANSFER -> Group.LOGISTICS
         Kind.ACTIVITY -> Group.EVENTS
         // A booking of the traveler's own: an event unless it reads like travel or a bed.
@@ -54,6 +58,9 @@ data class Bookable(
     enum class Type(val glyph: String, val label: String) { LODGING("🏨", "Lodging"), FLIGHT("✈️", "Flights"), GROUND("🚌", "Transfers"), EVENT("🎟️", "Events") }
 
     val type: Type get() = when {
+        planningType == "flight" -> Type.FLIGHT
+        planningType == "lodging" -> Type.LODGING
+        planningType == "transfer" -> Type.GROUND
         group == Group.EVENTS -> Type.EVENT
         kind == Kind.LODGING -> Type.LODGING
         kind == Kind.TRANSFER -> if (glyph == "flight") Type.FLIGHT else Type.GROUND
@@ -121,7 +128,18 @@ fun Trip.bookables(): List<Bookable> {
             stayId = c.stayId ?: c.date.toDate()?.let { stayFor(it)?.id }, glyph = c.activityId?.let { activity(it)?.tag }, record = c,
         )
     }
-    return (lodging + transfers + activities + bookings)
+    val details = planning.associateBy { it.id }
+    return (lodging + transfers + activities + bookings).map { b ->
+        val p = details[b.key] ?: return@map b
+        b.copy(
+            title = p.title ?: b.title, stayId = p.stayId ?: b.stayId,
+            resolved = p.status == "resolved" && !b.booked, planningType = p.type,
+            planningInfo = (listOfNotNull(p.nextAction, p.notes) +
+                p.fields.filterValues { it.isNotBlank() }.map { (k, v) -> "$k: $v" } +
+                p.options.map { o -> listOfNotNull(o.name, o.estimate, o.notes, o.url).joinToString(" · ") })
+                .joinToString("\n").ifBlank { null },
+        )
+    }
         .sortedWith(compareBy({ it.date ?: "9999" }, { it.time ?: "" }))
 }
 
@@ -144,7 +162,7 @@ fun bookBy(date: String?, bookDaysBefore: Int?, priority: Int?): LocalDate? {
     return d.minusDays(lead.toLong())
 }
 
-fun Bookable.due(today: LocalDate): Boolean = !booked && bookBy != null && bookBy <= today.plusDays(DUE_WITHIN_DAYS)
+fun Bookable.due(today: LocalDate): Boolean = !settled && bookBy != null && bookBy <= today.plusDays(DUE_WITHIN_DAYS)
 
 /** What to book this week. */
 fun Trip.dueToBook(today: LocalDate = LocalDate.now()): List<Bookable> = bookables().filter { it.due(today) }

@@ -28,6 +28,7 @@ That file is an export from the app, and it contains the traveler's own changes.
   - An activity with `"userStatus": "wontdo"` doesn't interest the traveler: keep it, but never plan it, and don't suggest anything like it in its place. `"userStatus": "done"` means they already did it.
   - An item with `"origin": "user"` is the traveler's own entry. Keep it and keep its wording.
   - A commitment with `"origin": "user"` is a booking the traveler made. It is fixed: keep its date and times, keep its linked activity at that time, and plan the rest of that day around it.
+  - Preserve `planning` entries, including stable ids, research options, next actions, type-specific fields and resolved status. Reservation facts remain on their original lodging, transfer, activity or commitment; never turn `resolved` into a booked reservation.
   - Keep every entry in `links`. They are trip-wide documents the traveler adds, such as a planning sheet or a map. A link for one place, tour or restaurant goes in that activity's `url` (or its `booking.url`), never in `links`. Never create a sheet or document on the traveler's behalf.
   - A field named in an item's `userEdited` list holds the traveler's wording. Do not overwrite it. Suggest changes in your reply instead.
 - Keep every activity a day's `plan` points at, and any day plan the traveler edited, unless asked to change them.

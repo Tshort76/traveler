@@ -12,6 +12,22 @@ import org.junit.Test
 import java.time.LocalDate
 
 class BookingsTest {
+    @Test
+    fun `desktop research survives serialization and resolved transport is not due`() {
+        val t = Fixtures.trip("demo.trip.json")
+        val decoded = dev.tlong.traveler.model.TripJson.decode(dev.tlong.traveler.model.TripJson.encode(t))
+        assertEquals(t.planning, decoded.planning)
+        val taxi = decoded.bookables().single { it.key == "commitment:demo-airport-taxi" }
+        assertEquals(Bookable.Type.GROUND, taxi.type)
+        assertTrue(taxi.resolved)
+        assertFalse(taxi.booked)
+        assertFalse(taxi.due(LocalDate.parse("2028-01-01")))
+        assertTrue(taxi.planningInfo!!.contains("No advance reservation"))
+        val booked = Edits.markBooked(decoded, taxi, Edits.Booked(null, "DEMO", null, null, null, null, null))
+        assertTrue(booked.bookables().single { it.key == taxi.key }.booked)
+        val reopened = Edits.markNotBooked(booked, booked.bookables().single { it.key == taxi.key })
+        assertFalse(reopened.bookables().single { it.key == taxi.key }.settled)
+    }
     private val longBefore = LocalDate.parse("2026-01-01")
     private val trip = Fixtures.iguazu.normalized()
     private val items = trip.bookables()

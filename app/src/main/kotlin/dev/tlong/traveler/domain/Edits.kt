@@ -281,7 +281,7 @@ object Edits {
                 updateActivity(t, b.id) { it.copy(booking = it.booking?.copy(status = "needed")) }
             } else t
         }
-    }
+    }.let { t -> t.copy(planning = t.planning.map { if (it.id == b.key) it.copy(status = "research") else it }) }
 
     private fun updateTransfer(trip: Trip, id: String, f: (Transfer) -> Transfer): Trip =
         trip.copy(transfers = trip.transfers.map { if (it.id == id) f(it) else it })

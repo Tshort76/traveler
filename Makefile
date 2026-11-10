@@ -35,6 +35,7 @@ test: ## JVM tests only (model, merge, editing, UI under Robolectric)
 	@$(GRADLE) testDebugUnitTest
 
 check: tools-test validate ## Everything runnable without a phone (the pre-commit gate)
+	@node --test tools/planner/core.test.js
 	@$(GRADLE) testDebugUnitTest
 
 validate: ## Validate every example trip file

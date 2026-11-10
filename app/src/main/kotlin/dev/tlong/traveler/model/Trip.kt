@@ -37,6 +37,7 @@ data class Trip(
     val transfers: List<Transfer> = emptyList(),
     val activities: List<Activity> = emptyList(),
     val commitments: List<Commitment> = emptyList(),
+    val planning: List<PlanningDetail> = emptyList(),
     val days: List<Day> = emptyList(),
     val notes: List<String> = emptyList(),
     val warnings: List<String> = emptyList(),

@@ -152,6 +152,12 @@
         "hash"
       ],
       "additionalProperties": false
+    },
+    "planning": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/planningDetail"
+      }
     }
   },
   "$defs": {
@@ -1018,6 +1024,87 @@
         },
         "note": {
           "type": "string"
+        }
+      }
+    },
+    "planningDetail": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(lodging|transfer|activity|commitment):.+$"
+        },
+        "type": {
+          "enum": [
+            "lodging",
+            "flight",
+            "transfer",
+            "event"
+          ]
+        },
+        "status": {
+          "enum": [
+            "research",
+            "ready",
+            "resolved"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "nextAction": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "stayId": {
+          "$ref": "#/$defs/id"
+        },
+        "critical": {
+          "type": "boolean"
+        },
+        "flightId": {
+          "$ref": "#/$defs/id"
+        },
+        "journey": {
+          "enum": [
+            "departure",
+            "arrival"
+          ]
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "estimate": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }

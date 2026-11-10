@@ -55,3 +55,16 @@ See [docs/BUILD.md](docs/BUILD.md) for setup.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Desktop logistics planner
+
+Build a self-contained local planner from an exported trip (Node and Python 3 required):
+
+```bash
+python3 tools/make_planner.py /path/to/trip.json --out-dir out/my-planner
+open out/my-planner/index.html
+```
+
+The output directory contains the HTML editor and a `.planner.json` project. Keep personal outputs outside tracked source files. All arrangements are visible initially; click column headers to sort, filter by city/type/status, and use **+** to add a missing arrangement. Selecting a row opens its type-specific details and editable research options. Airport ground journeys are added as unresolved placeholders, with unknown airports explicitly marked for confirmation; connections within a flight record still need review. A reference in imported prose is not proof that ground transport was booked.
+
+**Save JSON** writes the current trip plus its exchange baseline. Supported browsers can save directly to a chosen file; other browsers download JSON. A local browser draft provides recovery, but keep the project file as the durable copy. **Export to Traveler** creates a normal trip revision; import it on the phone, then save the desktop project to retain that exchange baseline. **Import phone edits** compares the phone export with that baseline and your desktop trip, showing conflicting changes before applying them. Wrong-trip files are refused. Research travels in the optional `planning` field, so update the Android app before using this round trip. No network service or Google account is involved.
