@@ -76,6 +76,23 @@ test('editing lodging preserves its imported check-in and check-out times', () =
   assert.equal(t.stays.find(s => s.id === 'palermo').lodging.checkOut, '11:00');
 });
 
+test('row status changes preserve reservation details and do not invent a lodging name', () => {
+  const t = fixture(), original = C.clone(t.transfers[0]);
+  C.setStatus(t, 'transfer:' + original.id, 'resolved');
+  assert.equal(C.rows(t).find(r => r.key === 'transfer:' + original.id).status, 'resolved');
+  assert.deepEqual(t.transfers[0].booking.price, original.booking.price);
+  assert.equal(t.transfers[0].booking.ref, original.booking.ref);
+  C.setStatus(t, 'transfer:' + original.id, 'booked');
+  assert.equal(C.rows(t).find(r => r.key === 'transfer:' + original.id).status, 'booked');
+  C.setStatus(t, 'transfer:' + original.id, 'research');
+  assert.equal(C.rows(t).find(r => r.key === 'transfer:' + original.id).status, 'research');
+  const s = t.stays.find(s => s.id === 'madryn'); delete s.lodging.name;
+  const options = C.clone(s.lodging.options);
+  C.setStatus(t, 'lodging:madryn', 'resolved');
+  assert.equal(s.lodging.name, undefined);
+  assert.deepEqual(s.lodging.options, options);
+});
+
 test('an older phone export cannot silently discard research', () => {
   const b = fixture(), p = C.clone(b); delete p.planning;
   assert.throws(() => C.merge(b, b, p), /omitted planning details/);

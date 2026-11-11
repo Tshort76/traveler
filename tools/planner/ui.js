@@ -38,7 +38,7 @@
     shown.sort((a, b) => { const av = a[sort], bv = b[sort]; if (!av || !bv) return !av === !bv ? 0 : !av ? 1 : -1; return direction * String(av).localeCompare(String(bv)); });
     $('#counts').textContent = `${shown.length} of ${all.length} arrangements shown · ${all.filter(r => !['booked', 'resolved'].includes(r.status)).length} unresolved`;
     $('#list-state').textContent = filter === 'all' && type === 'all' && city === 'all' ? 'All arrangements visible' : `${all.length - shown.length} hidden by filters`;
-    $('#rows').innerHTML = shown.map(r => `<tr class="${r.key === selected ? 'selected' : ''} ${['booked', 'resolved'].includes(r.status) ? 'completed' : ''}"><td><button class="item" data-key="${esc(r.key)}">${esc(r.title)}</button><div class="subline">${esc(r.nextAction || r.how)}</div></td><td>${labels[r.type]}</td><td>${esc(r.city)}</td><td>${fmt(r.date)}</td><td>${fmt(r.bookBy)}</td><td>${labels[r.status]}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">No matching arrangements.</td></tr>';
+    $('#rows').innerHTML = shown.map(r => `<tr class="${r.key === selected ? 'selected' : ''} ${['booked', 'resolved'].includes(r.status) ? 'completed' : ''}"><td><button class="item" data-key="${esc(r.key)}">${esc(r.title)}</button><div class="subline">${esc(r.nextAction || r.how)}</div></td><td>${labels[r.type]}</td><td>${esc(r.city)}</td><td>${fmt(r.date)}</td><td>${fmt(r.bookBy)}</td><td><select class="row-status" data-status-key="${esc(r.key)}" aria-label="Status for ${esc(r.title)}">${C.statuses.map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${labels[s]}</option>`).join('')}</select></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No matching arrangements.</td></tr>';
     if (selected && !shown.some(r => r.key === selected)) selected = null;
     renderDetail(); renderCoverage();
     if (!$('#json-preview').hidden) $('#json-preview').textContent = JSON.stringify(project, null, 2);
@@ -135,6 +135,21 @@
     $('#merge-dialog').showModal();
   }
   $('#rows').onclick = e => { const b = e.target.closest('[data-key]'); if (b && leave()) { selected = b.dataset.key; newDraft = null; render(); } };
+  $('#rows').onchange = e => {
+    const control = e.target.closest('[data-status-key]'); if (!control) return;
+    const key = control.dataset.statusKey, status = control.value;
+    if (!flushForm()) { control.value = C.rows(project.trip).find(r => r.key === key)?.status || 'research'; return; }
+    const row = C.rows(project.trip).find(r => r.key === key);
+    if (row && status === 'booked' && !row.date) {
+      selected = key; newDraft = null; render();
+      $('#edit [name=status]').value = status; formDirty = true; $('#edit [name=date]').focus();
+      message('Choose a date, then Apply changes to record this booking.'); return;
+    }
+    try {
+      const trip = C.clone(project.trip); C.setStatus(trip, key, status); project.trip = trip;
+      changed(); render(); message('Status updated. Save JSON to keep the change in your project file.');
+    } catch (error) { render(); message(error.message, true); }
+  };
   $('#filters').onclick = e => { const b = e.target.closest('[data-filter]'); if (b && leave()) { filter = b.dataset.filter; newDraft = null; render(); } };
   $('#type').onchange = e => { if (leave()) { type = e.target.value; newDraft = null; render(); } else e.target.value = type; };
   $('#city').onchange = e => { if (leave()) { city = e.target.value; newDraft = null; render(); } else e.target.value = city; };

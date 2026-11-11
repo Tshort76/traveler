@@ -117,6 +117,29 @@
     delete t.validated;
     return key;
   }
+  function setStatus(t, key, status) {
+    if (!statuses.includes(status)) throw Error('Choose a valid status.');
+    const row = rows(t).find(r => r.key === key);
+    if (!row) throw Error('Arrangement no longer exists.');
+    if (key.startsWith('activity:')) return edit(t, key, {...row, status});
+    const p = planning(t, row);
+    p.status = status === 'booked' ? 'research' : status;
+    const [kind, id] = key.split(':');
+    if (kind === 'lodging') {
+      const s = stay(t, id);
+      (s.lodging ||= {}).status = status === 'booked' ? 'booked' : 'needed';
+      s.userEdited = [...new Set([...(s.userEdited || []), 'lodging'])];
+    } else if (kind === 'transfer') {
+      const f = t.transfers.find(f => f.id === id);
+      (f.booking ||= {}).status = status === 'booked' ? 'booked' : 'needed';
+    } else {
+      const c = t.commitments.find(c => c.id === id);
+      c.booked = status === 'booked';
+      c.userEdited = [...new Set([...(c.userEdited || []), 'booked'])];
+    }
+    delete t.validated;
+    return key;
+  }
   function add(t, v) {
     validateEdit(v); if (!v.date) throw Error('Choose a travel date.');
     const id = uid(); let key;
@@ -197,7 +220,7 @@
     const t = clone(project.trip); t.revision = Math.max(t.revision || 1, project.lastExchange?.revision || 1) + 1;
     t.generatedAt = new Date().toISOString(); t.generatedBy = 'Traveler desktop planner'; delete t.validated; delete t.exportedFrom; return t;
   }
-  const api = {clone, types, statuses, dateOK, shift, validateTrip, openProject, rows, edit, add, coverage, addAirportJourneys, merge, exportTrip};
+  const api = {clone, types, statuses, dateOK, shift, validateTrip, openProject, rows, edit, setStatus, add, coverage, addAirportJourneys, merge, exportTrip};
   globalThis.PlannerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })();
