@@ -4,7 +4,9 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const labels = {flight: 'Flight', transfer: 'Transfer', lodging: 'Lodging', event: 'Event', research: 'Research needed', ready: 'Ready to book', booked: 'Booked', resolved: 'Resolved'};
   const fmt = s => s ? new Date(s + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '—';
+  const hosted = Boolean(window.PlannerHosted);
   let project = C.openProject(JSON.parse($('#seed').textContent)), selected = null, newDraft = null, editing = false, formDirty = false, dirty = false, filter = 'all', type = 'all', city = 'all', sort = 'date', direction = 1, handle = null, pendingPhone = null;
+  let sharedVersion = window.PlannerHosted?.version, saving = false;
   let filename = project.trip.id + '.planner.json';
   const storageKey = () => 'traveler-planner:' + project.trip.id;
   const fieldSets = {
@@ -135,6 +137,29 @@
   }
   async function saveProject() {
     if (!flushForm()) return;
+    if (hosted) {
+      if (saving) return;
+      saving = true; $('#save').disabled = true;
+      const snapshot = JSON.stringify(project);
+      $('#save-state').textContent = 'Saving…';
+      try {
+        const response = await fetch('/api/project', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({version: sharedVersion, project: JSON.parse(snapshot)})});
+        if (response.status === 409) {
+          $('#save-state').textContent = 'Conflict · draft kept';
+          $('#shared-conflict').showModal(); return;
+        }
+        if (!response.ok) throw Error('Shared save failed (' + response.status + ')');
+        const result = await response.json(); sharedVersion = result.version;
+        dirty = JSON.stringify(project) !== snapshot;
+        $('#save-state').textContent = dirty ? 'Unsaved' : 'Saved';
+        message(dirty ? 'Earlier changes saved. Save again to include your latest edits.' : 'Shared project saved.');
+        if (!dirty) { try { localStorage.removeItem(storageKey()); } catch {} }
+      } catch (e) {
+        dirty = true; draftBackup(); $('#save-state').textContent = 'Unsaved · retry Save';
+        message(e.message + '. Your draft is kept on this device; you can also download a JSON backup.', true);
+      } finally { saving = false; $('#save').disabled = false; }
+      return;
+    }
     try {
       const disk = await saveFile(project, filename, true);
       if (disk) { dirty = false; $('#save-state').textContent = 'Saved'; $('#filename').textContent = filename; message('Project file saved.'); }
@@ -175,7 +200,7 @@
   $('#open').onclick = () => { if (!leave() || (dirty && !confirm('Open another file? Save JSON first if you need to keep this workspace.'))) return; $('#file').click(); };
   $('#file').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
-    try { const next = C.openProject(JSON.parse(await f.text())); project = next; filename = f.name.endsWith('.planner.json') ? f.name : project.trip.id + '.planner.json'; handle = null; dirty = formDirty = false; newDraft = selected = null; filter = type = city = 'all'; $('#restore').hidden = true; $('#save-state').textContent = 'Loaded'; render(); message('File opened.'); checkRecovery(); }
+    try { const next = C.openProject(JSON.parse(await f.text())); project = next; filename = f.name.endsWith('.planner.json') ? f.name : project.trip.id + '.planner.json'; handle = null; dirty = formDirty = false; newDraft = selected = null; filter = type = city = 'all'; $('#restore').hidden = true; $('#save-state').textContent = 'Loaded'; if (hosted) changed(); render(); message(hosted ? 'File opened. Save to replace the shared project.' : 'File opened.'); checkRecovery(); }
     catch (err) { message('Could not open file: ' + err.message, true); }
     finally { e.target.value = ''; }
   };
@@ -211,6 +236,38 @@
     try { project = C.openProject(JSON.parse(localStorage.getItem(storageKey()))); selected = newDraft = null; $('#restore').hidden = true; changed(); render(); message('Browser draft restored. Save to write it to a file.'); } catch (e) { message('Recovery failed: ' + e.message, true); }
   };
   window.addEventListener('beforeunload', e => { if (dirty || formDirty) { e.preventDefault(); e.returnValue = ''; } });
-  $('#save-state').textContent = 'Loaded';
+  if (hosted) {
+    $('#backup').onclick = async () => {
+      if (!flushForm()) return;
+      try { await saveFile(project, filename); } catch (e) { if (e.name !== 'AbortError') message('Backup failed: ' + e.message, true); }
+    };
+    $('#reload-shared').onclick = async () => {
+      if (!leave() || (dirty && !confirm('Replace this device’s edits with the latest shared project? Download a JSON backup first to keep them.'))) return;
+      try {
+        const response = await fetch('/api/project', {cache: 'no-store'});
+        if (!response.ok) throw Error('Could not load shared project (' + response.status + ')');
+        const result = await response.json(), next = C.openProject(result.project);
+        // Keep the replaced draft available through Restore browser draft.
+        project = next; sharedVersion = result.version; dirty = formDirty = false;
+        selected = newDraft = null; editing = false; filter = type = city = 'all';
+        filename = project.trip.id + '.planner.json'; render();
+        $('#save-state').textContent = 'Saved'; $('#shared-conflict').close(); checkRecovery();
+        message('Latest shared project loaded.');
+      } catch (e) { message(e.message, true); }
+    };
+    $('#conflict-backup').onclick = () => $('#backup').click();
+    $('#conflict-reload').onclick = () => $('#reload-shared').click();
+    $('#conflict-close').onclick = () => $('#shared-conflict').close();
+    $('#history').onclick = async () => {
+      try {
+        const response = await fetch('/api/backups', {cache: 'no-store'});
+        if (!response.ok) throw Error('Could not load saved backups');
+        const versions = await response.json();
+        $('#backup-list').innerHTML = versions.map(v => `<p><a href="/api/backups/${v.version}" download>Version ${v.version} · ${esc(v.savedAt)}</a></p>`).join('');
+        $('#backups').showModal();
+      } catch (e) { message(e.message, true); }
+    };
+  }
+  $('#save-state').textContent = hosted ? 'Saved' : 'Loaded';
   render(); checkRecovery();
 })();
