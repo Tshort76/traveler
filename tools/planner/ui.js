@@ -4,7 +4,7 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
   const labels = {flight: 'Flight', transfer: 'Transfer', lodging: 'Lodging', event: 'Event', research: 'Research needed', ready: 'Ready to book', booked: 'Booked', resolved: 'Resolved'};
   const fmt = s => s ? new Date(s + 'T12:00:00').toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) : '—';
-  let project = C.openProject(JSON.parse($('#seed').textContent)), selected = null, newDraft = null, formDirty = false, dirty = false, filter = 'all', type = 'all', city = 'all', sort = 'date', direction = 1, handle = null, pendingPhone = null;
+  let project = C.openProject(JSON.parse($('#seed').textContent)), selected = null, newDraft = null, editing = false, formDirty = false, dirty = false, filter = 'all', type = 'all', city = 'all', sort = 'date', direction = 1, handle = null, pendingPhone = null;
   let filename = project.trip.id + '.planner.json';
   const storageKey = () => 'traveler-planner:' + project.trip.id;
   const fieldSets = {
@@ -38,7 +38,7 @@
     shown.sort((a, b) => { const av = a[sort], bv = b[sort]; if (!av || !bv) return !av === !bv ? 0 : !av ? 1 : -1; return direction * String(av).localeCompare(String(bv)); });
     $('#counts').textContent = `${shown.length} of ${all.length} arrangements shown · ${all.filter(r => !['booked', 'resolved'].includes(r.status)).length} unresolved`;
     $('#list-state').textContent = filter === 'all' && type === 'all' && city === 'all' ? 'All arrangements visible' : `${all.length - shown.length} hidden by filters`;
-    $('#rows').innerHTML = shown.map(r => `<tr class="${r.key === selected ? 'selected' : ''} ${['booked', 'resolved'].includes(r.status) ? 'completed' : ''}"><td><button class="item" data-key="${esc(r.key)}">${esc(r.title)}</button><div class="subline">${esc(r.nextAction || r.how)}</div></td><td>${labels[r.type]}</td><td><input class="row-note" data-note-key="${esc(r.key)}" aria-label="Short note for ${esc(r.title)}" value="${esc(r.shortNote || (r.type === 'transfer' ? r.mode : ''))}" placeholder="${r.type === 'transfer' ? 'bus, taxi, shuttle…' : 'Short note…'}" maxlength="100"></td><td>${esc(r.city)}</td><td>${fmt(r.date)}</td><td>${fmt(r.bookBy)}</td><td><select class="row-status" data-status-key="${esc(r.key)}" aria-label="Status for ${esc(r.title)}">${C.statuses.map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${labels[s]}</option>`).join('')}</select></td></tr>`).join('') || '<tr><td colspan="7" class="empty">No matching arrangements.</td></tr>';
+    $('#rows').innerHTML = shown.map(r => `<tr class="${r.key === selected ? 'selected' : ''} ${['booked', 'resolved'].includes(r.status) ? 'completed' : ''}"><td><div class="row-title"><button class="item" data-key="${esc(r.key)}">${esc(r.title)}</button><button class="row-details" data-details-key="${esc(r.key)}" aria-label="Details for ${esc(r.title)}">Details</button></div><div class="subline">${esc(r.shortNote || (r.type === 'transfer' ? r.mode : '') || r.nextAction || r.how)}</div></td><td>${labels[r.type]}</td><td>${esc(r.city)}</td><td>${fmt(r.date)}</td><td>${fmt(r.bookBy)}</td><td><select class="row-status" data-status-key="${esc(r.key)}" aria-label="Status for ${esc(r.title)}">${C.statuses.map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${labels[s]}</option>`).join('')}</select></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No matching arrangements.</td></tr>';
     if (selected && !shown.some(r => r.key === selected)) selected = null;
     renderDetail(); renderCoverage();
     if (!$('#json-preview').hidden) $('#json-preview').textContent = JSON.stringify(project, null, 2);
@@ -46,12 +46,12 @@
   function input(label, name, value, kind = 'text', attrs = '') { return `<label>${label}<input name="${name}" type="${kind}" value="${esc(value)}" ${attrs}></label>`; }
   function stayOptions(current, allowEmpty = true) { return (allowEmpty ? '<option value="">Unassigned</option>' : '') + project.trip.stays.map(s => `<option value="${esc(s.id)}" ${s.id === current ? 'selected' : ''}>${esc(s.name)} · ${fmt(s.arrive)}–${fmt(s.depart)}</option>`).join(''); }
   function renderDetail() {
-    const r = newDraft || C.rows(project.trip).find(r => r.key === selected);
-    $('#detail').hidden = !r; $('#layout').classList.toggle('closed', !r); if (!r) return;
+    const r = editing ? newDraft || C.rows(project.trip).find(r => r.key === selected) : null;
+    if (!r) { editing = false; if ($('#detail').open) $('#detail').close(); return; }
     const isNew = newDraft && !newDraft.existing;
     const fields = [...new Set([...fieldSets[r.type], ...Object.keys(r.fields || {})])].filter(k => !['Short note', 'Method'].includes(k));
     const source = r.key?.split(':')[0];
-    $('#detail').innerHTML = `<div class="detail-label"><h2>${isNew ? 'New arrangement' : esc(r.title)}</h2><button class="drawer-close" id="close-detail" aria-label="Close details">×</button></div><form id="edit">
+    $('#detail').innerHTML = `<div class="detail-label"><h2>${isNew ? 'New arrangement' : esc(r.title)}</h2><button class="drawer-close" id="close-detail" aria-label="Close details">×</button></div><form id="edit"><div class="detail-body">
       <label>Type<select name="type" ${isNew ? 'id="new-type"' : 'disabled'}>${C.types.map(t => `<option value="${t}" ${t === r.type ? 'selected' : ''}>${labels[t]}</option>`).join('')}</select></label>
       ${input('Title', 'title', r.title, 'text', 'required')}${input('Short note', 'shortNote', r.shortNote)}
       ${r.type === 'transfer' ? `<label>Method<select name="mode"><option value="">Unspecified</option>${['bus', 'train', 'taxi', 'shuttle', 'car', 'boat', 'ferry', 'hike', 'other'].map(m => `<option value="${m}" ${r.mode === m ? 'selected' : ''}>${m[0].toUpperCase() + m.slice(1)}</option>`).join('')}</select></label>` : ''}
@@ -71,11 +71,12 @@
       <label>${r.type === 'flight' || r.type === 'transfer' ? 'Travel details' : 'Booking notes'}<textarea name="sourceNotes" rows="3">${esc(r.sourceNotes)}</textarea></label>
       ${r.how ? `<details><summary>Booking guidance</summary><div class="source-notes">${esc(r.how)}</div></details>` : ''}
       <h3>Research options</h3><div id="options">${r.options.map((o, i) => `<div class="options-editor" data-option="${i}"><div class="option-head"><span class="quiet">Option ${i + 1}</span><button type="button" data-remove-option="${i}" aria-label="Remove option ${i + 1}">×</button></div>${input('Name', `option:${i}:name`, o.name, 'text', 'required')}${input('Link', `option:${i}:url`, o.url, 'url')}${input('Estimate', `option:${i}:estimate`, o.estimate)}<label>Notes<textarea name="option:${i}:notes" rows="2">${esc(o.notes)}</textarea></label></div>`).join('')}</div>
-      <div class="actions"><button type="submit" class="primary">${isNew ? 'Create arrangement' : 'Apply changes'}</button><button type="button" id="add-option" aria-label="Add research option">+</button></div><p id="detail-error" role="alert"></p></form>`;
+      <div class="actions option-action"><button type="button" id="add-option" aria-label="Add research option">+ Option</button></div></div><div class="actions detail-actions"><button type="submit" class="primary">${isNew ? 'Create arrangement' : 'Apply & close'}</button><button type="button" id="cancel-detail">Cancel</button></div><p id="detail-error" role="alert"></p></form>`;
+    if (!$('#detail').open) { $('#detail').showModal(); $('#detail .detail-body').scrollTop = 0; }
     $('#edit').oninput = () => { formDirty = true; };
     $('#edit').onchange = () => { formDirty = true; };
     $('#edit').onsubmit = e => { e.preventDefault(); applyForm(); };
-    $('#close-detail').onclick = () => { if (!leave()) return; selected = null; newDraft = null; render(); };
+    $('#close-detail').onclick = closeDetails; $('#cancel-detail').onclick = closeDetails;
     const refreshDraft = change => { const v = captureForm(); change(v); if (newDraft) newDraft = v; else { newDraft = {...v, key: r.key, existing: true}; selected = null; } formDirty = true; renderDetail(); };
     $('#add-option').onclick = () => refreshDraft(v => v.options.push({name: '', url: '', estimate: '', notes: ''}));
     $('#options').onclick = e => { const b = e.target.closest('[data-remove-option]'); if (b) refreshDraft(v => v.options.splice(Number(b.dataset.removeOption), 1)); };
@@ -98,13 +99,24 @@
     if (!$('#edit')) return true;
     if (!$('#edit').reportValidity()) return false;
     try {
-      const value = captureForm(), trip = C.clone(project.trip);
+      const value = captureForm(), trip = C.clone(project.trip), wasNew = newDraft && !newDraft.existing;
       const key = newDraft && !newDraft.existing ? C.add(trip, value) : C.edit(trip, value.key, value);
-      project.trip = trip; selected = key; newDraft = null; formDirty = false; changed();
+      project.trip = trip; selected = key; newDraft = null; editing = false; formDirty = false; changed();
       // A newly created item must not disappear behind the current filters.
-      filter = 'all'; type = 'all'; city = 'all'; render(); message('Arrangement updated. Use Save to keep your changes.'); return true;
+      if (wasNew) { filter = 'all'; type = 'all'; city = 'all'; }
+      render(); returnToRow(key); message('Arrangement updated. Use Save to keep your changes.'); return true;
     } catch (e) { $('#detail-error').textContent = e.message; return false; }
   }
+  function returnToRow(key = selected) {
+    const rowButton = [...document.querySelectorAll('[data-details-key]')].find(b => b.dataset.detailsKey === key);
+    if (rowButton) { rowButton.focus({preventScroll: true}); rowButton.scrollIntoView({block: 'nearest'}); }
+    else $('#add').focus({preventScroll: true});
+  }
+  function closeDetails() {
+    if (!leave()) return;
+    editing = false; newDraft = null; render(); returnToRow();
+  }
+  $('#detail').addEventListener('cancel', e => { e.preventDefault(); closeDetails(); });
   function flushForm() { return !formDirty || applyForm(); }
   function renderCoverage() {
     const checks = C.coverage(project.trip), missing = checks.filter(x => !x.row).length;
@@ -136,22 +148,14 @@
     $('#merge-body').innerHTML = result.conflicts.map((c, i) => `<div class="conflict"><strong>${esc(c.path)}</strong><div class="pair"><div><div class="quiet">Desktop</div><pre>${esc(c.local === undefined ? '(removed)' : JSON.stringify(c.local, null, 2))}</pre></div><div><div class="quiet">Phone</div><pre>${esc(c.phone === undefined ? '(removed)' : JSON.stringify(c.phone, null, 2))}</pre></div></div><select data-conflict="${esc(c.path)}" aria-label="Conflict ${i + 1}"><option value="local">Keep desktop</option><option value="phone">Use phone</option></select></div>`).join('');
     $('#merge-dialog').showModal();
   }
-  $('#rows').onclick = e => { const b = e.target.closest('[data-key]'); if (b && leave()) { selected = b.dataset.key; newDraft = null; render(); } };
+  $('#rows').onclick = e => { const b = e.target.closest('[data-key], [data-details-key]'); if (b && leave()) { selected = b.dataset.key || b.dataset.detailsKey; newDraft = null; editing = true; render(); } };
   $('#rows').onchange = e => {
-    const note = e.target.closest('[data-note-key]');
-    if (note) {
-      const key = note.dataset.noteKey, value = note.value;
-      if (!flushForm()) return;
-      try { const trip = C.clone(project.trip); C.setNote(trip, key, value); project.trip = trip; changed(); render(); }
-      catch (error) { message(error.message, true); }
-      return;
-    }
     const control = e.target.closest('[data-status-key]'); if (!control) return;
     const key = control.dataset.statusKey, status = control.value;
     if (!flushForm()) { control.value = C.rows(project.trip).find(r => r.key === key)?.status || 'research'; return; }
     const row = C.rows(project.trip).find(r => r.key === key);
     if (row && status === 'booked' && !row.date) {
-      selected = key; newDraft = null; render();
+      selected = key; newDraft = null; editing = true; render();
       $('#edit [name=status]').value = status; formDirty = true; $('#edit [name=date]').focus();
       message('Choose a date, then Apply changes to record this booking.'); return;
     }
@@ -161,12 +165,11 @@
     } catch (error) { render(); message(error.message, true); }
   };
   $('#filter').onchange = e => { if (leave()) { filter = e.target.value; newDraft = null; render(); } else e.target.value = filter; };
-  $('#rows').onkeydown = e => { if (e.key === 'Enter' && e.target.matches('[data-note-key]')) { e.preventDefault(); e.target.blur(); } };
   $('#type').onchange = e => { if (leave()) { type = e.target.value; newDraft = null; render(); } else e.target.value = type; };
   $('#city').onchange = e => { if (leave()) { city = e.target.value; newDraft = null; render(); } else e.target.value = city; };
   $('thead').onclick = e => { const b = e.target.closest('[data-sort]'); if (!b || !leave()) return; direction = sort === b.dataset.sort ? -direction : 1; sort = b.dataset.sort; render(); };
-  $('#add').onclick = () => { if (!leave()) return; selected = null; newDraft = {type: 'transfer', title: '', date: project.trip.startDate, bookBy: '', stayId: '', status: 'research', critical: true, nextAction: '', ref: '', url: '', notes: '', fields: {}, options: []}; render(); $('#detail').scrollIntoView({block: 'nearest'}); };
-  $('#checks').onclick = e => { const b = e.target.closest('[data-coverage-key]'); if (b && leave()) { selected = b.dataset.coverageKey; newDraft = null; filter = type = city = 'all'; render(); $('#detail').scrollIntoView({block: 'nearest'}); } };
+  $('#add').onclick = () => { if (!leave()) return; selected = null; editing = true; newDraft = {type: 'transfer', title: '', date: project.trip.startDate, bookBy: '', stayId: '', status: 'research', critical: true, nextAction: '', ref: '', url: '', notes: '', fields: {}, options: []}; render(); };
+  $('#checks').onclick = e => { const b = e.target.closest('[data-coverage-key]'); if (b && leave()) { selected = b.dataset.coverageKey; newDraft = null; editing = true; $('#coverage').close(); filter = type = city = 'all'; render(); } };
   $('#fill-gaps').onclick = () => { if (!flushForm()) return; const n = C.addAirportJourneys(project.trip); changed(); render(); message(`${n} airport journey row(s) added or linked. Research and reservation status have not been inferred.`); };
   $('#save').onclick = saveProject;
   $('#open').onclick = () => { if (!leave() || (dirty && !confirm('Open another file? Save JSON first if you need to keep this workspace.'))) return; $('#file').click(); };
