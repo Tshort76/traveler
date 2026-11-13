@@ -98,3 +98,61 @@ test('an older phone export cannot silently discard research', () => {
   assert.throws(() => C.merge(b, b, p), /omitted planning details/);
   assert.throws(() => C.merge({...b, revision: 2}, {...b, revision: 2}, b), /predates/);
 });
+
+test('flight edits write native airports, times, cost and confirmation and remove stale coordinates', () => {
+  const p = C.openProject(fixture()), row = C.rows(p.trip).find(r => r.key === 'transfer:fly-south');
+  C.edit(p.trip, row.key, {...row, status: 'booked', start: '09:10', end: '11:25', ref: 'DEMO-FLIGHT', price: {amount: 245, currency: 'USD'}, sourceNotes: 'Demo airline flight 123; one checked bag.', fields: {...row.fields, 'Departure airport': 'Different departure airport', 'Arrival airport': 'Different arrival airport'}});
+  const f = C.exportTrip(p).transfers.find(t => t.id === 'fly-south');
+  assert.equal(f.depart, '09:10'); assert.equal(f.arrive, '11:25');
+  assert.equal(f.fromPlace.name, 'Different departure airport'); assert.equal(f.toPlace.name, 'Different arrival airport');
+  assert.equal(f.fromPlace.lat, undefined); assert.equal(f.toPlace.lng, undefined);
+  assert.equal(f.booking.ref, 'DEMO-FLIGHT'); assert.equal(f.booking.price.amount, 245);
+  assert.equal(f.details, 'Demo airline flight 123; one checked bag.');
+});
+
+test('unchanged native places keep their coordinates while lodging and old ground bookings accept real details', () => {
+  const t = fixture(), flight = t.transfers.find(f => f.id === 'fly-south'), before = C.clone(flight.fromPlace);
+  const r = C.rows(t).find(r => r.key === 'transfer:fly-south'); C.edit(t, r.key, {...r});
+  assert.deepEqual(flight.fromPlace, before);
+  const room = C.rows(t).find(r => r.key === 'lodging:palermo');
+  C.edit(t, room.key, {...room, fields: {...room.fields, Address: '123 Demo Street'}, sourceNotes: 'Entry code in confirmation.'});
+  assert.equal(t.stays.find(s => s.id === 'palermo').lodging.place.query, '123 Demo Street');
+  assert.equal(t.stays.find(s => s.id === 'palermo').lodging.place.address, '123 Demo Street');
+  assert.equal(t.stays.find(s => s.id === 'palermo').lodging.notes, 'Entry code in confirmation.');
+  const ground = C.rows(t).find(r => r.key === 'commitment:demo-airport-taxi');
+  C.edit(t, ground.key, {...ground, mode: 'taxi', start: '14:30', ref: 'DEMO-TAXI', fields: {...ground.fields, Pickup: 'Arrival hall'}, sourceNotes: 'Driver meets at the exit.'});
+  const c = t.commitments.find(c => c.id === 'demo-airport-taxi');
+  assert.equal(c.start, '14:30'); assert.equal(c.ref, 'DEMO-TAXI');
+  assert.equal(c.place.name, 'Arrival hall'); assert.equal(c.notes, 'Driver meets at the exit.');
+});
+
+test('lodging address fields prefer the address over the property name and preserve unchanged coordinates', () => {
+  const t = fixture(), s = t.stays.find(s => s.id === 'palermo');
+  s.lodging.place = {name: 'Demo property', address: '123 Demo Street', query: '123 Demo Street', lat: -34.5, lng: -58.4};
+  const before = C.clone(s.lodging.place), r = C.rows(t).find(r => r.key === 'lodging:palermo');
+  assert.equal(r.fields.Address, '123 Demo Street');
+  C.edit(t, r.key, {...r}); assert.deepEqual(s.lodging.place, before);
+});
+
+test('short method notes set transfer mode without replacing existing travel details', () => {
+  const t = fixture(), f = t.transfers.find(f => f.id === 'taxi-across'), details = f.details;
+  C.setNote(t, 'transfer:taxi-across', 'shuttle');
+  assert.equal(f.mode, 'bus'); assert.equal(f.details, details);
+  const r = C.rows(t).find(r => r.key === 'transfer:taxi-across');
+  assert.equal(r.shortNote, 'shuttle'); assert.equal(r.mode, 'shuttle');
+  C.setNote(t, 'transfer:taxi-across', 'Ask hotel about pickup');
+  assert.equal(f.mode, 'bus'); assert.equal(f.details, details);
+});
+
+test('legacy airport notes are promoted on export but do not replace newer native phone edits', () => {
+  const p = C.openProject(fixture()), f = p.trip.transfers.find(f => f.id === 'fly-south');
+  delete f.fromPlace;
+  const meta = p.trip.planning.find(p => p.id === 'transfer:fly-south');
+  meta.fields['Departure airport'] = 'Legacy departure airport';
+  meta.fields['Arrival airport'] = 'Stale arrival airport';
+  const out = C.exportTrip(p), saved = out.transfers.find(f => f.id === 'fly-south');
+  assert.equal(saved.fromPlace.name, 'Legacy departure airport');
+  assert.equal(saved.toPlace.name, f.toPlace.name);
+  assert.equal(out.planning.find(p => p.id === meta.id).fields['Arrival airport'], undefined);
+  assert.equal(p.trip.transfers.find(f => f.id === 'fly-south').fromPlace, undefined);
+});

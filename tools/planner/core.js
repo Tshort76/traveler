@@ -2,6 +2,9 @@
 (() => {
   const clone = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   const types = ['flight', 'transfer', 'lodging', 'event'];
+  const modes = {bus: 'bus', train: 'train', taxi: 'taxi', shuttle: 'bus', car: 'car', boat: 'boat', ferry: 'ferry', hike: 'hike', other: 'other'};
+  const placeText = p => p?.name || p?.address || p?.query || '';
+  const updatePlace = (value, old, address = false) => { const text = (value || '').trim(), previous = address ? old?.address || old?.query || old?.name || '' : placeText(old); return text === previous ? clone(old) : text ? {...(address ? {address: text} : {name: text}), query: text} : undefined; };
   const statuses = ['research', 'ready', 'booked', 'resolved'];
   const dateOK = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s;
   const shift = (s, days) => { if (!dateOK(s)) return ''; const d = new Date(s); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };
@@ -37,18 +40,18 @@
     const out = [], details = new Map((t.planning || []).map(p => [p.id, p]));
     function add(key, type, title, date, stayId, booking, extra = {}) {
       const p = details.get(key) || {}, booked = booking?.status === 'booked';
-      out.push({key, type: p.type || type, title: p.title || title, date: date || '', stayId: p.stayId || stayId || '', city: stay(t, p.stayId || stayId)?.name || 'Unassigned', bookBy: booking?.bookDaysBefore != null && date ? shift(date, -booking.bookDaysBefore) : '', status: booked ? 'booked' : p.status || 'research', ref: booking?.ref || '', url: booking?.url || '', price: clone(booking?.price), how: booking?.how || '', nextAction: p.nextAction || '', notes: p.notes || '', fields: clone(p.fields || extra.defaultFields || {}), options: clone(p.options || extra.defaultOptions || []), critical: p.critical ?? type !== 'event', flightId: p.flightId || '', journey: p.journey || '', ...extra});
+      out.push({key, type: p.type || type, title: p.title || title, date: date || '', stayId: p.stayId || stayId || '', city: stay(t, p.stayId || stayId)?.name || 'Unassigned', bookBy: booking?.bookDaysBefore != null && date ? shift(date, -booking.bookDaysBefore) : '', status: booked ? 'booked' : p.status || 'research', ref: booking?.ref || '', url: booking?.url || '', price: clone(booking?.price), how: booking?.how || '', nextAction: p.nextAction || '', notes: p.notes || '', fields: {...clone(extra.defaultFields || {}), ...clone(p.fields || {}), ...clone(extra.nativeFields || {})}, shortNote: p.fields?.['Short note'] || '', options: clone(p.options || extra.defaultOptions || []), critical: p.critical ?? type !== 'event', flightId: p.flightId || '', journey: p.journey || '', ...extra, mode: p.fields?.Method && (!extra.mode || modes[p.fields.Method] === extra.mode) ? p.fields.Method : extra.mode || ''});
     }
-    for (const s of t.stays) if (s.arrive !== s.depart) add('lodging:' + s.id, 'lodging', s.lodging?.name || 'Lodging in ' + s.name, s.arrive, s.id, s.lodging, {defaultFields: {'Address': s.lodging?.place?.address || s.lodging?.place?.query || ''}, defaultOptions: (s.lodging?.options || []).map(o => ({name: o.name, url: o.url || '', estimate: o.price ? [o.price.amount + (o.price.max ? '–' + o.price.max : ''), o.price.currency || 'USD', o.price.unit || 'total'].join(' ') : '', notes: [o.type, o.room, o.area, o.rating ? o.rating.score + ' ' + o.rating.source : '', o.pro, o.con].filter(Boolean).join(' · ')})), endDate: s.depart, start: s.lodging?.checkIn || '', end: s.lodging?.checkOut || '', sourceNotes: s.lodging?.notes || ''});
-    for (const f of t.transfers || []) if (f.booking?.status !== 'onsite') add('transfer:' + f.id, f.mode === 'flight' ? 'flight' : 'transfer', (stay(t, f.from)?.name || f.from) + ' → ' + (stay(t, f.to)?.name || f.to), f.date, stay(t, f.to)?.arrive !== stay(t, f.to)?.depart ? f.to : f.from, f.booking, {defaultFields: f.mode === 'flight' ? {'Departure airport': f.fromPlace?.name || '', 'Arrival airport': f.toPlace?.name || ''} : {'Pickup': f.fromPlace?.name || '', 'Drop-off': f.toPlace?.name || ''}, start: f.depart || '', end: f.arrive || '', from: f.from, to: f.to, fromPlace: f.fromPlace?.name || '', toPlace: f.toPlace?.name || '', sourceNotes: f.details || ''});
+    for (const s of t.stays) if (s.arrive !== s.depart) add('lodging:' + s.id, 'lodging', s.lodging?.name || 'Lodging in ' + s.name, s.arrive, s.id, s.lodging, {defaultFields: {'Address': s.lodging?.place?.address || s.lodging?.place?.query || ''}, defaultOptions: (s.lodging?.options || []).map(o => ({name: o.name, url: o.url || '', estimate: o.price ? [o.price.amount + (o.price.max ? '–' + o.price.max : ''), o.price.currency || 'USD', o.price.unit || 'total'].join(' ') : '', notes: [o.type, o.room, o.area, o.rating ? o.rating.score + ' ' + o.rating.source : '', o.pro, o.con].filter(Boolean).join(' · ')})), endDate: s.depart, start: s.lodging?.checkIn || '', end: s.lodging?.checkOut || '', sourceNotes: s.lodging?.notes || '', nativeFields: s.lodging?.place ? {Address: s.lodging.place.address || s.lodging.place.query || s.lodging.place.name || ''} : {}});
+    for (const f of t.transfers || []) if (f.booking?.status !== 'onsite') add('transfer:' + f.id, f.mode === 'flight' ? 'flight' : 'transfer', (stay(t, f.from)?.name || f.from) + ' → ' + (stay(t, f.to)?.name || f.to), f.date, stay(t, f.to)?.arrive !== stay(t, f.to)?.depart ? f.to : f.from, f.booking, {defaultFields: f.mode === 'flight' ? {'Departure airport': f.fromPlace?.name || '', 'Arrival airport': f.toPlace?.name || ''} : {'Pickup': f.fromPlace?.name || '', 'Drop-off': f.toPlace?.name || ''}, start: f.depart || '', end: f.arrive || '', from: f.from, to: f.to, fromPlace: placeText(f.fromPlace), toPlace: placeText(f.toPlace), mode: f.mode || '', sourceNotes: f.details || '', nativeFields: {...(f.fromPlace ? {[f.mode === 'flight' ? 'Departure airport' : 'Pickup']: placeText(f.fromPlace)} : {}), ...(f.toPlace ? {[f.mode === 'flight' ? 'Arrival airport' : 'Drop-off']: placeText(f.toPlace)} : {})}});
     const folded = new Set();
     for (const a of t.activities || []) if (a.booking && a.booking.status !== 'onsite') {
       const c = (t.commitments || []).find(c => c.activityId === a.id && c.booked);
       const d = (t.days || []).find(d => (d.plan || []).some(p => p.activityId === a.id));
-      add('activity:' + a.id, 'event', c?.title || a.name, c?.date || d?.date, a.stayId, c ? {...a.booking, ...c, status: 'booked'} : a.booking, {start: c?.start || '', end: c?.end || '', commitmentId: c?.id, sourceNotes: c?.notes || a.practical?.booking || ''});
+      add('activity:' + a.id, 'event', c?.title || a.name, c?.date || d?.date, a.stayId, c ? {...a.booking, ...c, status: 'booked'} : a.booking, {start: c?.start || '', end: c?.end || '', commitmentId: c?.id, sourceNotes: c?.notes || a.practical?.booking || '', nativeFields: (c?.place || a.place) ? {'Venue / operator': placeText(c?.place || a.place)} : {}});
       folded.add(a.id);
     }
-    for (const c of t.commitments || []) if ((c.kind === 'booking' || c.booked) && !folded.has(c.activityId)) add('commitment:' + c.id, 'event', c.title, c.date, c.stayId, {...c, status: c.booked ? 'booked' : 'needed'}, {start: c.start || '', end: c.end || '', sourceNotes: c.notes || ''});
+    for (const c of t.commitments || []) if ((c.kind === 'booking' || c.booked) && !folded.has(c.activityId)) add('commitment:' + c.id, 'event', c.title, c.date, c.stayId, {...c, status: c.booked ? 'booked' : 'needed'}, {start: c.start || '', end: c.end || '', sourceNotes: c.notes || '', nativeFields: c.place ? {[details.get('commitment:' + c.id)?.type === 'transfer' ? 'Pickup' : 'Venue / operator']: placeText(c.place)} : {}});
     return out;
   }
   function planning(t, row) {
@@ -59,6 +62,7 @@
   }
   function validateEdit(v) {
     if (!types.includes(v.type) || !statuses.includes(v.status) || !v.title.trim()) throw Error('Choose a type, title and status.');
+    if (v.type === 'transfer' && v.mode && !Object.hasOwn(modes, v.mode)) throw Error('Choose a valid transfer method.');
     if (v.date && !dateOK(v.date)) throw Error('Travel date is invalid.');
     if (v.bookBy && (!dateOK(v.bookBy) || !v.date || v.bookBy > v.date)) throw Error('Book-by date needs a travel date and cannot follow it.');
     for (const k of ['start', 'end']) if (v[k] && !/^([01]\d|2[0-3]):[0-5]\d$/.test(v[k])) throw Error('Use 24-hour times.');
@@ -74,6 +78,8 @@
     const [kind, id] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
     const p = planning(t, row);
     Object.assign(p, {type: v.type, title: kind === 'transfer' ? v.title.trim() : undefined, status: v.status === 'booked' ? 'research' : v.status, stayId: v.stayId || undefined, critical: v.critical, nextAction: v.nextAction || undefined, notes: v.notes || undefined, fields: clone(v.fields || {}), options: clone(v.options || []), flightId: v.flightId || undefined, journey: v.journey || undefined});
+    if (v.shortNote) p.fields['Short note'] = v.shortNote.trim(); else delete p.fields['Short note'];
+    if (v.type === 'transfer' && v.mode) p.fields.Method = v.mode; else delete p.fields.Method;
     function booking(b) {
       const out = {...b, status: v.status === 'booked' ? 'booked' : 'needed'};
       for (const k of ['ref', 'url']) if (v[k]) out[k] = v[k]; else delete out[k];
@@ -86,25 +92,32 @@
       const s = stay(t, id);
       // Stay dates are itinerary boundaries, not just booking fields.
       if (v.date !== s.arrive) throw Error('Change the stay dates in the itinerary before changing lodging check-in.');
-      s.lodging = {...booking(s.lodging), name: v.title.trim(), checkIn: v.start || undefined, checkOut: v.end || undefined}; mark(s, ['lodging']);
+      s.lodging = {...booking(s.lodging), name: !s.lodging?.name && v.title.trim() === row.title ? undefined : v.title.trim(), checkIn: v.start || undefined, checkOut: v.end || undefined, notes: v.sourceNotes || undefined, place: updatePlace(v.fields?.Address, s.lodging?.place, true)}; delete p.fields.Address; mark(s, ['lodging']);
     } else if (kind === 'transfer') {
       const f = t.transfers.find(f => f.id === id); if (!v.date) throw Error('A transfer needs a travel date.');
       f.date = v.date; f.depart = v.start || undefined; f.arrive = v.end || undefined; f.booking = booking(f.booking);
+      const fromLabel = v.type === 'flight' ? 'Departure airport' : 'Pickup', toLabel = v.type === 'flight' ? 'Arrival airport' : 'Drop-off';
+      f.fromPlace = updatePlace(v.fields?.[fromLabel], f.fromPlace); f.toPlace = updatePlace(v.fields?.[toLabel], f.toPlace);
+      delete p.fields[fromLabel]; delete p.fields[toLabel];
+      if (v.type === 'transfer') f.mode = modes[v.mode] || undefined;
+      f.details = v.sourceNotes || undefined;
     } else if (kind === 'commitment') {
       const c = t.commitments.find(c => c.id === id); if (!v.date) throw Error('An arrangement needs a travel date.');
       const b = booking(c); delete b.status;
-      Object.assign(c, b, {title: v.title.trim(), date: v.date, stayId: v.stayId || undefined, start: v.start || undefined, end: v.end || undefined, booked: v.status === 'booked'});
+      Object.assign(c, b, {title: v.title.trim(), date: v.date, stayId: v.stayId || undefined, start: v.start || undefined, end: v.end || undefined, booked: v.status === 'booked', notes: v.sourceNotes || undefined, place: updatePlace(v.fields?.[v.type === 'transfer' ? 'Pickup' : 'Venue / operator'], c.place)});
+      delete p.fields[v.type === 'transfer' ? 'Pickup' : 'Venue / operator'];
       // Object.assign cannot remove optional fields cleared in the form.
       for (const k of ['ref', 'url', 'price', 'bookDaysBefore', 'priority']) if (!(k in b)) delete c[k];
-      mark(c, ['title', 'date', 'stayId', 'start', 'end', 'booked', 'ref', 'url', 'price', 'bookDaysBefore']);
+      mark(c, ['title', 'date', 'stayId', 'start', 'end', 'booked', 'ref', 'url', 'price', 'bookDaysBefore', 'notes', 'place']);
     } else {
-      const a = t.activities.find(a => a.id === id); a.name = v.title.trim(); a.booking = booking(a.booking); mark(a, ['name', 'booking']);
+      const a = t.activities.find(a => a.id === id); a.name = v.title.trim(); a.booking = booking(a.booking); a.place = updatePlace(v.fields?.['Venue / operator'], a.place); delete p.fields['Venue / operator']; mark(a, ['name', 'booking', 'place']);
       const linked = (t.commitments || []).filter(c => c.activityId === id);
+      if (v.status !== 'booked') { a.practical = {...a.practical, booking: v.sourceNotes || undefined}; mark(a, ['practical']); }
       for (const c of linked) { c.booked = v.status === 'booked'; mark(c, ['booked']); }
       if (v.status === 'booked') {
         if (!v.date) throw Error('A booked activity needs a date.');
         let c = linked[0]; if (!c) { c = {id: uid(), kind: 'booking', activityId: id, origin: 'user'}; (t.commitments ||= []).push(c); }
-        Object.assign(c, {title: v.title, date: v.date, stayId: v.stayId || a.stayId, start: v.start || undefined, end: v.end || undefined, ref: v.ref || undefined, url: v.url || undefined, price: clone(v.price), booked: true});
+        Object.assign(c, {title: v.title, date: v.date, stayId: v.stayId || a.stayId, start: v.start || undefined, end: v.end || undefined, ref: v.ref || undefined, url: v.url || undefined, price: clone(v.price), notes: v.sourceNotes || undefined, place: clone(a.place), booked: true});
       } else if (v.date !== row.date) {
         if (v.date) {
           let d = (t.days || []).find(d => d.date === v.date);
@@ -116,6 +129,18 @@
     }
     delete t.validated;
     return key;
+  }
+  function setNote(t, key, text) {
+    const row = rows(t).find(r => r.key === key); if (!row) throw Error('Arrangement no longer exists.');
+    const p = planning(t, row); p.fields ||= {};
+    const note = String(text).trim();
+    if (note) p.fields['Short note'] = note; else delete p.fields['Short note'];
+    const method = note.toLowerCase();
+    if (row.type === 'transfer' && Object.hasOwn(modes, method)) {
+      p.fields.Method = method;
+      if (key.startsWith('transfer:')) t.transfers.find(f => 'transfer:' + f.id === key).mode = modes[method];
+    }
+    delete t.validated;
   }
   function setStatus(t, key, status) {
     if (!statuses.includes(status)) throw Error('Choose a valid status.');
@@ -217,10 +242,25 @@
     return {trip, conflicts};
   }
   function exportTrip(project) {
-    const t = clone(project.trip); t.revision = Math.max(t.revision || 1, project.lastExchange?.revision || 1) + 1;
+    const t = clone(project.trip);
+    for (const p of t.planning || []) {
+      const fields = p.fields || {};
+      if (p.id.startsWith('transfer:')) {
+        const f = (t.transfers || []).find(f => 'transfer:' + f.id === p.id); if (!f) continue;
+        for (const [label, field] of [[p.type === 'flight' ? 'Departure airport' : 'Pickup', 'fromPlace'], [p.type === 'flight' ? 'Arrival airport' : 'Drop-off', 'toPlace']]) {
+          if (!f[field] && fields[label]) f[field] = updatePlace(fields[label]);
+          delete fields[label];
+        }
+      } else if (p.id.startsWith('lodging:')) {
+        const s = t.stays.find(s => 'lodging:' + s.id === p.id);
+        if (s?.lodging && !s.lodging.place && fields.Address) s.lodging.place = updatePlace(fields.Address, undefined, true);
+        delete fields.Address;
+      }
+    }
+    t.revision = Math.max(t.revision || 1, project.lastExchange?.revision || 1) + 1;
     t.generatedAt = new Date().toISOString(); t.generatedBy = 'Traveler desktop planner'; delete t.validated; delete t.exportedFrom; return t;
   }
-  const api = {clone, types, statuses, dateOK, shift, validateTrip, openProject, rows, edit, setStatus, add, coverage, addAirportJourneys, merge, exportTrip};
+  const api = {clone, types, statuses, dateOK, shift, validateTrip, openProject, rows, edit, setStatus, setNote, add, coverage, addAirportJourneys, merge, exportTrip};
   globalThis.PlannerCore = api;
   if (typeof module !== 'undefined') module.exports = api;
 })();
