@@ -10,7 +10,7 @@ An offline-first Android travel companion: turn an assistant’s travel ideas in
 | **Stay** | A visit to one destination, with arrival/departure dates, lodging and a pool of activities. |
 | **Activity** | Something you could do. It can remain an idea until you give it a place in a day. |
 | **Itinerary** | Your day-by-day plan: selected activities alongside travel, bookings and work time. |
-| **Daily Activity Patch** | A small assistant-generated file that refreshes a particular day’s suggestions without rewriting the whole trip. |
+| **Day** | One date in the itinerary, with activities arranged around bookings, travel and work. |
 
 ```mermaid
 flowchart LR
@@ -19,7 +19,6 @@ flowchart LR
     Stay --> Itinerary
     Ideas -->|choose and schedule| Day[Day plan]
     Itinerary --> Day
-    Patch[Daily Activity Patch] -->|refresh suggestions| Day
 ```
 
 **Ideas are flexible; bookings are commitments.** An activity can be suggested for the morning without having a fixed time. Reservations and travel give the day its constraints.
@@ -86,9 +85,9 @@ flowchart LR
 
 **Output:** a `traveler-activities` JSON file. Import it to add ideas to the stay’s activity pool without replacing day plans.
 
-### Send a Daily Activity Patch
+### Plan a day and send it to the app
 
-**Input:** an agreed day plan, its exact date and the stay it belongs to. This works inside a `/travel-guide` chat too.
+**Input:** the date, stay and what you want to do. Explore options in a `/travel-guide` chat, agree on a day plan, then ask to send it to the app.
 
 ```text
 /send-day YYYY-MM-DD
@@ -96,7 +95,7 @@ flowchart LR
 
 Or ask: “Send the Santiago plan we just drafted for [date] to my app.”
 
-**Output:** `<trip-id>.<date>.activities.json`, containing the activities and dated plan—not a whole-trip revision. Open it with Traveler or use **Day → + → Import day plan…** and review the dates in the preview. You can request several days together.
+**Output:** a **Daily Activity Patch** file, `<trip-id>.<date>.activities.json`, containing the activities and dated plan—not a whole-trip revision. Open it with Traveler or use **Day → + → Import day plan…** and review the dates in the preview. You can request several days together.
 
 ### Revise the whole trip
 
