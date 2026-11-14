@@ -25,27 +25,23 @@ flowchart LR
 
 ## The App
 
-### Your screens, at a glance
+### See the journey, then zoom into a stay
 
-| Screen | The question it answers |
-| --- | --- |
-| **Trips** | Which journey am I planning or taking? |
-| **Trip → Stays** | Where am I going, and in what order? |
-| **Trip → Planning** | What needs booking or preparing? Reach events, checklists, packing and notes here. |
-| **Trip → Calendar** | What does the journey look like across dates? |
-| **Stay → Itinerary / Activities** | What is planned here, and what else could I do? |
-| **Day** | What fits today? Arrange activities around bookings, travel and work; open the day’s route in Maps. |
+<a href="docs/screenshots/trip.png"><img src="docs/screenshots/trip.png" width="260" alt="Demo trip: three stays with dates, onward transport and booking counts"></a>
+<a href="docs/screenshots/stay.png"><img src="docs/screenshots/stay.png" width="260" alt="Palermo itinerary: activities, travel and fixed commitments grouped by day"></a>
 
-During a trip, Traveler opens on today’s day when it belongs to a destination stay. Back takes you up through the stay’s itinerary to the trip. Explore **Settings → Load the demo trip** to try it.
+**Trip (left):** the route at a glance—where you sleep, when you move on and what is booked. **Stay itinerary (right):** how those days fit together, with activities alongside travel and fixed commitments. Open a day to work on its schedule.
 
-### Plan, import and revise
+### Turn possibilities into a day you can follow
 
-- **On the phone:** schedule ideas, add bookings and notes, and mark activities done or skipped. Edits save automatically and can be undone.
-- **Incoming files:** open or share them with Traveler, then review the import preview. If a file needs repair, copy its fix request back to ChatGPT.
-- **Trip revisions:** Traveler merges your edits and asks you to resolve conflicting changes.
-- **Day patches:** replace suggestions for the dates **inside the file**, preserving completed activities, booked activities and your own entries.
+<a href="docs/screenshots/activities.png"><img src="docs/screenshots/activities.png" width="260" alt="Palermo activity pool: ideas grouped by type, with scheduled dates and done or booked marks"></a>
+<a href="docs/screenshots/day.png"><img src="docs/screenshots/day.png" width="260" alt="Daily timeline: a walk and coffee arranged around work and a fixed call, with unscheduled suggestions shown dashed"></a>
 
-Personal trip notes, checklists and work-block adjustments stay on the phone, outside the assistant’s trip file. Backups include them; trip exports do not.
+**Activities (left):** your pool of ideas for the stay, including things you have scheduled, completed or ruled out. **Day (right):** the actual shape of your time. Dashed blocks are flexible suggestions; timed blocks show where activities and commitments land. Fill a gap, move an activity or leave an idea for another day.
+
+Bookings, checklists, packing and notes are reached through the trip’s **Planning** tab. Changes save automatically and can be undone. During the trip, the app opens on today’s day when it belongs to a destination stay.
+
+*Screenshots use the demo trip. Explore it through Settings → Load the demo trip.*
 
 ## ChatGPT — the Traveler Project
 
