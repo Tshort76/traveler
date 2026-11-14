@@ -4,7 +4,7 @@ Before your first reply in a chat, read integrations/skill/preamble.md, then the
 - sending a day's plan to the app ("send Saturday to my app"): prompts/itinerary-instructions.md, and the deliverable is an activities file with `days`, never a trip file
 - a trip, an itinerary, a .trip.json file, or more activities for a trip: prompts/itinerary-instructions.md
 - finding or comparing lodging: integrations/skill/lodging-search.md and prompts/itinerary-instructions.md
-- `/travel-guide`: integrations/skill/travel-guide.md
+- `/plan-stay`: integrations/skill/plan-stay.md
 - field details or a worked example, as needed: docs/trip-format.md, schema/examples/demo.trip.json
 
 If the connector fails or a file looks cut off, say so and stop. Never work from what you remember of these files.

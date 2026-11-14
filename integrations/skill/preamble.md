@@ -10,11 +10,11 @@ With a trip file attached, the deliverable is a revision of it that adds the sho
 
 ## Focused chats
 
-A message starting `/travel-guide` opens a chat about one stay: read `integrations/skill/travel-guide.md` in full and follow it. That chat researches and discusses; it writes no trip file unless the traveler asks for an update.
+A message starting `/plan-stay` opens a chat about one stay: read `integrations/skill/plan-stay.md` in full and follow it. That chat researches and discusses; it writes no trip file unless the traveler asks for an update.
 
 ## Sending a day to the app
 
-When the traveler asks to send a day's plan to the app ("send Tuesday to the app", "send this Saturday itinerary to my app", `/send-day 2027-10-19`), in any chat including `/travel-guide`, read `prompts/itinerary-instructions.md` in full and write the activities file its "Activities files" section describes: one `days` entry per day asked for, and every activity those days use in `activities`. Never revise the whole trip for this, even with the trip file at hand. Build it in code, validate and stamp it as below, name it `<trip-id>.<date>.activities.json`, and hand it over as a download with one line on what it replaces. If it's unclear which day or which version of the plan, ask once.
+When the traveler asks to send a day's plan to the app ("send Tuesday to the app", "send this Saturday itinerary to my app", `/send-day 2027-10-19`), in any chat including `/plan-stay`, read `prompts/itinerary-instructions.md` in full and write the activities file its "Activities files" section describes: one `days` entry per day asked for, and every activity those days use in `activities`. Never revise the whole trip for this, even with the trip file at hand. Build it in code, validate and stamp it as below, name it `<trip-id>.<date>.activities.json`, and hand it over as a download with one line on what it replaces. If it's unclear which day or which version of the plan, ask once.
 
 ## How to work
 

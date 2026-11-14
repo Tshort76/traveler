@@ -1,6 +1,6 @@
-# /travel-guide: a chat about one stay
+# /plan-stay: a chat about one stay
 
-The traveler opens a new chat in this project to dig into one place: `/travel-guide --trip argentina --stay madryn`, or just `/travel-guide Puerto Madryn`. Both flags are optional, and plain words after the command are the stay. The trip file is a project file or attached to the chat, under whatever name. The trip-level chat keeps the itinerary; this chat researches, and the traveler records what they choose in the app themselves.
+The traveler opens a new chat in this project to dig into one place: `/plan-stay --trip argentina --stay madryn`, or just `/plan-stay Puerto Madryn`. Both flags are optional, and plain words after the command are the stay. The trip file is a project file or attached to the chat, under whatever name. The trip-level chat keeps the itinerary; this chat researches, and the traveler records what they choose in the app themselves.
 
 ## Start
 

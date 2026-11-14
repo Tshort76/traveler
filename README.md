@@ -27,17 +27,33 @@ flowchart LR
 
 ### See the journey, then zoom into a stay
 
-<a href="docs/screenshots/trip.png"><img src="docs/screenshots/trip.png" width="260" alt="Demo trip: three stays with dates, onward transport and booking counts"></a>
-<a href="docs/screenshots/stay.png"><img src="docs/screenshots/stay.png" width="260" alt="Palermo itinerary: activities, travel and fixed commitments grouped by day"></a>
-
-**Trip (left):** the route at a glance—where you sleep, when you move on and what is booked. **Stay itinerary (right):** how those days fit together, with activities alongside travel and fixed commitments. Open a day to work on its schedule.
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/screenshots/trip.png"><img src="docs/screenshots/trip.png" width="260" alt="Demo trip with stays, dates, transport and booking counts"></a><br>
+<sub><b>Trip.</b> The route at a glance: where you sleep, when you move on and what is booked.</sub>
+</td>
+<td width="50%" valign="top">
+<a href="docs/screenshots/stay.png"><img src="docs/screenshots/stay.png" width="260" alt="Palermo itinerary grouped by day"></a><br>
+<sub><b>Stay itinerary.</b> See activities alongside travel and fixed commitments. Open a day to work on its schedule.</sub>
+</td>
+</tr>
+</table>
 
 ### Turn possibilities into a day you can follow
 
-<a href="docs/screenshots/activities.png"><img src="docs/screenshots/activities.png" width="260" alt="Palermo activity pool: ideas grouped by type, with scheduled dates and done or booked marks"></a>
-<a href="docs/screenshots/day.png"><img src="docs/screenshots/day.png" width="260" alt="Daily timeline: a walk and coffee arranged around work and a fixed call, with unscheduled suggestions shown dashed"></a>
-
-**Activities (left):** your pool of ideas for the stay, including things you have scheduled, completed or ruled out. **Day (right):** the actual shape of your time. Dashed blocks are flexible suggestions; timed blocks show where activities and commitments land. Fill a gap, move an activity or leave an idea for another day.
+<table>
+<tr>
+<td width="50%" valign="top">
+<a href="docs/screenshots/activities.png"><img src="docs/screenshots/activities.png" width="260" alt="Palermo ideas grouped by type with dates and completion marks"></a><br>
+<sub><b>Activities.</b> Your pool of ideas for the stay, including things you have scheduled, completed or ruled out.</sub>
+</td>
+<td width="50%" valign="top">
+<a href="docs/screenshots/day.png"><img src="docs/screenshots/day.png" width="260" alt="Daily timeline with flexible suggestions and timed activities around work"></a><br>
+<sub><b>Day.</b> Dashed blocks are flexible suggestions; timed blocks show where activities and commitments land. Fill a gap, move an activity or leave an idea for another day.</sub>
+</td>
+</tr>
+</table>
 
 Bookings, checklists, packing and notes are reached through the trip’s **Planning** tab. Changes save automatically and can be undone. During the trip, the app opens on today’s day when it belongs to a destination stay.
 
@@ -45,13 +61,13 @@ Bookings, checklists, packing and notes are reached through the trip’s **Plann
 
 ## ChatGPT — the Traveler Project
 
-[Set up a Project named **Traveler**](integrations/skill/README.md) once. Use a trip-level chat for the overall journey and separate `/travel-guide` chats to explore individual stays. The commands below are messages to send in those chats.
+[Set up a Project named **Traveler**](integrations/skill/README.md) once. Use a trip-level chat for the overall journey and separate `/plan-stay` chats to explore individual stays. The commands below are messages to send in those chats.
 
 ```mermaid
 flowchart LR
     Chat[Traveler Project chat] -->|JSON file| App[Preview and import in app]
     App -->|latest trip export| Chat
-    Chat -->|stay context| Guide[Travel-guide chat]
+    Chat -->|stay context| Guide[Plan-stay chat]
     Guide -->|activities or day patch| App
 ```
 
@@ -68,7 +84,7 @@ flowchart LR
 **Input:** the latest trip export, attached to the chat or available as a Project file. Link any separate stay itinerary you want considered as supporting context; the command starts from the trip JSON.
 
 ```text
-/travel-guide --trip argentina --stay Santiago
+/plan-stay --trip argentina --stay Santiago
 ```
 
 **Output:** a stay brief drawn from the trip, followed by a focused research conversation. Ask about options, practicalities or a particular day; existing plans and work hours provide context. No file is produced until you request one.
@@ -83,7 +99,7 @@ flowchart LR
 
 ### Plan a day and send it to the app
 
-**Input:** the date, stay and what you want to do. Explore options in a `/travel-guide` chat, agree on a day plan, then ask to send it to the app.
+**Input:** the date, stay and what you want to do. Explore options in a `/plan-stay` chat, agree on a day plan, then ask to send it to the app.
 
 ```text
 /send-day YYYY-MM-DD
